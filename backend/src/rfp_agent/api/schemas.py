@@ -1213,6 +1213,9 @@ class RunLogItem(ReviewFields):
     resumed_from: str | None = None         # 이어서 다시 시도한 단계 (C2). 처음부터면 비움
     documents_reprocessed: int = 0          # 점검 뒤 다시 물은 문서 수 (C1)
     lines_reprocessed: int = 0              # 점검 뒤 다시 물은 줄 수 (update-partial-reprocess)
+    # 역할별 프롬프트 판 (add-prompt-eval). 예전 실행은 비고 prompt_version(전체 판 하나)만 있다
+    prompt_versions: dict[str, str] | None = None
+    prompt_version: str | None = None
     explanations_unverified: int            # AI 검증에서 확인 필요로 표시된 설명 수
     retries: int
     steps: list[RunStepTime]
@@ -1439,3 +1442,67 @@ class PeakCheck(Out):
     allowed_ka: list[float]
     result: Literal["PASS", "VIOLATION", "NEEDS_REVIEW"]
     reason_code: str | None
+
+
+class PromptEvalCount(Out):
+    """정답 출처 하나의 지표 재료 (add-prompt-eval). value는 % (평균 도구 호출 수만 평균)."""
+    num: int
+    den: int
+    value: float | None
+
+
+class PromptEvalMetric(Out):
+    """지표 하나: 출처별 값, 기준 출처(사람 → 코드 → Claude 초안), 반복 최소·최대·평균."""
+    by_source: dict[Literal["HUMAN", "CODE", "CLAUDE_DRAFT", "ALL"], PromptEvalCount]
+    basis: Literal["HUMAN", "CODE", "CLAUDE_DRAFT", "ALL"] | None
+    weak: bool                               # Claude 초안 정답만으로 낸 지표 ("근거 약함")
+    min: float | None
+    max: float | None
+    mean: float | None
+    repeats: list[float | None]
+
+
+class PromptEvalRun(Out):
+    """프롬프트 평가 한 번 (add-prompt-eval, FR-18). 비용은 팀 가정 단가로 어림."""
+    eval_id: int
+    set_name: str
+    set_version: str
+    model: str | None
+    ai_mode: str
+    prompt_versions: dict[str, str]
+    code_version: str | None
+    repeat: int
+    status: Literal["DONE", "SKIPPED", "FAILED"]
+    skip_reason: str | None
+    metrics: dict[str, dict[str, PromptEvalMetric]]
+    injection_effect: int
+    calls: int
+    input_tokens: int
+    output_tokens: int
+    cost_krw: int | None
+    seconds: float | None
+    is_baseline: bool
+    note: str | None
+    run_by: str | None
+    created_at: datetime
+
+
+class PromptEvalList(Out):
+    """평가 기록(최신순)과 평가셋·모델마다 가장 최근 끝난 평가 (모델 비교, NFR-07)."""
+    runs: list[PromptEvalRun]
+    latest_by_model: list[PromptEvalRun]
+
+
+class PromptEvalItem(Out):
+    repeat_no: int
+    item_id: str
+    role: str
+    made_by: Literal["HUMAN", "CODE", "CLAUDE_DRAFT"]
+    ok: bool | None                          # null = 답 없음
+    answer: dict | None
+    error: str | None
+
+
+class PromptEvalDetail(Out):
+    run: PromptEvalRun
+    items: list[PromptEvalItem]

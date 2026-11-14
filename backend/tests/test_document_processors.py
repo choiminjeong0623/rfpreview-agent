@@ -13,6 +13,7 @@ from types import SimpleNamespace
 import pytest
 from docx import Document
 
+from rfp_agent.llm.tasks import DATA_RULE
 from rfp_agent.pipeline import dictionaries, queries, run_control
 from rfp_agent.pipeline import run as run_mod
 from rfp_agent.pipeline.document import process_document
@@ -20,6 +21,11 @@ from rfp_agent.pipeline.run import RunContext, create_run, execute_run
 from rfp_agent.pipeline.run_log import run_log
 from tests.conftest import FakeLLM
 from tests.docx_factory import build_gis_spec, build_judgment_spec
+
+
+def body(prompt: str) -> str:
+    """CR-14 공통 머리말(구분자 규칙)을 뺀 프롬프트. 그다음 첫 줄이 문서 종류 설명이다."""
+    return prompt.removeprefix(DATA_RULE)
 
 VERSION = "test-dict-v1"
 LABEL = "RFP의 한 절에서"
@@ -92,7 +98,7 @@ class HintMisleads(FakeLLM):
 
     def generate_json(self, prompt: str, schema: dict) -> dict:
         answer = super().generate_json(prompt, schema)
-        if "labels" in answer and prompt.startswith("문서 종류:"):
+        if "labels" in answer and body(prompt).startswith("문서 종류:"):
             answer["labels"] = [{"n": a["n"], "v": "WRITING_RULE"} for a in answer["labels"]]
         return answer
 
@@ -117,7 +123,7 @@ def test_bid_form_uses_bid_form_processor(db, tmp_path):
     result = process(db, build_gis_spec(tmp_path / "Bidding Forms_gis.docx"), llm)
     assert document_row(db, result.document_id)[:3] == ("BID_FORM", None, False)
     labels = [p for p in llm.prompts if LABEL in p]
-    assert labels and all(p.startswith("문서 종류: 입찰 서식") for p in labels)
+    assert labels and all(body(p).startswith("문서 종류: 입찰 서식") for p in labels)
 
 
 def test_unknown_uses_general_processor(db, tmp_path):
@@ -126,7 +132,7 @@ def test_unknown_uses_general_processor(db, tmp_path):
     result = process(db, letters(tmp_path / "misc_notes.docx"), llm)
     assert document_row(db, result.document_id)[0] == "GENERAL"
     asked = [p for p in llm.prompts if LABEL in p or TYPE in p]
-    assert asked and not any(p.startswith("문서 종류:") for p in asked)
+    assert asked and not any(body(p).startswith("문서 종류:") for p in asked)
 
 
 def test_failed_test_spec_reasks_unknown_types(db, tmp_path):
@@ -137,11 +143,12 @@ def test_failed_test_spec_reasks_unknown_types(db, tmp_path):
     assert (processor, again, review) == ("TEST_SPEC", True, True)
     assert check == "시험 사양서인데 시험 유형 줄이 하나도 없습니다"
     labels = [p for p in llm.prompts if LABEL in p]
-    assert labels and all(p.startswith("문서 종류: 시험 사양서") for p in labels)  # 다시 안 물음
+    # 문장 구분은 다시 묻지 않음
+    assert labels and all(body(p).startswith("문서 종류: 시험 사양서") for p in labels)
     typed = [p for p in llm.prompts if TYPE in p]
     first, again_asked = typed[0], typed[1:]
-    assert first.startswith("문서 종류: 시험 사양서")
-    assert again_asked and not any(p.startswith("문서 종류:") for p in again_asked)
+    assert body(first).startswith("문서 종류: 시험 사양서")
+    assert again_asked and not any(body(p).startswith("문서 종류:") for p in again_asked)
     unknown = len(re.findall(r"^\d+\. ", first, re.MULTILINE))     # 처음 물어 모두 NONE인 줄
     assert reprocessed_lines(db, result.document_id) == unknown == result.reprocessed_lines > 0
     assert db.execute("SELECT count(*) FROM document").fetchone()[0] == 1
@@ -155,7 +162,7 @@ def test_failed_requirement_spec_reasks_dropped_sections(db, tmp_path):
     assert (processor, again, review) == ("REQUIREMENT_SPEC", True, True)
     assert check == "요구 사양서인데 요구사항 줄이 하나도 없습니다"
     labels = [p for p in llm.prompts if LABEL in p]
-    hinted = [p for p in labels if p.startswith("문서 종류: 기술 요구 사양서")]
+    hinted = [p for p in labels if body(p).startswith("문서 종류: 기술 요구 사양서")]
     assert hinted and len(labels) == 2 * len(hinted)      # 떨어진 절(여기선 둘 다)만 한 번 더
     assert reprocessed_lines(db, result.document_id) == 8
     kinds = db.execute("SELECT req_kind, extracted_by FROM requirement WHERE document_id = %s",
@@ -171,7 +178,7 @@ def test_failed_bid_form_not_reasked(db, tmp_path):
         "BID_FORM", "입찰 서식인데 표 칸 요구값이 하나도 없습니다", False, True)
     assert result.reprocessed is False and reprocessed_lines(db, result.document_id) == 0
     asked = [p for p in llm.prompts if LABEL in p or TYPE in p]
-    assert asked and all(p.startswith("문서 종류: 입찰 서식") for p in asked)
+    assert asked and all(body(p).startswith("문서 종류: 입찰 서식") for p in asked)
 
 
 def test_boq_uses_boq_processor(db, tmp_path):
@@ -183,7 +190,7 @@ def test_boq_uses_boq_processor(db, tmp_path):
     assert kind == "BOQ"
     assert document_row(db, result.document_id)[:3] == ("BOQ", None, False)
     labels = [p for p in llm.prompts if LABEL in p]
-    assert labels and all(p.startswith("문서 종류: 물량표(BOQ)") for p in labels)
+    assert labels and all(body(p).startswith("문서 종류: 물량표(BOQ)") for p in labels)
 
 
 def test_boq_without_table(db, tmp_path):
@@ -193,7 +200,7 @@ def test_boq_without_table(db, tmp_path):
     assert document_row(db, result.document_id) == (
         "BOQ", "물량표인데 표 줄이 하나도 없습니다", False, True)
     asked = [p for p in llm.prompts if LABEL in p or TYPE in p]
-    assert asked and all(p.startswith("문서 종류: 물량표(BOQ)") for p in asked)
+    assert asked and all(body(p).startswith("문서 종류: 물량표(BOQ)") for p in asked)
 
 
 def test_failed_check_without_ai(db, tmp_path):
@@ -215,7 +222,7 @@ def test_test_spec_type_question_has_hint(db, tmp_path):
     llm = FakeLLM()
     process(db, letters(tmp_path / "testing_procedure.docx"), llm)
     typed = [p for p in llm.prompts if TYPE in p]
-    assert typed and typed[0].startswith("문서 종류: 시험 사양서")
+    assert typed and body(typed[0]).startswith("문서 종류: 시험 사양서")
 
 
 def workers(monkeypatch, n):

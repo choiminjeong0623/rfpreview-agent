@@ -195,3 +195,22 @@ def test_api(db, run, db_url, monkeypatch):
         assert client.post(f"/api/runs/{run}/assistant", json={"question": "a"}).status_code == 400
     finally:
         get_settings.cache_clear()
+
+
+def test_assistant_schema_has_no_empty_enum():
+    """답 형식의 enum에 빈 글자가 없다: Gemini가 400(설정 오류)으로 거절해 도우미가 늘 글자 찾기로
+    떨어지던 것 (add-prompt-eval 평가에서 찾음)."""
+    from rfp_agent.llm import tasks
+
+    seen = {}
+
+    class Capture:
+        model = "capture"
+
+        def generate_json(self, prompt, schema):
+            seen.update(schema)
+            return {"action": "answer", "sentences": []}
+
+    tasks.assistant_step(Capture(), "질문", "", True)
+    enums = [p["enum"] for p in seen["properties"].values() if "enum" in p]
+    assert enums and all("" not in e for e in enums)

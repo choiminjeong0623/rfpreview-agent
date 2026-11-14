@@ -2,13 +2,19 @@
 | demo-businesses --business 사업명 a.docx [b.docx ...] (시연용 사업, add-project-status)
 | load-answer-key 정답지.csv --name 이름 [--human] [--kind REQ --doc 문서] (정답지)
 | make-answer-key 공급사답안.docx --name 이름 (요구사항 정답지, add-requirement-answer-key)
-| demo-setup [--create] [--file 파일] (빈 DB에 시연 준비, add-demo-setup)"""
+| demo-setup [--create] [--file 파일] (빈 DB에 시연 준비, add-demo-setup)
+| export-eval-set --key 정답지이름 [--out 경로] [--synthetic]
+  (유형 정답지 → 평가셋, add-prompt-eval)
+| eval-prompts --set 이름 [--repeat N] [--baseline] [--yes] [--report 경로]
+  [--write-baseline-file] [--baseline-file 경로] (프롬프트 평가, add-prompt-eval)"""
 
 import argparse
 import re
 import sys
 from datetime import timedelta
 from pathlib import Path
+
+import psycopg
 
 from rfp_agent.config import get_settings
 from rfp_agent.db.connection import connect
@@ -114,6 +120,85 @@ def make_answer_key(path: Path, name: str) -> None:
     print(f"[요구사항 정답지] {name} (코드 자동, 사람 확인 전): 조항 {report.rows}줄")
 
 
+def export_eval_set(key_name: str, out: Path | None, synthetic: bool) -> Path:
+    """유형 정답지(answer_key)를 평가셋 JSONL로. 고객 원문이 들 수 있어 기본은 data/private/eval/.
+
+    data/private 밖(공개 평가셋)에 쓰려면 합성 문서 정답지라는 확인(--synthetic)이 있어야 한다.
+    """
+    from rfp_agent.pipeline.prompt_eval import export_type_key
+
+    settings = get_settings()
+    private = settings.private_data_dir / "eval"
+    target = out or private / f"{re.sub(r'[^0-9A-Za-z가-힣_-]+', '_', key_name)}.jsonl"
+    if not target.resolve().is_relative_to(settings.private_data_dir.resolve()) and not synthetic:
+        sys.exit("고객 원문이 든 정답지는 data/private/eval/ 아래로만 씁니다. 합성 문서 정답지면 "
+                 "--synthetic을 주세요.")
+    with connect() as conn:
+        try:
+            n = export_type_key(conn, key_name, target)
+        except LookupError as exc:
+            sys.exit(str(exc))
+    print(f"[평가셋] {key_name} → {target} ({n}줄)")
+    return target
+
+
+def eval_prompts(set_name: str, repeat: int, baseline: bool, yes: bool, report_path: Path | None,
+                 write_baseline_file: bool, baseline_file: Path | None) -> int:
+    """평가셋을 지금 AI 방식의 모델로 평가한다. 회귀면 1, 아니면 0 (AI 없음·건너뜀도 0)."""
+    import json
+    import tempfile
+
+    from rfp_agent.llm.client import ai_mode, make_llm
+    from rfp_agent.pipeline import prompt_eval as pe
+
+    settings = get_settings()
+    if (baseline or write_baseline_file) and repeat < pe.BASELINE_MIN_REPEAT:
+        sys.exit(f"기준선은 {pe.BASELINE_MIN_REPEAT}번 이상 반복해 만듭니다 "
+                 f"(--repeat {pe.BASELINE_MIN_REPEAT}).")
+    try:
+        evalset = pe.load_set(pe.find_set(set_name, settings))
+    except pe.EvalError as exc:
+        sys.exit(str(exc))
+    mode = ai_mode(settings)
+    llm = make_llm(settings)
+    fixture = pe.Fixture()
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            names = {i.input["fixture"] for i in evalset.items if i.role == "assistant"}
+            if llm is not None and names:
+                fixture = pe.open_fixtures(names, settings, Path(tmp))
+            result = pe.evaluate(evalset, llm, mode, repeat, settings.rfp_eval_max_krw, yes,
+                                 fixture)
+    except pe.EvalError as exc:
+        sys.exit(str(exc))
+    finally:
+        pe.close_fixtures(fixture)
+    base = None
+    if baseline_file is not None:
+        base = json.loads(baseline_file.read_text()) if baseline_file.exists() else None
+    cmp = None
+    try:
+        with connect() as conn:
+            if baseline_file is None:
+                base = pe.db_baseline(conn, evalset.name)
+            cmp = pe.compare(result, base) if result.status == "DONE" else None
+            pe.save(conn, result, baseline=baseline)
+    except psycopg.OperationalError:
+        if result.status == "DONE":
+            raise
+        print("[프롬프트 평가] DB에 연결하지 못해 건너뜀 기록은 남기지 않음")
+    text = pe.report(result, cmp)
+    print(text)
+    if report_path is not None:
+        report_path.write_text(text, encoding="utf-8")
+    if write_baseline_file and result.status == "DONE":
+        target = baseline_file or settings.seed_dir.parent / "eval" / "baseline.json"
+        target.write_text(json.dumps(pe.summary(result), ensure_ascii=False, indent=1) + "\n",
+                          encoding="utf-8")
+        print(f"[기준선 파일] {target}")
+    return 1 if cmp is not None and cmp.regression else 0
+
+
 DEMO_FILE = "RFP_Product_Master_Evaluative_EN_With_Product_Switch.docx"
 DEMO_KEYS = [("synthetic_rfp28_req.csv", "합성 RFP 28 요구사항", "REQ"),
              ("synthetic_rfp28_type.csv", "합성 RFP 28 유형", "TYPE")]
@@ -178,7 +263,8 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="rfp-db")
     parser.add_argument("command", choices=["migrate", "seed-rules", "seed-products", "setup",
                                             "demo-businesses", "load-answer-key",
-                                            "make-answer-key", "fill-due", "demo-setup"])
+                                            "make-answer-key", "fill-due", "demo-setup",
+                                            "export-eval-set", "eval-prompts"])
     parser.add_argument("path", nargs="?",
                         help="load-answer-key: 정답지 CSV / make-answer-key: 공급사 답안 docx")
     parser.add_argument("--name", help="load-answer-key: 정답지 이름 (같은 이름이면 줄을 바꿈)")
@@ -200,8 +286,41 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--file", help="demo-setup: 시연 파일 (기본: 합성 RFP 파일 28)")
     parser.add_argument("--reset-edits", action="store_true",
                         help="화면에서 고친 규칙을 버리고 사전 파일 내용만 넣음 (이력은 남음)")
+    parser.add_argument("--key", help="export-eval-set: 유형 정답지 이름")
+    parser.add_argument("--out",
+                        help="export-eval-set: 쓸 경로 (기본 data/private/eval/이름.jsonl)")
+    parser.add_argument("--synthetic", action="store_true",
+                        help="export-eval-set: 합성 문서 정답지라 data/private 밖에 써도 됨")
+    parser.add_argument("--set", dest="eval_set",
+                        help="eval-prompts: 평가셋 이름(data/eval·data/private/eval) 또는 .jsonl")
+    parser.add_argument("--repeat", type=int, default=1, help="eval-prompts: 반복 횟수 (기본 1)")
+    parser.add_argument("--baseline", action="store_true",
+                        help="eval-prompts: 이번 실행을 기준선으로 (이전 기준선은 풂)")
+    parser.add_argument("--yes", action="store_true",
+                        help="eval-prompts: 어림 비용이 상한(RFP_EVAL_MAX_KRW)을 넘어도 시작")
+    parser.add_argument("--report", help="eval-prompts: 마크다운 보고서를 쓸 경로")
+    parser.add_argument("--write-baseline-file", action="store_true",
+                        help="eval-prompts: 결과를 기준선 파일(data/eval/baseline.json)로 씀")
+    parser.add_argument("--baseline-file",
+                        help="eval-prompts: DB 기준선 대신 이 파일과 비교 (CI)")
     args = parser.parse_args(argv)
     settings = get_settings()
+    if args.command == "export-eval-set":
+        if not args.key:
+            parser.error("export-eval-set --key 정답지이름 이 필요합니다")
+        export_eval_set(args.key, Path(args.out) if args.out else None, args.synthetic)
+        return
+    if args.command == "eval-prompts":
+        if not args.eval_set:
+            parser.error("eval-prompts --set 이름 이 필요합니다")
+        if args.repeat < 1:
+            parser.error("--repeat는 1 이상입니다")
+        code = eval_prompts(args.eval_set, args.repeat, args.baseline, args.yes,
+                            Path(args.report) if args.report else None, args.write_baseline_file,
+                            Path(args.baseline_file) if args.baseline_file else None)
+        if code:
+            sys.exit(code)
+        return
     if args.command == "demo-businesses":
         if not args.business or any(len(g) < 2 for g in args.business):
             parser.error("--business 사업명 a.docx [b.docx ...] 가 필요합니다")

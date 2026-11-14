@@ -17,7 +17,12 @@
     "FR-14": { "specs": ["proposal-points"] },
     "FR-15": { "specs": ["field-history"] },
     "FR-16": { "specs": ["cost-conditions"] },
-    "FR-17": { "specs": ["review-assistant"] }
+    "FR-17": { "specs": ["review-assistant"] },
+    "FR-18": { "specs": ["prompt-evaluation"] },
+    "FR-19": { "specs": [], "planned": "명세서 v3 제안 — change 작성 전" },
+    "FR-20": { "specs": [], "planned": "명세서 v3 제안 — change 작성 전" },
+    "FR-21": { "specs": [], "planned": "명세서 v3 제안 — change 작성 전" },
+    "FR-22": { "specs": [], "planned": "명세서 v3 제안 — change 작성 전" }
   },
   "common": {
     "CR-01~12 공통 규칙": ["evidence-integrity", "api-contract"],
