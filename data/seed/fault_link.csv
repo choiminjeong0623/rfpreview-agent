@@ -1,0 +1,9 @@
+표준 항목키,제품군,고장 번호,적용 설비(;로 구분),근거 원문 위치,확정자,메모
+anti_condensation_heater,MV_EQUIP,FLT-051,GIS; BREAKER; SWITCHGEAR,파일 4 327행; 파일 2 5.15절,팀 확정,명세서 수용 기준의 예시와 같은 짝
+spring_charging_motor,MV_EQUIP,FLT-048,GIS; BREAKER; SWITCHGEAR,파일 1 7208행; 파일 2 2032행,팀 확정,요구 부품과 고장 부품이 같음
+ct_polarity,MV_EQUIP,FLT-055,GIS; BREAKER; SWITCHGEAR; INSTRUMENT,파일 4 404행,팀 확정,시험 요구가 고장 원인(CT 극성 반대)을 막는 항목
+buchholz_relay,TRANSFORMER,FLT-065,TRANSFORMER,파일 1 7994행; 파일 22 1031행,팀 확정,오일 주입 뒤 공기 → 경보
+buchholz_relay,TRANSFORMER,FLT-066,TRANSFORMER,파일 1 7994행; 파일 22 1031행,팀 확정,권선 내부 고장 → 트립. 공장 수리라 제안 문장은 신중하게
+off_load_tap_changer,TRANSFORMER,FLT-068,TRANSFORMER,파일 1 11833행; 파일 2 1678행,팀 확정,탭 위치 잘못 → 2차 전압 높음
+partial_discharge,MV_EQUIP,FLT-052,GIS; BREAKER; SWITCHGEAR,파일 4 398행; 파일 1 7126행,팀 확정,케이블 단말 시공 불량 원인. 한 단계 간접 연결
+sound_level,TRANSFORMER,FLT-063,TRANSFORMER,파일 1 7800행; 파일 2 1406행,팀 확정,원인에 고조파 부하(현장 조건)가 섞여 있음

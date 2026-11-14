@@ -1,0 +1,44 @@
+{
+  "gemini-embedding-001": {
+    "asked": 186,
+    "top1_accuracy": 0.9301075268817204,
+    "cross_lang_accuracy": 0.8494623655913979,
+    "cross_lang_asked": 186,
+    "at_system_threshold": {
+      "threshold": 0.85,
+      "candidates": 97,
+      "coverage": 0.521505376344086,
+      "precision": 0.9690721649484536
+    },
+    "suggested_threshold": {
+      "threshold": 0.5,
+      "candidates": 164,
+      "coverage": 0.8817204301075269,
+      "precision": 0.9573170731707317
+    },
+    "seconds": 3.82,
+    "dims": 768,
+    "approx_cost_usd": 0.000102
+  },
+  "bge-m3 (Ollama)": {
+    "asked": 186,
+    "top1_accuracy": 0.8548387096774194,
+    "cross_lang_accuracy": 0.6451612903225806,
+    "cross_lang_asked": 186,
+    "at_system_threshold": {
+      "threshold": 0.85,
+      "candidates": 83,
+      "coverage": 0.44623655913978494,
+      "precision": 0.9759036144578314
+    },
+    "suggested_threshold": {
+      "threshold": 0.83,
+      "candidates": 92,
+      "coverage": 0.4946236559139785,
+      "precision": 0.9565217391304348
+    },
+    "seconds": 18.95,
+    "dims": 1024,
+    "approx_cost_usd": 0.0
+  }
+}

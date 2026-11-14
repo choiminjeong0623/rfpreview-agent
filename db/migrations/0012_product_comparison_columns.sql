@@ -1,0 +1,13 @@
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS lightning_impulse_kv NUMERIC(8,2);
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS power_freq_withstand_kv NUMERIC(8,2);
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS switching_impulse_kv NUMERIC(8,2);
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS peak_current_ka NUMERIC(8,2);
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS making_current_ka NUMERIC(8,2);
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS breaking_time_ms NUMERIC(8,2);
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS closing_time_ms NUMERIC(8,2);
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS gas_leakage_percent NUMERIC(8,4);
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS partial_discharge_pc NUMERIC(8,2);
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS cooling_type VARCHAR(40);
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS insulation_medium VARCHAR(40);
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS maintenance_months SMALLINT;
+ALTER TABLE product_master ADD COLUMN IF NOT EXISTS service_life_years SMALLINT;

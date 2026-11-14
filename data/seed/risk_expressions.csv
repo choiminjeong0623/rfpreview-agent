@@ -1,0 +1,11 @@
+﻿표현,언어,종류,위험 후보로 보는 조건,예시 위치
+deemed,영어,포괄 조항(간주),계약·일탈·예외 조항 안에 있을 때 위험 후보,"파일 3 190행 ""deemed to be accepted"""
+no deviation(s),영어,포괄 조항,,
+shall be accepted,영어,포괄 조항(간주),,
+at no extra cost,영어,비용 전가,공급 범위·변경 조항 안에 있을 때,
+including but not limited to,영어,범위 모호,공급 범위 문장 안에 있을 때,
+but not limited to,영어,범위 모호,공급 범위 문장 안에 있을 때,"파일 2 369행 ""as summarized below but not limited to"""
+간주,한국어,포괄 조항(간주),계약·일탈 조항 안에 있을 때,
+본다,한국어,포괄 조항(간주),"""~한 것으로 본다"" 형태일 때만",
+일체,한국어,범위 모호,공급 범위 문장 안에 있을 때,
+포함하여,한국어,범위 모호,공급 범위 문장 안에 있을 때,

@@ -1,0 +1,4 @@
+product_code,product_name,family,family_name,description,standards,certifications,has_firmware,fw_latest,warranty_months,lifecycle_status,std_lead_time_weeks,moq,list_price_usd,weight_kg,dimensions_mm,ip_rating,operating_temp,tech_support_dept,doc_ids,rated_voltage_kv,rated_current_a,short_circuit_ka,is_assumed,source_doc,market
+GIS-145,GIS 145 kV 40 kA,GIS,Gas-insulated switchgear (GIS),"정격 단시간 전류 40 kA (3초), 50/60 Hz",IEC 62271-203,,,,,ACTIVE,,,,,,,,,,145,3150,40,N,카탈로그 p.19,IEC
+GIS-145-P7,145kV GIS 설계 사례 카드,GIS,Gas-insulated switchgear (GIS),"[설계 사례 카드, 판정 기준 아님] 60 Hz",,,,,,,,,,,,,,,,145,2000,40,Y,RFP 파일 7,IEC
+TRF-HV,초고압 변압기,TRANSFORMER,Power transformers,초고압 유입 변압기,,,,,,ACTIVE,,,,,,,,,,,,,N,홈페이지,

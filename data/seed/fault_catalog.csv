@@ -1,0 +1,9 @@
+fault_id,family,applies_to,symptom,root_cause,action,needs_rma,typical_resolution_hours,verified
+FLT-048,MV_EQUIP,VCB-25kV-1250,Breaker closing spring does not charge,Spring charging motor burned out,Replace the spring charging motor,N,48,Y
+FLT-051,MV_EQUIP,SWGR-MV-12kV,Partial discharge alarm raised in switchgear panel,Moisture condensed because the anti-condensation heater was switched off,Switch the heater back on and clean the insulators,N,48,Y
+FLT-052,MV_EQUIP,SWGR-MV-12kV,Partial discharge detected at cable termination,Poor workmanship at the cable termination,Redo the cable termination,N,72,Y
+FLT-055,MV_EQUIP,VCB-25kV-1250;SWGR-MV-12kV,Protection relay trips with no system fault,CT wired with reversed polarity or wrong relay setting,Correct the CT wiring and relay settings,N,24,Y
+FLT-063,TRANSFORMER,TRF-DRY-630;TRF-OIL-1000,Transformer makes abnormal humming noise,Core clamping has loosened or load has high harmonics,Re-tighten the core clamping and add a harmonic filter,N,72,Y
+FLT-065,TRANSFORMER,TRF-OIL-1000,Buchholz relay alarm,Air left inside after oil filling,Bleed air from the Buchholz relay and keep monitoring,N,24,Y
+FLT-066,TRANSFORMER,TRF-OIL-1000,Buchholz relay trip,Internal winding fault,Return to factory for repair under warranty,Y,240,Y
+FLT-068,TRANSFORMER,TRF-DRY-630;TRF-OIL-1000,Secondary voltage higher than expected,Off-circuit tap changer left at wrong position,De-energise and set the correct tap position,N,8,Y

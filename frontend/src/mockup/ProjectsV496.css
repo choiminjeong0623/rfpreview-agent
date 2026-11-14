@@ -1,0 +1,20 @@
+/* 목업 v4.96 Projects에서 더해진 규칙 (update-home-projects). 요약 칸 누르기 sh-sum.qk, qkbar */
+.sh-sum.qk{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;padding:0;overflow:hidden}
+@media (max-width:900px){.sh-sum.qk{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sh-sum.qk button{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;padding:12px 16px;cursor:pointer;min-width:0;border-right:1px solid #EEF2F6;position:relative}
+.sh-sum.qk button:last-child{border-right:0}
+.sh-sum.qk button{position:relative}
+.sh-sum.qk button::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:#0A1E5A;transform:scaleX(0);transform-origin:center;transition:transform .32s cubic-bezier(.2,.7,.2,1)}
+.sh-sum.qk button.on::after{transform:scaleX(1)}
+.sh-sum.qk button:not([disabled]):hover .ql{color:#1F2937}
+.sh-sum.qk button.on .ql{color:#1F2937;font-weight:600}
+@media (prefers-reduced-motion: reduce){.sh-sum.qk button::after{transition:none}}
+.sh-sum.qk button:focus-visible{outline:2px solid #0569A0;outline-offset:-2px}
+.sh-sum.qk button.on{background:inherit}
+.sh-sum.qk button[disabled]{cursor:default;background:none}
+.sh-sum.qk .ql{display:flex;align-items:baseline;gap:6px;color:#475467}
+.sh-sum.qk .ql b{margin-left:0}
+.sh-sum.qk .qs{font-size:var(--fs-xs);color:#667085;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qkbar{display:flex;align-items:center;gap:8px;margin-top:16px;padding:8px 14px;border-radius:8px;background:#EDF3FA;font-size:var(--fs-sm);color:#344054}
+.qkbar .ms{font-size:18px;color:#0569A0}
+.qkbar .lnk{margin-left:auto;border:0;background:none;color:#0569A0;font:inherit;font-size:var(--fs-sm);font-weight:600;cursor:pointer;padding:0}

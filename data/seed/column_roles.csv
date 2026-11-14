@@ -1,0 +1,10 @@
+header_text,column_role
+No.,ITEM_NO
+No,ITEM_NO
+Item,ITEM_NO
+Description,ITEM_NAME
+Unit,UNIT
+Employer's Requirement,REQUIRED
+Employer's Data,REQUIRED
+Warranted Data,WARRANTED
+C/D/E,SUPPLIER_MARK

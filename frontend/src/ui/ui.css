@@ -1,0 +1,131 @@
+/* 공통 부품 중 목업 CSS에 없는 모양만 (add-ui-foundation). 색·간격은 styles/tokens.css 토큰만 쓴다. */
+
+/* 줄바꿈: 한국어도 낱말(띄어쓰기) 단위로 바꾸고, 칸보다 긴 낱말(파일 이름·URL 등)만 낱말 안에서 끊는다 */
+body{word-break:keep-all;overflow-wrap:break-word}
+
+/* 창 (목업 Detail .mdo > .apw 모양을 모든 화면에서 쓰려고 옮김) */
+.uim{position:fixed;inset:0;z-index:var(--z-modal);background:var(--c-overlay-strong);display:flex;align-items:center;justify-content:center;padding:var(--s-8);box-sizing:border-box}
+.uid{width:min(var(--uid-w,640px),100%);max-height:100%;background:var(--c-white);border-radius:var(--r-lg);box-shadow:0 24px 48px var(--c-shade-strong);display:flex;flex-direction:column;overflow:hidden;outline:none}
+.uid-h{display:flex;align-items:center;gap:var(--s-2);padding:var(--s-4) var(--s-5) var(--s-3)}
+.uid-h h2{margin:0;font-size:var(--t-h3);font-weight:600;color:var(--c-text);flex:1}
+.uid-b{padding:var(--s-1) var(--s-5) var(--s-4);overflow:auto;color:var(--c-text);font-size:var(--t-sm)}
+.uid-f{display:flex;align-items:center;justify-content:flex-end;gap:var(--s-2);padding:var(--s-3) var(--s-5);border-top:1px solid var(--c-line-soft)}
+
+/* 목록 표 순번 칸 (목업 v4.77 .sqt와 같은 모양) */
+.tbl th.sq,.tbl td.sq{width:44px;min-width:44px;box-sizing:border-box;text-align:center;color:var(--c-muted);font-size:var(--t-xs);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl th.sq{color:var(--c-text-3);font-weight:600}
+.tbl td.uis{padding:var(--s-6) var(--s-4);text-align:center;color:var(--c-muted)}
+.tbl td.uis.err{color:var(--c-red)}
+
+/* 화면 상태 */
+.uiload{display:grid;gap:var(--s-2);padding:var(--s-3) 0}
+.uiload i{display:block;height:14px;border-radius:var(--r-sm);background:var(--c-bar);animation:uiPulse 1.2s ease-in-out infinite}
+.uiload i:nth-child(2){width:80%}.uiload i:nth-child(3){width:60%}
+@keyframes uiPulse{50%{opacity:.45}}
+/* 진행 중 표시: 단추 안에서 도는 동그라미 (update-send-progress) */
+.uispin{display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-1px;margin-right:6px;animation:uiSpin .8s linear infinite}
+@keyframes uiSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.uiload i{animation:none}.uispin{animation-duration:2.4s}}
+.uiempty{padding:var(--s-6) var(--s-4);text-align:center;color:var(--c-muted);font-size:var(--t-sm)}
+.uierr{display:flex;align-items:center;gap:var(--s-2);padding:var(--s-3) var(--s-4);border:1px solid var(--c-red-line);background:var(--c-red-bg);color:var(--c-red);border-radius:var(--r-lg);font-size:var(--t-sm)}
+.uierr span{flex:1}
+
+/* 알림 쌓기 (목업 v4.96 .antstw 모양) */
+.uitw{position:fixed;z-index:var(--z-toast);right:var(--s-6);top:76px;width:360px;display:flex;flex-direction:column;gap:var(--s-2);max-height:calc(100vh - 96px);overflow:auto;pointer-events:none}
+.uitw>*{pointer-events:auto}
+/* 동작 결과 알림: 아래 가운데 하나 (update-action-toast-place). 검토 상세 아래 행동 줄(.ftb)이 있으면 그 위 */
+.uisnk{position:fixed;z-index:var(--z-toast);left:50%;bottom:28px;transform:translateX(-50%);max-width:min(640px,calc(100vw - 32px));box-sizing:border-box;display:flex;align-items:flex-start;gap:var(--s-2);padding:10px var(--s-4);border-radius:var(--r-lg);background:var(--c-text);color:var(--c-white);font-size:var(--t-sm);line-height:1.5;box-shadow:var(--sh-pop);animation:uiUp .2s ease-out}
+.uisnk p{margin:0}
+.uisnk .ms{font-size:18px;color:var(--c-green-dot);margin-top:1px}
+.uisnk a{color:var(--c-white);font-weight:600;text-decoration:underline;margin-left:6px}
+body:has(.ftb) .uisnk{bottom:88px}
+@keyframes uiUp{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+@media (prefers-reduced-motion: reduce){.uisnk{animation:none}}
+@keyframes uiIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.uit{position:relative;box-sizing:border-box;animation:uiIn .25s ease-out;background:var(--c-white);border:1px solid var(--c-green-line);border-left:4px solid var(--c-green);border-radius:var(--r-lg);box-shadow:var(--sh-pop);padding:var(--s-3) 14px;font-size:var(--t-sm);color:var(--c-text);display:flex;gap:10px;align-items:flex-start}
+.uit .ms{color:var(--c-green);font-size:20px}
+.uit.info{border-color:var(--c-line);border-left-color:var(--c-link)}.uit.info .ms{color:var(--c-link)}
+.uit.error{border-color:var(--c-red-line);border-left-color:var(--c-red)}.uit.error .ms{color:var(--c-red)}
+.uit p{margin:0;flex:1;line-height:1.5}
+.uit button{border:0;background:none;color:var(--c-muted);cursor:pointer;padding:0;font:inherit;font-size:var(--t-xs);font-weight:600}
+@media (prefers-reduced-motion:reduce){.uit{animation:none}}
+
+/* 부품 견본 화면 */
+.uidev{display:grid;gap:var(--s-6)}
+.uidev .sw{display:flex;flex-wrap:wrap;gap:var(--s-2)}
+.uidev .sw div{width:132px;font-size:var(--t-2xs);color:var(--c-text-3)}
+.uidev .sw i{display:block;height:36px;border-radius:var(--r-md);border:1px solid var(--c-line);margin-bottom:var(--s-1)}
+.uidev .row{display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:center}
+.uit p a{font-weight:600;margin-left:var(--s-1)}
+
+/* 줄 안 작은 보조 단추 (예: [유형 고치기]). 화면마다 다른 목업 .bo 대신 어느 화면에서나 같은 모양 */
+.uib{display:inline-flex;align-items:center;gap:var(--s-1);height:30px;padding:0 var(--s-3);box-sizing:border-box;border:1px solid var(--c-line);border-radius:var(--r-md);background:var(--c-white);color:var(--c-text);font:inherit;font-size:var(--t-sm);font-weight:600;white-space:nowrap;cursor:pointer}
+.uib:hover{background:var(--c-bg-hover);border-color:var(--c-line-strong)}
+.uib:focus-visible{outline:2px solid var(--c-link);outline-offset:2px}
+.uib .ms{font-size:16px;color:var(--c-text-3)}
+.uib .uib-v{font-weight:400;color:var(--c-muted)}
+
+/* 인계 패키지 만드는 동안 진행 (update-package-progress). 막대는 공통 .anbar */
+.pkprog{margin:8px 0 0}
+.pkprog .anbar{height:6px;margin-top:0}
+.pkprog p{margin:6px 0 0;font-size:var(--t-sm);color:var(--c-text-3)}
+.pkprog b{color:var(--c-text);font-weight:600}
+
+/* 영업 인계 패키지 미리 보기 (add-package-preview, 목업 v4.96) */
+.pkv-h{display:flex;align-items:center;gap:var(--s-3)}
+.pkv-sub{flex:1;margin:0;font-size:var(--t-sm);color:var(--c-text-3)}
+.pkv-k{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));margin-top:var(--s-3);border:1px solid var(--c-line);border-radius:var(--r-lg)}
+.pkv-k>div{padding:var(--s-3) var(--s-4);border-left:1px solid var(--c-line-soft)}
+.pkv-k>div:first-child{border-left:0}
+.pkv-k span{display:block;font-size:var(--t-xs);color:var(--c-muted)}
+.pkv-k b{display:block;margin-top:2px;font-size:22px;font-weight:600;color:var(--c-text);font-variant-numeric:tabular-nums}
+.pkv-k b.c-red{color:var(--c-red)}
+.pkv-k b.c-ora{color:var(--c-orange)}
+.pkv-ap{margin:var(--s-3) 0 0;font-size:var(--t-sm);color:var(--c-text-3)}
+.pkv-note{margin:var(--s-2) 0 0;padding:var(--s-2) var(--s-3);border-radius:var(--r-md);background:var(--c-bg-page);font-size:var(--t-sm);color:var(--c-text-3)}
+.pkv-tabs{display:flex;gap:var(--s-1);margin-top:var(--s-4);border-bottom:1px solid var(--c-line)}
+.pkv-tabs button{border:0;background:none;font:inherit;font-size:var(--t-sm);color:var(--c-text-3);padding:var(--s-2) var(--s-3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.pkv-tabs button.on{color:var(--c-navy);font-weight:600;border-bottom-color:var(--c-navy)}
+.pkv-tabs .n{margin-left:4px;color:var(--c-muted);font-weight:400}
+.pkv-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s-3);margin-top:var(--s-3)}
+.pkv-card{border:1px solid var(--c-line);border-radius:var(--r-lg);padding:var(--s-3) var(--s-4)}
+.pkv-card h3{margin:0;font-size:var(--t-h3);font-weight:600;color:var(--c-text)}
+.pkv-cn{margin:var(--s-2) 0;font-size:var(--t-sm);color:var(--c-text-3)}
+.pkv-cn b{margin:0 8px 0 2px;color:var(--c-text)}
+.pkv-cn b.c-red{color:var(--c-red)}
+.pkv-cn b.c-ora{color:var(--c-orange)}
+.pkv-card ul{list-style:none;margin:0;padding:var(--s-2) 0 0;border-top:1px solid var(--c-line-soft);font-size:var(--t-sm)}
+.pkv-card li{padding:3px 0}
+.pkv-t{margin-top:var(--s-3)}
+.pkv-ft{flex:1;font-size:var(--t-sm);color:var(--c-text-3)}
+
+/* 검토 등록 진행 (update-register-progress). 끝을 모르는 막대는 .anbar.ind */
+.regprog{margin:var(--s-3) 0 0;padding:var(--s-3) var(--s-4);border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-white)}
+.regprog .anbar{height:6px;margin-top:0}
+.regprog p{margin:6px 0 0;font-size:var(--t-sm);color:var(--c-text-3)}
+.regprog b{color:var(--c-text);font-weight:600}
+.anbar.ind{position:relative}
+.anbar.ind i{position:absolute;width:30%;animation:anInd 1.2s ease-in-out infinite}
+@keyframes anInd{from{left:-30%}to{left:100%}}
+@media (prefers-reduced-motion: reduce){.anbar.ind i{animation:none;left:0;width:100%;opacity:.5}}
+
+/* 판정 줄 말풍선 (update-judge-tab-preview): 원문 위치·문장만, 보기만 */
+.jtip{position:fixed;z-index:var(--z-toast);max-width:520px;box-sizing:border-box;padding:var(--s-2) var(--s-3);border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-white);box-shadow:var(--sh-pop);font-size:var(--t-sm);color:var(--c-text);pointer-events:none}
+.jtip.up{transform:translateY(-100%)}
+.jtip-l{font-size:var(--t-xs);color:var(--c-muted)}
+.jtip p{margin:4px 0 0;line-height:1.55;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.jtip mark{background:var(--c-orange-bg);color:inherit;padding:0 2px;border-radius:2px}
+.jtip-f{margin-top:4px;font-size:var(--t-xs);color:var(--c-link)}
+#judge table.tbl tbody tr:focus-visible{outline:2px solid var(--c-link);outline-offset:-2px}
+
+/* 판정 상세 검산 확인 (add-check-calculator) */
+.cc{margin:var(--s-3) 0;padding:var(--s-3) var(--s-4);border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-bg-page)}
+.cc-h{display:flex;align-items:baseline;gap:var(--s-2)}
+.cc-h b{font-size:var(--t-sm);color:var(--c-text)}
+.cc-h span{font-size:var(--t-xs);color:var(--c-muted)}
+.cc-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--s-3);margin-top:var(--s-2)}
+.cc-f{display:flex;flex-direction:column;gap:4px;font-size:var(--t-xs);color:var(--c-text-3)}
+.cc-in{display:inline-flex;align-items:center;gap:4px;color:var(--c-text-3)}
+.cc-in .fi{width:88px;text-align:right}
+.cc-o{margin:var(--s-2) 0 0;font-size:var(--t-sm)}
+.cc-r{margin:4px 0 0}

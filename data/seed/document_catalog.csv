@@ -1,0 +1,29 @@
+file_no,file_key,bundle,language,project_key,note
+1,RFP01 Bidding Forms,A,en,P-A,"가격표, 데이터시트 49종, 손실 환산 조항"
+2,RFP02 Employers Requirement Substation,A,en,P-A,변전소 6곳. 파일 1과 데이터시트 공유
+3,RFP03 115kV GIS Requisition,B,en,,"구매 요청서, 포괄 조항(6장). 사업 확인 필요(Q5)"
+4,RFP04 GIS Specification,B,en,,GIS 기술 사양. 사업 확인 필요(Q5)
+5,RFP05 Testing Specification,B,en,,전기 시험 사양. 사업 확인 필요(Q5)
+6,RFP06 154kV GIS Specification,B,ko,,"공급 범위, 가스 누설 0.5 % / 1 %. 사업 확인 필요(Q5)"
+7,RFP07 Comment Update GIS Specification,B,en,,공급사 사양 + 고객 의견. 사업 확인 필요(Q5)
+8,RFP08 Circuit Breaker Specification,B,image,,이미지가 지워져 분석 불가
+9,RFP09 Seismic Controls,C,en,,내진
+10,RFP10 Secondary Unit Substations,C,en,,유닛 변전소
+11,RFP11 Unit Substations with Switchboard,C,en,,유닛 변전소
+12,RFP12 Unit Substations with Switchgear,C,en,,유닛 변전소
+13,RFP13 Medium-Voltage Switchgear,C,en,,15 kV 배전반
+14,RFP14 MV Metal-Clad Switchgear,C,en,,15 kV 배전반
+15,RFP15 MV Metal-Clad Switchgear,C,en,,13.8 kV 배전반
+16,RFP16 Switchboards,C,en,,600 V 스위치보드
+17,RFP17 Switchboards,C,en,,"600 V 스위치보드, 서지보호기 요구"
+18,RFP18 Electric Distribution,C,en,,공급사 준수·일탈·제외 표시
+19,RFP19 설계기준,D,ko,P-D,설계 조건표 (UPS 10 kVA)
+20,RFP20 계통설명서,D,ko,P-D,계통 설명
+21,RFP21 일반사항,D,ko,P-D,"공통 규칙, 성능 보증"
+22,RFP22 154kV 송변전설비,D,ko,P-D,설비 14종 반복 (UPS 30 kVA)
+23,RFP_product_master_based_EN,B,en,,Product-master based demonstration RFP for GIS and power equipment
+24,RFP_Product_Master_Evaluat,B,en,,Product-master based evaluative RFP
+25,RFP_Product_Master_Evaluative_EN_With_Deviation,B,en,,"Product-master based evaluative RFP + Appendix B deviation-candidate requirements (파일 24와 다른 문서)"
+26,RFP_Product_Master_Evaluative_EN_With_Collaboration,B,en,,"파일 25 + 8장 견적·품질·영업 협조 요청 항목 (시험용)"
+27,RFP_Product_Master_Evaluative_EN_With_Risk,B,en,,"파일 26 + 9장 위험 조항(포괄 조항·범위 모호·비용 전가·가스 누설률 값 불일치) (시연용, add-synthetic-risk-rfp)"
+28,RFP_Product_Master_Evaluative_EN_With_Product_Switch,B,en,,"파일 27 + 4.3 24 kV 차단기 데이터시트(비교 제품 후보 5개, 바꿔 보기 시연용, update-synthetic-product-switch)"

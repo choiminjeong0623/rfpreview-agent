@@ -1,0 +1,6 @@
+/* 목업 v4.96 Project에서 더해진 규칙 (update-home-projects). 인계 패키지 보기 단추 hpkw, 창 안 subpk(목업 Detail과 같음) */
+.hpkw{display:inline-flex}
+.hpkw button[disabled]{pointer-events:none;opacity:.5}
+.subpk{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px;padding:12px 14px;border:1px solid #DCE3EC;border-radius:8px;background:#F7F9FC;font-size:var(--fs-sm);color:#475467}
+.subpk b{color:#344054}
+.subpk .grow{flex:1;min-width:220px}

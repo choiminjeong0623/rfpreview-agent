@@ -1,0 +1,2 @@
+product_code,product_name,product_kind,family,family_name,description,standards,certifications,has_firmware,fw_latest,warranty_months,lifecycle_status,std_lead_time_weeks,moq,list_price_usd,weight_kg,dimensions_mm,ip_rating,operating_temp,tech_support_dept,doc_ids,rated_voltage_kv,rated_current_a,short_circuit_ka,is_assumed,source_doc,market
+TRF-HV,초고압 변압기 (550 kV 이하),SERIES,TRANSFORMER,Power Transmission-Power Transformer,수주 설계형,IEC 60076,,,,,ACTIVE,,,,,,,,,,550,,,N,카탈로그 C84501-10,IEC

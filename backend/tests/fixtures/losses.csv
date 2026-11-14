@@ -1,0 +1,3 @@
+product_code,no_load_loss_kw,load_loss_kw,aux_loss_kw,is_assumed
+TRF-HV,60,300,8,Y
+TRF-NONE,1,2,3,Y

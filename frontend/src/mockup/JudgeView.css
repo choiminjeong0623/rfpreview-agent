@@ -1,0 +1,11 @@
+/* 목업 v4.96 JudgeView에서 새로 쓰인 규칙만 원본 그대로 (change add-judgment-view design.md 7). Detail.css 뒤에 붙인다. */
+.jv-top{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.jv-back{display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-sm);font-weight:600;color:#0569A0;text-decoration:none}
+.jv-back .ms{font-size:18px}
+.jv-back:hover{text-decoration:underline}
+.jv-ctx{font-size:var(--fs-sm);color:#667085}
+.jv .mdo{position:static;inset:auto;z-index:auto;background:none;padding:0;display:block}
+.jv .mdw{width:auto;height:calc(100vh - 150px);min-height:560px;border:1px solid #DCE3EC;border-radius:8px;box-shadow:none}
+.jv .mdh{padding:16px 20px}
+.jv .jv-h{margin:0;font-size:var(--fs-h1,22px);font-weight:700;flex:1;min-width:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;color:#1F2937}
+.jv .mdf{position:sticky;bottom:0}

@@ -1,0 +1,77 @@
+/* 목업 v4.96 Products·ProductView에서 새로 쓰인 규칙만 원본 그대로 (change add-product-view). Products.css 뒤에 붙인다. AI 요약(.ais)은 9단계에서. */
+.rqf{display:inline-flex;align-items:center;gap:2px;margin-top:4px;border:1px solid #C3CDDA;background:#fff;border-radius:6px;height:26px;padding:0 6px 0 8px;font:inherit;font-size:var(--fs-xs);font-weight:600;color:#0569A0;cursor:pointer;white-space:nowrap}
+.rqf:hover{border-color:#0569A0;background:#F5F9FD}
+.rqf .ms{font-size:16px}
+.rqt small{margin-top:4px}
+.rvo{position:fixed;inset:0;z-index:110;background:rgba(16,24,40,.48);display:flex;align-items:center;justify-content:center;padding:32px;box-sizing:border-box}
+.rvw{width:min(1040px,100%);max-height:min(720px,100%);background:#fff;border-radius:10px;box-shadow:0 24px 48px rgba(16,24,40,.24);display:flex;flex-direction:column;overflow:hidden}
+.rvh{display:flex;align-items:center;gap:10px;padding:14px 16px 14px 20px;border-bottom:1px solid #DCE3EC}
+.rvh h2{margin:0;font-size:var(--fs-h2);font-weight:700}
+.rvs{font-size:var(--fs-xs);color:#667085;flex:1}
+.rvf{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 16px;padding:14px 20px;background:#F7F9FC;border-bottom:1px solid #DCE3EC}
+.rvf>label{display:flex;flex-direction:column;gap:4px;font-size:var(--fs-xs);color:#475467}
+.rvf>label .fi{width:180px;height:34px}
+.rvr{display:flex;align-items:center;gap:10px;font-size:var(--fs-sm);height:34px}
+.rvr>span{font-size:var(--fs-xs);color:#475467}
+.rvr .rd{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+.rvr input{accent-color:#0569A0}
+.rvq{flex:1 1 100%;display:flex;gap:8px;align-items:center;padding-top:12px;border-top:1px solid #E4E9F0}
+.rvq .fi{flex:1 1 auto;min-width:0;height:36px}
+.rvq .bo,.rvq .bp{height:36px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.rvl{flex:1;min-height:0;overflow:auto;padding:10px 20px 12px}
+.rvn{font-size:var(--fs-sm);color:#475467;margin-bottom:6px}
+.rvt td.mono,.rvt td:nth-child(6),.rvt td:nth-child(7){white-space:nowrap}
+.rvt tbody tr{cursor:pointer}
+.rvt tbody tr.on td{background:#EDF3FA}
+.rve{margin:0;padding:24px 0;text-align:center;color:#667085}
+.rvft{display:flex;align-items:center;gap:8px;padding:12px 20px;border-top:1px solid #DCE3EC;font-size:var(--fs-sm);color:#475467}
+.rvft .bo,.rvft .bp{height:34px}
+.pcode{font-weight:600;color:#0569A0;text-decoration:none}
+.pcode:hover{text-decoration:underline}
+.qv{padding:12px 16px 16px;display:flex;flex-direction:column;gap:6px}
+.qv-act{display:flex;gap:8px;margin-bottom:6px}
+.qv-act .bp,.qv-act .bo{height:32px;display:inline-flex;align-items:center;gap:4px;text-decoration:none}
+.qv h4{margin:10px 0 2px;font-size:var(--fs-xs);font-weight:600;color:#667085;display:flex;align-items:center;gap:6px}
+.qv h4 .n{color:#1F2937}
+.qv-t{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+.qv-t th{text-align:left;font-weight:400;color:#667085;padding:5px 0;width:96px;vertical-align:top;white-space:nowrap}
+.qv-t td{padding:5px 0;vertical-align:top}
+.qv-t td:last-child{text-align:right;white-space:nowrap}
+.qv-t b{font-weight:600;font-variant-numeric:tabular-nums}
+.qv-t .opt{display:block;font-size:var(--fs-xs);color:#0569A0}
+.qv-blk{margin-top:8px;border:1px solid #FEDF89;background:#FFFAEB;border-radius:8px;padding:6px 12px 10px}
+.qv-blk h4{color:#B54708;margin-top:4px}
+.qv-blk h4 .ms{font-size:16px}
+.qv-b{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);color:#475467}
+.qv-b>span{flex:1;min-width:0}
+.qv-b .bo{height:28px;padding:0 10px;font-size:var(--fs-xs);white-space:nowrap}
+.qv-e{margin:0;font-size:var(--fs-sm);color:#98A2B3}
+.qv-u{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:7px 0;border-top:1px solid #EEF2F6;text-decoration:none;color:#1F2937;font-size:var(--fs-sm)}
+.qv-u .mono{color:#667085;font-size:var(--fs-xs)}
+.qv-u .nm{min-width:0}
+.qv-u small{display:block;font-size:var(--fs-xs);color:#667085}
+.qv-u:hover .nm{text-decoration:underline}
+.qv-u .dd{font-size:var(--fs-xs);font-weight:600;color:#667085}
+.qv-u .dd.red{color:#B42318}
+.qv-a{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:120px minmax(0,1fr) 18px;gap:8px;align-items:center;padding:7px 0;border-top:1px solid #EEF2F6;font-size:var(--fs-sm)}
+.qv-a span{color:#475467;font-size:var(--fs-xs)}
+.qv-a .ms{font-size:18px;color:#98A2B3}
+.qv-a:hover b{text-decoration:underline;color:#0569A0}
+.qv .g-t,.qv .g-c,.qv .g-s,.qv .g-a{font-size:11px}
+.pvp .ttl1{display:flex;align-items:center;gap:10px}
+.pvp .ttl1 h1{margin:0}
+.pvp .ttl2{margin-top:4px;font-size:var(--fs-sm);color:#667085}
+.hc3{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.2fr) minmax(0,1.2fr);margin-top:16px;background:#fff;border:1px solid #DCE3EC;border-radius:8px;padding:14px 0}
+.hc3>section{padding:0 20px;min-width:0}
+.hc3>section+section{border-left:1px solid #EEF2F6}
+.hc3 h3{margin:0 0 8px;font-size:var(--fs-xs);font-weight:600;color:#667085}
+.hc3 dl{margin:0;display:flex;flex-direction:column;gap:5px;font-size:var(--fs-sm)}
+.hc3 dl>div{display:grid;grid-template-columns:80px minmax(0,1fr);gap:8px}
+.hc3 dt{color:#667085}
+.hc3 dd{margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kv3{display:flex;flex-wrap:wrap;gap:6px 20px}
+.kv3>div{display:flex;flex-direction:column}
+.kv3 span{font-size:var(--fs-xs);color:#667085}
+.kv3 b{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.pvw{width:auto;height:auto;min-height:640px;margin-top:16px;box-shadow:none;border:1px solid #DCE3EC;border-radius:8px}
+.pvw .pmb{min-height:640px}

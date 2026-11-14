@@ -1,0 +1,1584 @@
+{
+ "retrieved": "2026-10-31",
+ "families": {
+  "susol-vcb": {
+   "page": "https://www.ls-electric.com/ko/product/view/P01062",
+   "docs": [
+    {
+     "kind": "catalog",
+     "title": "[Susol VCB]",
+     "date": "2026-09-21",
+     "lang": "한국어",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/%5BSusol_VCB%5D_KO_C05001-26-202609.pdf"
+    },
+    {
+     "kind": "manual",
+     "title": "[Susol VCB] VL Type",
+     "date": "2026-09-21",
+     "lang": "한국어",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/HPDT/%5BSusol%20VCB%5D%20VL%20Type_Manual_KO_202405.pdf"
+    },
+    {
+     "kind": "manual",
+     "title": "[Susol VCB] VH Type",
+     "date": "2026-09-21",
+     "lang": "한국어",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/HPDT/%5BSusol%20VCB%5D%20VH%20Type_Manual_KO_202405.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#1",
+     "date": "2025-04-03",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/VL-25H25B13_25.8%20kV%201%20250%20A%2025%20kA%205060%20Hz_CERT.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#10",
+     "date": "2025-04-03",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/VL-20H25B13_24%20kV%201%20250%20A%2025%20kA%2050_60%20Hz_CERT.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#2",
+     "date": "2025-04-03",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/VL-25H25B13_25.8%20kV%201%20250%20A%2025%20kA%2050_60%20Hz_CERT.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#3",
+     "date": "2025-04-03",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/VL-25H25B06_25.8%20kV%20630%20A%2025%20kA%2050_60%20Hz_CERT.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#4",
+     "date": "2025-04-03",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/VL-25H16B06_25.8%20kV%20630%20A%2016%20kA%2050_60%20Hz_CERT.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#5",
+     "date": "2025-04-03",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/VL-20H16B13_24%20kV%201%20250%20A%2016%20kA%2050_60%20Hz_CERT.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#6",
+     "date": "2025-04-03",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/VL-20H16B06_24%20kV%20630%20A%2016%20kA%2050_60%20Hz_CERT.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#7",
+     "date": "2025-04-03",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/VL-20H25B06_24%20kV%20630%20A%2025%20kA%2050_60Hz_CERT.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#8",
+     "date": "2025-04-03",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/VL-20H13B13__24%20kV%201%20250%20A%2012.5%20kA%2050%2060%20Hz_CERT.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#9",
+     "date": "2025-04-03",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/VL-25H13B13_25.8%20kV%201250%20A%2012%2C5%20kA%2050_60%20Hz_CERT.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#11",
+     "date": "2023-09-25",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKERI%5D%20%2023AP00026%207.2kV%202000A%2020KA%2050%2060%20Hz%20CERT.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#12",
+     "date": "2017-01-12",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKERI%5D2017TC00031_Solution%20Power%20S17_17.5kV%2040kA%201250A.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#13",
+     "date": "2017-01-12",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKERI%5D2017TC00030_Solution%20Power%20S17_17.5kV%2040kA%202000A.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#14",
+     "date": "2017-01-11",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKERI%5D2017TC00029_VH-17%E2%96%A140%E2%96%A120_17.5kV%2040kA%202000A.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#15",
+     "date": "2017-01-11",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKERI%5D2017TC00025_VH-17%E2%96%A140%E2%96%A113_17.5kV%2040kA%201250A.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_#16",
+     "date": "2016-02-18",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKERI%5D2016TS00390%28TRD14S02794%29%2017.5kV%2050kA%204000A%20%28%EC%83%81%EA%B0%84%20275%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20150720001",
+     "date": "2015-06-23",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%202100-15%28VH-17%E2%96%A150%E2%96%A120_VCB_%EB%8B%A8%EB%9D%BD_E1_C2_7.2_12_17.5kV_50kA_1250_2000A%29_Certi..pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20150720002",
+     "date": "2015-06-23",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%202104-15%28VH-17%E2%96%A150%E2%96%A132_VCB_%EB%8B%A8%EB%9D%BD_E1_C2_7.2_12_17.5kV_50kA_3150A%29_Certi..pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20150720009",
+     "date": "2015-06-23",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%202092-15%28VH-17%E2%96%A150%E2%96%A140_E1_E2_C2_7.2_12_17.5kV_40_50kA_4000A%29_Certi..pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20150720010",
+     "date": "2015-06-23",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%202096-15%28Solution%20Power%20S17_PANEL_%EB%8B%A8%EB%9D%BD_7.2_12_17.5kV_40_50kA_4000A%29_Certi..pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929001",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20805-09%28VL-17%E2%96%A125%E2%96%A120%29_1.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929002",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20806-09%28VL-17%E2%96%A125%E2%96%A113%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929003",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20807-09%28VL-17%E2%96%A125%E2%96%A106%29_1.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929004",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20808-09%28VL-12%E2%96%A125%E2%96%A120%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929005",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20809-09%28VL-12%E2%96%A125%E2%96%A113%29_1.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929006",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20810-09%28VL-12%E2%96%A125%E2%96%A106%29_1.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929007",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20811-09%28VL-06%E2%96%A125%E2%96%A120%29_1.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929008",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20812-09%28VL-06%E2%96%A125%E2%96%A113%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929009",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20813-09%28VL-D6%E2%96%A125%E2%96%A106%29_1.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929010",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20814-09%28VL-17%E2%96%A120%E2%96%A120%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929011",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20815-09%28VL-17%E2%96%A120%E2%96%A113%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929012",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20816-09%28VL-17%E2%96%A120%E2%96%A106%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929013",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20817-09%28VL-12%E2%96%A120%E2%96%A120%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929014",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20818-09%28VL-12%E2%96%A120%E2%96%A113%29_1.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929015",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20819-09%28VL-12%E2%96%A120%E2%96%A106%29_1.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929016",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20820-09%28VL-06%E2%96%A120%E2%96%A120%29_1.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929017",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20821-09%28VL-06%E2%96%A120%E2%96%A113%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Susol VCB_TypeTest_20140929018",
+     "date": "2009-12-10",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKEMA%5D%20822-09%28VL-06%E2%96%A120%E2%96%A106%29_1.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_V-CheckMark_#1",
+     "date": "2026-07-14",
+     "lang": "한국어",
+     "org": "한국기계전기전자시험연구원(KTC)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BV-Check%5DKTC2291603-02_VCB_cert.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_LR(영국선급)_#1",
+     "date": "2026-03-31",
+     "lang": "한국어",
+     "org": "영국선급",
+     "url": "https://www.ls-electric.com/ko/certi/LR26370194TA_VL-06%2CVL-12_cert.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_V-CheckMark_#2",
+     "date": "2025-12-22",
+     "lang": "한국어",
+     "org": "한국기계전기전자시험연구원(KTC)",
+     "url": "https://www.ls-electric.com/ko/certi/KTC2291602-01_VCB_cert.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_LR(영국선급)_#3",
+     "date": "2025-11-19",
+     "lang": "한국어",
+     "org": "영국선급",
+     "url": "https://www.ls-electric.com/ko/certi/LR25372803TA_VH-06H40A12_cert.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_DNV(노르웨이선급)_#1",
+     "date": "2025-10-30",
+     "lang": "한국어",
+     "org": "노르웨이선급",
+     "url": "https://www.ls-electric.com/ko/certi/%5BDNV%5DTAE00003XS_MVL-12_cert.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_BV(프랑스선급)_20140401014",
+     "date": "2024-06-19",
+     "lang": "한국어",
+     "org": "BV(프랑스선급)",
+     "url": "https://www.ls-electric.com/ko/certi/%5BBV%5D33273%20C0%20BV_CERT.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_RINA(이탈리아선급)_#1",
+     "date": "2024-01-05",
+     "lang": "한국어",
+     "org": "이탈리아선급",
+     "url": "https://www.ls-electric.com/ko/certi/%5BRINA%5D_PQA187323PU_Susol_VL_series.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_RINA(이탈리아선급)_#2",
+     "date": "2023-12-26",
+     "lang": "한국어",
+     "org": "이탈리아선급",
+     "url": "https://www.ls-electric.com/ko/certi/%5BRINA%5D_ELE183523PU_Suso_VL_series.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_ABS(미국선급)_20140428005",
+     "date": "2023-11-10",
+     "lang": "한국어",
+     "org": "미국선급",
+     "url": "https://www.ls-electric.com/ko/certi/%5BABS%5D23-2471618-PDA_Susol%20VCB%20Series_cert.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_LR(영국선급)_#2",
+     "date": "2023-10-17",
+     "lang": "한국어",
+     "org": "영국선급",
+     "url": "https://www.ls-electric.com/ko/certi/%5BLR%5DLR23410781TA_VL-06_cert.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_DNV(노르웨이선급)_#2",
+     "date": "2023-08-25",
+     "lang": "한국어",
+     "org": "노르웨이선급",
+     "url": "https://www.ls-electric.com/ko/certi/%5BDNV%5DTAE00002Z5_VL_06%2C12%2C17_cert.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_KR(한국선급)_20140423045",
+     "date": "2023-04-05",
+     "lang": "한국어",
+     "org": "한국선급",
+     "url": "https://www.ls-electric.com/ko/certi/%5BKR%5DPTD00429-EL035_VL_cert.PDF"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol VCB_CCC(중국안전인증)_20170621002",
+     "date": "2021-10-12",
+     "lang": "한국어",
+     "org": "CNCA",
+     "url": "https://www.ls-electric.com/ko/certi/2017010401956123_LSVM_2020980401000613_DONGJIN.pdf"
+    }
+   ]
+  },
+  "susol-ul-vcb": {
+   "page": "https://www.ls-electric.com/ko/product/view/P02216",
+   "docs": [
+    {
+     "kind": "catalog",
+     "title": "UL VCB",
+     "date": "2026-10-21",
+     "lang": "영어",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/UL_VCB_EN_C050E2-13-202610.pdf"
+    },
+    {
+     "kind": "manual",
+     "title": "[Susol UL VCB]_User_Manual_UVM_UVH-Type",
+     "date": "2025-11-03",
+     "lang": "English",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/HPDT/%5BSusol%20UL%20VCB%5D_User_Manual_UVM_UVH-Type_EN_202510.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#55",
+     "date": "2026-07-28",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec13-20260728_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#1",
+     "date": "2026-07-28",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol4-Sec3-20260728_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#2",
+     "date": "2026-07-22",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E533202-Vol1-Sec5-20260722_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#3",
+     "date": "2026-07-11",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E533202-Vol1-Sec4-20260227_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#4",
+     "date": "2026-07-11",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E533202-Vol1-Sec3-20251216_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#5",
+     "date": "2026-07-11",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E533202-Vol1-Sec1-20250224_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#6",
+     "date": "2026-07-11",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E533202-Vol1-Sec2-20241106.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#7",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol2-Sec1-20260116_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#8",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol2-Sec3.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#9",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol2-Sec5-20251119_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#10",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol2-Sec2-20260616_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#11",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol2-Sec6-20250701_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#12",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol2-Sec11-20260616_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#13",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol2-Sec7-20260617_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#14",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E533202-Vol2-Sec2-20251202_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#15",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E533202-Vol2-Sec3-20260302_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#16",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol2-Sec4-20231020.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#17",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol2-Sec9-20260527_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#18",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol2-Sec8-20260105_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#19",
+     "date": "2026-07-10",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol2-Sec10-20260617_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#54",
+     "date": "2026-06-17",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol4-Sec7-20260617_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#53",
+     "date": "2026-05-27",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E472759-Vol1-Sec5-20260527_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#52",
+     "date": "2026-04-27",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol5-Sec6-20260427_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#20",
+     "date": "2026-04-27",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec11-20250521_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#21",
+     "date": "2026-04-17",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec9-20250521_Certificate%20of%20Compliacne.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#22",
+     "date": "2026-04-06",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec2-20200417.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#23",
+     "date": "2026-04-06",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec4-20200417.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#24",
+     "date": "2026-04-06",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec1-20200417.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#25",
+     "date": "2026-04-06",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec5-20201125.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#26",
+     "date": "2026-04-06",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec7-20200417.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#27",
+     "date": "2026-04-06",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec12-20250521_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#28",
+     "date": "2026-04-06",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec10-20250521_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#29",
+     "date": "2026-04-05",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec8-20250521_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#30",
+     "date": "2026-02-12",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E537093-Vol1-Sec1-20260212_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#31",
+     "date": "2026-02-09",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec3-20200701.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#32",
+     "date": "2026-02-09",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol6-Sec5-20200701.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#33",
+     "date": "2026-01-19",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol1-Sec1-20260119_Certifiace%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#34",
+     "date": "2026-01-13",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol1-Sec5.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#35",
+     "date": "2026-01-13",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol5-Sec5-20251104_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#36",
+     "date": "2026-01-13",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol1-Sec2-20231020.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#37",
+     "date": "2025-12-22",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol4-Sec2-20251222_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#38",
+     "date": "2025-12-22",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol4-Sec1-20251222_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#39",
+     "date": "2025-12-22",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol4-Sec5-20251222_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#40",
+     "date": "2025-12-22",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol4-Sec4-20251222_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#56",
+     "date": "2025-12-22",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol4-Sec6-20251222_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#41",
+     "date": "2024-12-02",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E472759-Vol1-Sec3-20230502.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#42",
+     "date": "2024-07-19",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E533202-Vol2-Sec1-20250403_Certificate%20of%20Compliance.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#43",
+     "date": "2024-06-27",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E472759-Vol1-Sec1-20200416.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#44",
+     "date": "2024-06-27",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E472759-Vol1-Sec4-20240627.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#45",
+     "date": "2024-06-26",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol5-Sec3-20220404.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#46",
+     "date": "2024-04-05",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol1-Sec4.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#47",
+     "date": "2024-04-03",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol5-Sec4-20240403.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#48",
+     "date": "2024-04-02",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol1-Sec3.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#49",
+     "date": "2023-11-29",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol5-Sec1-20220324.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#50",
+     "date": "2023-11-29",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol5-Sec2-20220324.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Susol UL VCB_UL(미국안전인증)_#51",
+     "date": "2020-04-17",
+     "lang": "한국어",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/E468323-Vol3-Sec1-20200417.pdf"
+    }
+   ]
+  },
+  "uspc-spd": {
+   "page": "https://www.lselectricamerica.com/product/1670/ul-spd?category=577",
+   "docs": [
+    {
+     "kind": "catalog",
+     "title": "[SPD] UL Type Catalog",
+     "date": "2026-04-30",
+     "lang": "English",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/%5BSPD%5D_UL_Type_EN_C015%E2%93%952-01-202604.pdf"
+    },
+    {
+     "kind": "manual",
+     "title": "[UL SPD]USPC Series Manual",
+     "date": "2026-04-20",
+     "lang": "English",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/HPDT/%5BUL%20SPD%5DUSPC%20Series%20Manual_Manual_EN_202512.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "SPD_UL_#1",
+     "date": "2025-04-23",
+     "lang": "English",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/%5BUL%5DE319871-V2_cert_250918.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "SPD_UL_#2",
+     "date": "2024-12-07",
+     "lang": "English",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/%5BUL%5DE319871-V4_cert_250918.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "SPD_UL_#3",
+     "date": "2024-11-29",
+     "lang": "English",
+     "org": "UL",
+     "url": "https://www.ls-electric.com/ko/certi/%5BUL%5DE319871-V1_cert_250918.pdf"
+    }
+   ]
+  },
+  "gis": {
+   "page": "https://www.ls-electric.com/products/category/Smart_Power_Solution/Power_Transmission/GIS",
+   "docs": [
+    {
+     "kind": "catalog",
+     "title": "[GIS] Total Solution",
+     "date": "2022-06-07",
+     "lang": "한국어",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/%5BGIS%5D_Total_Solution_KO_C81001-08-202206.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#14",
+     "date": "2018-04-23",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2018TC00301%20Type%20Test%20Certificate.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#16",
+     "date": "2017-07-25",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00549%20Type%20Test%20Certificate.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#1",
+     "date": "2017-07-12",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00517%5B2%5D%20Type%20Test%20Certificate.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#9",
+     "date": "2017-06-20",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/CCA15C00067-%EC%9D%B8%EC%A6%9D%EC%84%9C%2817CECC00025%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#28",
+     "date": "2017-06-17",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00428%20Type%20Test%20Certificate.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#10",
+     "date": "2017-04-27",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00294%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#11",
+     "date": "2017-04-27",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00295%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#12",
+     "date": "2017-04-27",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00296%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#13",
+     "date": "2017-04-27",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00297%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#4",
+     "date": "2017-04-26",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00293%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#2",
+     "date": "2017-02-27",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TS00570%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#8",
+     "date": "2017-01-23",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/CCA14C00008-%EC%9D%B8%EC%A6%9D%EC%84%9C%2817CECC00003%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#7",
+     "date": "2017-01-17",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/CCA14C00009-%EC%9D%B8%EC%A6%9D%EC%84%9C%2817CECC00002%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#3",
+     "date": "2016-10-27",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2016TC00818%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#5",
+     "date": "2016-10-10",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2016TC00776%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#6",
+     "date": "2016-10-04",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2016TC00762%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#15",
+     "date": "2016-03-17",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/H15070%20Type%20Test%20Certificate.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150430002",
+     "date": "2014-07-08",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/TIC-2050-14_420kV_KEMA_%EC%9D%B8%EC%A6%9D%EC%84%9C.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150430003",
+     "date": "2014-07-08",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/TIC-2051-14_420kV_KEMA_%EC%9D%B8%EC%A6%9D%EC%84%9C.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#24",
+     "date": "2011-04-11",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/CCA10C00092-%EC%9D%B8%EC%A6%9D%EC%84%9C%2811CECC00035%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#25",
+     "date": "2011-04-11",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/%EC%9D%B8%EC%A6%9D%EC%84%9C%2811CECC00036%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150421008",
+     "date": "2010-10-05",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/TDT2143-10_145kV_KEMA_%EC%A0%84%EB%8F%99_60Hz_%EC%9D%B8%EC%A6%9D%EC%84%9C.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150429003",
+     "date": "2010-10-05",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/36kV%2040kA_KEMA%20Certi_GEVB-0341-NCSA.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150421006",
+     "date": "2008-07-07",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/28-08_145kV_KEMA_%EC%A0%84%EB%8F%99_1.3_50Hz_%EC%9D%B8%EC%A6%9D%EC%84%9C.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150421007",
+     "date": "2008-07-07",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/29-08_145kV_KEMA_%EC%A0%84%EB%8F%99_1.5_50Hz_%EC%9D%B8%EC%A6%9D%EC%84%9C.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#17",
+     "date": "2005-02-16",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2005-CC_003_Type%20Test%20Certificate.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150421002",
+     "date": "2004-06-09",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/28-04_145kV_KEMA_%EC%9C%A0%EC%95%95_50Hz_%EC%9D%B8%EC%A6%9D%EC%84%9C.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#27",
+     "date": "2002-09-17",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/KERI%20Certificate%282002.9.17%29.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "GIS_공인검수시험면제증_#1",
+     "date": "2022-04-11",
+     "lang": "한국어",
+     "org": "한국전기산업진흥회",
+     "url": "https://www.ls-electric.com/ko/certi/72.5kV%20GIS%20%EB%A9%B4%EC%A0%9C%EC%A6%9D_2024%20%EC%97%B0%EC%9E%A5_%EC%9C%A0%ED%9A%A8%EA%B8%B0%EA%B0%84%2825.02.10%29.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "GIS_공인검수시험면제증_#2",
+     "date": "2022-04-11",
+     "lang": "한국어",
+     "org": "한국전기산업진흥회",
+     "url": "https://www.ls-electric.com/ko/certi/2009-%EB%82%98-025%ED%98%B8_GESG-0220-NC.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "GIS_공인검수시험면제증_#3",
+     "date": "2022-04-11",
+     "lang": "한국어",
+     "org": "한국전기산업진흥회",
+     "url": "https://www.ls-electric.com/ko/certi/2013-%EB%82%98-009%ED%98%B8_GESG1750.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "GIS_공인검수시험면제증_#4",
+     "date": "2022-04-11",
+     "lang": "한국어",
+     "org": "한국전기산업진흥회",
+     "url": "https://www.ls-electric.com/ko/certi/170kV%20A-GIS%20%EB%A9%B4%EC%A0%9C%EC%A6%9D_2024%20%EC%97%B0%EC%9E%A5_%EC%9C%A0%ED%9A%A8%EA%B8%B0%EA%B0%84%2825.02.10%29.pdf"
+    }
+   ]
+  },
+  "gis-170": {
+   "page": "https://www.ls-electric.com/products/category/Smart_Power_Solution/Power_Transmission/GIS",
+   "docs": [
+    {
+     "kind": "catalog",
+     "title": "[GIS] 170kV",
+     "date": "2026-06-04",
+     "lang": "한국어",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/%5BGIS%5D_170kV_KO_C81021-04-202606.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#14",
+     "date": "2018-04-23",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2018TC00301%20Type%20Test%20Certificate.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#16",
+     "date": "2017-07-25",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00549%20Type%20Test%20Certificate.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#1",
+     "date": "2017-07-12",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00517%5B2%5D%20Type%20Test%20Certificate.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#9",
+     "date": "2017-06-20",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/CCA15C00067-%EC%9D%B8%EC%A6%9D%EC%84%9C%2817CECC00025%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#28",
+     "date": "2017-06-17",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00428%20Type%20Test%20Certificate.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#10",
+     "date": "2017-04-27",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00294%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#11",
+     "date": "2017-04-27",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00295%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#12",
+     "date": "2017-04-27",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00296%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#13",
+     "date": "2017-04-27",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00297%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#4",
+     "date": "2017-04-26",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TC00293%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#2",
+     "date": "2017-02-27",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2017TS00570%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#8",
+     "date": "2017-01-23",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/CCA14C00008-%EC%9D%B8%EC%A6%9D%EC%84%9C%2817CECC00003%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#7",
+     "date": "2017-01-17",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/CCA14C00009-%EC%9D%B8%EC%A6%9D%EC%84%9C%2817CECC00002%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#3",
+     "date": "2016-10-27",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2016TC00818%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#5",
+     "date": "2016-10-10",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2016TC00776%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#6",
+     "date": "2016-10-04",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2016TC00762%20Type%20Test%20Report.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#15",
+     "date": "2016-03-17",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/H15070%20Type%20Test%20Certificate.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150430002",
+     "date": "2014-07-08",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/TIC-2050-14_420kV_KEMA_%EC%9D%B8%EC%A6%9D%EC%84%9C.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150430003",
+     "date": "2014-07-08",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/TIC-2051-14_420kV_KEMA_%EC%9D%B8%EC%A6%9D%EC%84%9C.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#24",
+     "date": "2011-04-11",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/CCA10C00092-%EC%9D%B8%EC%A6%9D%EC%84%9C%2811CECC00035%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#25",
+     "date": "2011-04-11",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/%EC%9D%B8%EC%A6%9D%EC%84%9C%2811CECC00036%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150421008",
+     "date": "2010-10-05",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/TDT2143-10_145kV_KEMA_%EC%A0%84%EB%8F%99_60Hz_%EC%9D%B8%EC%A6%9D%EC%84%9C.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150429003",
+     "date": "2010-10-05",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/36kV%2040kA_KEMA%20Certi_GEVB-0341-NCSA.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150421006",
+     "date": "2008-07-07",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/28-08_145kV_KEMA_%EC%A0%84%EB%8F%99_1.3_50Hz_%EC%9D%B8%EC%A6%9D%EC%84%9C.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150421007",
+     "date": "2008-07-07",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/29-08_145kV_KEMA_%EC%A0%84%EB%8F%99_1.5_50Hz_%EC%9D%B8%EC%A6%9D%EC%84%9C.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#17",
+     "date": "2005-02-16",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2005-CC_003_Type%20Test%20Certificate.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_20150421002",
+     "date": "2004-06-09",
+     "lang": "한국어",
+     "org": "DEKRA(구KEMA)",
+     "url": "https://www.ls-electric.com/ko/certi/28-04_145kV_KEMA_%EC%9C%A0%EC%95%95_50Hz_%EC%9D%B8%EC%A6%9D%EC%84%9C.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "GIS_TypeTest_#27",
+     "date": "2002-09-17",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/KERI%20Certificate%282002.9.17%29.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "GIS_공인검수시험면제증_#1",
+     "date": "2022-04-11",
+     "lang": "한국어",
+     "org": "한국전기산업진흥회",
+     "url": "https://www.ls-electric.com/ko/certi/72.5kV%20GIS%20%EB%A9%B4%EC%A0%9C%EC%A6%9D_2024%20%EC%97%B0%EC%9E%A5_%EC%9C%A0%ED%9A%A8%EA%B8%B0%EA%B0%84%2825.02.10%29.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "GIS_공인검수시험면제증_#2",
+     "date": "2022-04-11",
+     "lang": "한국어",
+     "org": "한국전기산업진흥회",
+     "url": "https://www.ls-electric.com/ko/certi/2009-%EB%82%98-025%ED%98%B8_GESG-0220-NC.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "GIS_공인검수시험면제증_#3",
+     "date": "2022-04-11",
+     "lang": "한국어",
+     "org": "한국전기산업진흥회",
+     "url": "https://www.ls-electric.com/ko/certi/2013-%EB%82%98-009%ED%98%B8_GESG1750.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "GIS_공인검수시험면제증_#4",
+     "date": "2022-04-11",
+     "lang": "한국어",
+     "org": "한국전기산업진흥회",
+     "url": "https://www.ls-electric.com/ko/certi/170kV%20A-GIS%20%EB%A9%B4%EC%A0%9C%EC%A6%9D_2024%20%EC%97%B0%EC%9E%A5_%EC%9C%A0%ED%9A%A8%EA%B8%B0%EA%B0%84%2825.02.10%29.pdf"
+    }
+   ]
+  },
+  "power-transformer": {
+   "page": "https://www.ls-electric.com/products/category/Smart_Power_Solution/Power_Transmission/Power_Transformer",
+   "docs": [
+    {
+     "kind": "catalog",
+     "title": "[Power Transformer]",
+     "date": "2026-04-21",
+     "lang": "English",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/%5BPower_Transformer%5D_EN_C84502-03-202604.pdf"
+    },
+    {
+     "kind": "catalog",
+     "title": "초고압 변압기",
+     "date": "2018-12-19",
+     "lang": "한국어",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/%5BPower_Transformer%5D_KO_C84501-10-201812.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Power Transformer_TypeTest_#1",
+     "date": "2026-06-24",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/26TB100093%28RT26A1I00378%29.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Power Transformer_TypeTest_#4",
+     "date": "2025-08-28",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/25TB100186%28RT25A1I00135%29_KAOHSIUNG%20TRANSFORMER%20TEST%20REPORT.pdf"
+    },
+    {
+     "kind": "test",
+     "title": "Power Transformer_TypeTest_#3",
+     "date": "2022-09-22",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/22TB100195%28RT22A1I00331%29_%ED%95%9C%EC%A0%84%20%EC%9D%B4%EB%8F%99%ED%98%95%20%EB%B3%80%EC%95%95%EA%B8%B0%20%EC%8B%9C%ED%97%98%EC%84%B1%EC%A0%81%EC%84%9C.PDF"
+    },
+    {
+     "kind": "test",
+     "title": "Power Transformer_TypeTest_#2",
+     "date": "2018-09-18",
+     "lang": "한국어",
+     "org": "한국전기연구원(KERI)",
+     "url": "https://www.ls-electric.com/ko/certi/2018TC00647.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Power Transformer_공인검수시험면제증_#1",
+     "date": "2026-03-12",
+     "lang": "한국어",
+     "org": "한국전기산업진흥회",
+     "url": "https://www.ls-electric.com/ko/certi/%EB%A9%B4%EC%A0%9C%EC%A6%9D_LS%20ELECTRIC%E3%88%9C_IEC%28up%20to%20154kV%29.pdf"
+    },
+    {
+     "kind": "cert",
+     "title": "Power Transformer_공인검수시험면제증_#2",
+     "date": "2026-03-12",
+     "lang": "한국어",
+     "org": "한국전기산업진흥회",
+     "url": "https://www.ls-electric.com/ko/certi/%EB%A9%B4%EC%A0%9C%EC%A6%9D_LS%20ELECTRIC%E3%88%9C_IEEE%28up%20to%20345kV%29.pdf"
+    }
+   ]
+  },
+  "swgr-24kv": {
+   "page": "https://www.ls-electric.com/ko/product/view/P01098",
+   "docs": [
+    {
+     "kind": "catalog",
+     "title": "[GSH-20V]_국문",
+     "date": "2024-11-07",
+     "lang": "한국어",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/%5BGSH-20V%5D_KO_C80081-01-202411.pdf"
+    },
+    {
+     "kind": "manual",
+     "title": "[배전반] 설치 및 유지보수 설명서",
+     "date": "2025-09-09",
+     "lang": "한국어",
+     "org": null,
+     "url": "https://www.ls-electric.com/ko/cat/HPDT/Manual%28LSE%29_SWGR_%EC%84%A4%EC%B9%98%20%EB%B0%8F%20%EC%9C%A0%EC%A7%80%EB%B3%B4%EC%88%98%20%EC%84%A4%EB%AA%85%EC%84%9C_%EA%B3%B5%ED%86%B5_KR200326.pdf"
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,187 @@
+﻿key,text,top1_text,top1_key,top1_score,correct,cross_lang_correct,item_gap
+rated_voltage_um,설비 최고 전압 (정격 전압),설비 최고 전압,rated_voltage_um,0.9506,1,1,0.1643
+rated_voltage_um,Rated voltage,정격전압,rated_voltage_um,0.8459,1,1,0.0057
+rated_voltage_um,Highest voltage for equipment,Highest system voltage,rated_voltage_um,0.8287,1,1,0.1152
+rated_voltage_um,Highest system voltage,Highest voltage for equipment,rated_voltage_um,0.8287,1,1,0.0246
+rated_voltage_um,Rated Voltage (Ur),Rated voltage,rated_voltage_um,0.8357,1,1,0.096
+rated_voltage_um,설비 최고 전압,설비 최고 전압 (정격 전압),rated_voltage_um,0.9506,1,1,0.1932
+rated_voltage_um,정격전압,설비 최고 전압 (정격 전압),rated_voltage_um,0.8795,1,1,0.013
+nominal_voltage,공칭 계통 전압,공칭전압,nominal_voltage,0.9114,1,1,0.129
+nominal_voltage,Nominal system voltage,Nominal voltage,nominal_voltage,0.9267,1,1,0.1225
+nominal_voltage,Nominal voltage,Nominal system voltage,nominal_voltage,0.9267,1,1,0.1038
+nominal_voltage,공칭전압,공칭 계통 전압,nominal_voltage,0.9114,1,1,0.0669
+rated_current,정격 전류,정격전류,rated_current,0.9962,1,1,0.0858
+rated_current,Rated normal current,정격 전류,rated_current,0.8126,1,1,0.0448
+rated_current,Rated continuous current,Rated normal current,rated_current,0.8112,1,1,0.0249
+rated_current,Continuous current,Rated continuous current,rated_current,0.7993,1,0,0.0876
+rated_current,Current rating,Rated continuous current,rated_current,0.7871,1,1,0.0263
+rated_current,정격전류,정격 전류,rated_current,0.9962,1,1,0.0857
+rated_frequency,정격 주파수,정격주파수,rated_frequency,0.993,1,1,0.1669
+rated_frequency,Rated frequency,정격 주파수,rated_frequency,0.8552,1,1,0.0202
+rated_frequency,Frequency,Rated frequency,rated_frequency,0.7867,1,1,0.1552
+rated_frequency,정격주파수,정격 주파수,rated_frequency,0.993,1,1,0.1691
+short_time_current,정격 단시간 내전류,정격단시간내전류,short_time_current,0.9756,1,1,0.1071
+short_time_current,Rated short-time withstand current,Short-duration withstand current,short_time_current,0.8912,1,1,0.0095
+short_time_current,Short-duration withstand current,Rated short-time withstand current,short_time_current,0.8912,1,1,0.0023
+short_time_current,Short circuit breaking current (2seconds),Short circuit breaking current,breaking_current,0.8753,0,1,0.0997
+short_time_current,단시간 전류,정격 단시간 내전류,short_time_current,0.8476,1,1,0.0298
+short_time_current,정격단시간내전류,정격 단시간 내전류,short_time_current,0.9756,1,1,0.0938
+breaking_current,정격 차단 전류,정격차단전류,breaking_current,0.9904,1,0,0.1218
+breaking_current,Rated short-circuit breaking current,Short circuit breaking current,breaking_current,0.9023,1,0,0.0116
+breaking_current,Short circuit breaking current,Rated short-circuit breaking current,breaking_current,0.9023,1,0,0.027
+breaking_current,Nominal interrupting capacity,Rated short-circuit breaking current,breaking_current,0.7937,1,1,0.0524
+breaking_current,정격차단전류,정격 차단 전류,breaking_current,0.9904,1,0,0.1072
+peak_current,정격 최대 순간 전류,최대 순간 전류,peak_current,0.9445,1,1,0.0626
+peak_current,Rated peak withstand current,Peak withstand current,peak_current,0.9588,1,0,0.0772
+peak_current,Peak withstand current,Rated peak withstand current,peak_current,0.9588,1,0,0.07
+peak_current,최대 순간 전류,정격 최대 순간 전류,peak_current,0.9445,1,1,0.1165
+making_current,정격 투입 전류,정격투입전류,making_current,0.9879,1,0,0.0967
+making_current,Rated short-circuit making current,Rated short-circuit breaking current,breaking_current,0.8907,0,0,0.1063
+making_current,Rated closing and latching current,Rated normal current,rated_current,0.7631,0,0,0.0039
+making_current,정격투입전류,정격 투입 전류,making_current,0.9879,1,0,0.0925
+lightning_impulse,뇌 임펄스 내전압,뇌임펄스 내전압,lightning_impulse,0.9884,1,0,0.2539
+lightning_impulse,Rated lightning impulse withstand voltage,Lightning impulse withstand voltage at 1.2/50 μs,lightning_impulse,0.9074,1,0,0.053
+lightning_impulse,Lightning impulse withstand voltage at 1.2/50 μs,Rated lightning impulse withstand voltage,lightning_impulse,0.9074,1,0,0.0559
+lightning_impulse,BIL,Standard,standard,0.6025,0,0,0.0108
+lightning_impulse,뇌임펄스 내전압,뇌 임펄스 내전압,lightning_impulse,0.9884,1,0,0.233
+power_freq_withstand,상용주파 내전압,개폐충격 내전압,switching_impulse,0.7905,0,1,0.0211
+power_freq_withstand,Rated short-duration power-frequency withstand voltage,Short-duration power frequency withstand voltage for 60 sec,power_freq_withstand,0.8975,1,1,0.0422
+power_freq_withstand,Short-duration power frequency withstand voltage for 60 sec,Rated short-duration power-frequency withstand voltage,power_freq_withstand,0.8975,1,1,0.0805
+power_freq_withstand,withstand voltage,Peak withstand current,peak_current,0.8448,0,1,0.024
+switching_impulse,개폐 충격 내전압,개폐충격 내전압,switching_impulse,0.996,1,1,0.2147
+switching_impulse,Rated switching withstand voltage,Switching impulse withstand voltage,switching_impulse,0.861,1,1,0.0401
+switching_impulse,Switching impulse withstand voltage,Rated switching withstand voltage,switching_impulse,0.861,1,1,0.0066
+switching_impulse,개폐충격 내전압,개폐 충격 내전압,switching_impulse,0.996,1,1,0.2055
+gas_leakage_rate,가스 누설률,가스 누기량,gas_leakage_rate,0.8983,1,1,0.2599
+gas_leakage_rate,Annual leakage rate for each gas compartment,gas leakage rate,gas_leakage_rate,0.8831,1,1,0.2811
+gas_leakage_rate,gas leakage rate,Annual leakage rate for each gas compartment,gas_leakage_rate,0.8831,1,1,0.2455
+gas_leakage_rate,가스 누기량,가스 누설률,gas_leakage_rate,0.8983,1,1,0.2159
+gas_leakage_rate,누설량,가스 누설률,gas_leakage_rate,0.8734,1,1,0.1643
+partial_discharge,부분 방전,부분방전,partial_discharge,0.9838,1,1,0.2984
+partial_discharge,Partial discharge,부분방전,partial_discharge,0.8641,1,1,0.1989
+partial_discharge,PD,Partial discharge,partial_discharge,0.6612,1,0,0.0807
+partial_discharge,부분방전,부분 방전,partial_discharge,0.9838,1,1,0.2883
+breaking_time,차단 시간,정격차단시간,breaking_time,0.7993,1,1,0.0941
+breaking_time,Total Breaking Time,Rated breaking time,breaking_time,0.8612,1,0,0.1256
+breaking_time,Maximum interrupting time,정격차단시간,breaking_time,0.7295,1,1,0.018
+breaking_time,Rated breaking time,Total Breaking Time,breaking_time,0.8612,1,1,0.1434
+breaking_time,정격차단시간,정격차단전류,breaking_current,0.8722,0,1,0.0581
+closing_time,투입 시간,무부하 투입시간,closing_time,0.8443,1,0,0.1153
+closing_time,Total Closing Time,No-load closing time,closing_time,0.782,1,0,0.0463
+closing_time,No-load closing time,Total Closing Time,closing_time,0.782,1,1,0.06
+closing_time,무부하 투입시간,투입 시간,closing_time,0.8443,1,1,0.0848
+operating_sequence,동작 책무,표준 동작책무,operating_sequence,0.8822,1,1,0.2701
+operating_sequence,Rated operation cycle,Rated operation sequences,operating_sequence,0.8419,1,0,0.0642
+operating_sequence,Rated operation sequences,Rated operation cycle,operating_sequence,0.8419,1,0,0.0958
+operating_sequence,Operating sequence,Rated operation sequences,operating_sequence,0.8072,1,0,0.172
+operating_sequence,표준 동작책무,동작 책무,operating_sequence,0.8822,1,0,0.1954
+control_voltage,제어 전원 전압,제어전원,control_voltage,0.9503,1,1,0.1858
+control_voltage,Trip coil and closing coil voltage,Number of trip coil,trip_coil_count,0.8264,0,0,0.0962
+control_voltage,Control circuit voltage,Rated voltage of auxiliary and control circuits,aux_circuit_voltage,0.8387,0,1,0.0409
+control_voltage,Mechanism voltage,Rated voltage,rated_voltage_um,0.726,0,0,0.0059
+control_voltage,제어전원,제어 전원 전압,control_voltage,0.9503,1,1,0.238
+aux_circuit_voltage,보조 회로 정격 전압,보조회로 정격전압,aux_circuit_voltage,0.9937,1,1,0.1819
+aux_circuit_voltage,Rated voltage of auxiliary circuits,Rated supply voltage of auxiliary circuits,aux_circuit_voltage,0.976,1,1,0.1739
+aux_circuit_voltage,Rated supply voltage of auxiliary circuits,Rated voltage of auxiliary circuits,aux_circuit_voltage,0.976,1,1,0.1828
+aux_circuit_voltage,Rated voltage of auxiliary and control circuits,Rated supply voltage of auxiliary and control circuits,aux_circuit_voltage,0.9789,1,1,0.1403
+aux_circuit_voltage,Rated supply voltage of auxiliary and control circuits,Rated voltage of auxiliary and control circuits,aux_circuit_voltage,0.9789,1,1,0.1493
+aux_circuit_voltage,보조회로 정격전압,보조 회로 정격 전압,aux_circuit_voltage,0.9937,1,1,0.1633
+aux_circuit_voltage,보조회로 전압,보조 회로 정격 전압,aux_circuit_voltage,0.9434,1,1,0.1677
+trip_coil_count,트립 코일 수,트립코일 수,trip_coil_count,0.9905,1,1,0.1928
+trip_coil_count,No. of tripping coils,Number of trip coil,trip_coil_count,0.9454,1,1,0.1232
+trip_coil_count,Number of trip coil,No. of tripping coils,trip_coil_count,0.9454,1,1,0.1189
+trip_coil_count,트립코일 수,트립 코일 수,trip_coil_count,0.9905,1,1,0.1982
+ip_rating,외함 보호 등급,보호등급,ip_rating,0.8472,1,1,0.1946
+ip_rating,Protection class of enclosure,보호등급,ip_rating,0.7427,1,1,0.1214
+ip_rating,IP rating,보호등급,ip_rating,0.7211,1,1,0.0127
+ip_rating,보호등급,외함 보호 등급,ip_rating,0.8472,1,1,0.1561
+ambient_temp_max,최고 주위 온도,주위 최고 온도,ambient_temp_max,0.9469,1,1,0.2329
+ambient_temp_max,Ambient temperature,maximum ambient temperature,ambient_temp_max,0.8909,1,1,0.2374
+ambient_temp_max,maximum ambient temperature,Ambient temperature,ambient_temp_max,0.8909,1,1,0.228
+ambient_temp_max,주위 최고 온도,최고 주위 온도,ambient_temp_max,0.9469,1,1,0.2512
+altitude,설치 고도,해발 고도,altitude,0.8154,1,1,0.1017
+altitude,Altitude,Altitude above sea level,altitude,0.7426,1,1,0.1307
+altitude,Altitude above sea level,해발 고도,altitude,0.765,1,1,0.1513
+altitude,해발 고도,설치 고도,altitude,0.8154,1,1,0.1579
+standard,적용 규격,적용규격,standard,0.9903,1,1,0.2828
+standard,Standard,Applicable Standard,standard,0.7499,1,0,0.0589
+standard,Applicable Standard,적용 규격,standard,0.7676,1,1,0.0876
+standard,적용규격,적용 규격,standard,0.9903,1,1,0.2694
+manufacturer,제조사,Manufacturer,manufacturer,0.7594,1,1,0.0616
+manufacturer,Manufacturer,제조사,manufacturer,0.7594,1,1,0.1471
+manufacturer,Manufacturer’s name,제조사,manufacturer,0.7536,1,1,0.1007
+country_of_origin,원산지,Country of Origin,country_of_origin,0.778,1,1,0.0802
+country_of_origin,Country of Origin,원산지,country_of_origin,0.778,1,1,0.1301
+model_number,형식·모델 번호,형식,model_number,0.8362,1,1,0.1574
+model_number,Type designation and type ref or model number,형식·모델 번호,model_number,0.7808,1,1,0.1311
+model_number,형식,형식·모델 번호,model_number,0.8362,1,1,0.1603
+weight,중량,Weight,weight,0.8068,1,1,0.0569
+weight,Weight of complete 3-phase breaker,중량,weight,0.6898,1,1,0.0164
+weight,Weight,중량,weight,0.8068,1,1,0.1582
+rated_capacity,정격 용량,정격용량,rated_capacity,0.9924,1,1,0.0866
+rated_capacity,Rated capacity,Rated power,rated_capacity,0.8685,1,1,0.0655
+rated_capacity,Rated power,Rated capacity,rated_capacity,0.8685,1,1,0.0283
+rated_capacity,Capacity,Rated capacity,rated_capacity,0.822,1,1,0.1655
+rated_capacity,정격용량,정격 용량,rated_capacity,0.9924,1,1,0.0819
+rated_capacity,용량,정격 용량,rated_capacity,0.8446,1,1,0.0946
+anti_condensation_heater,결로 방지 히터,Anti-condensation heater,anti_condensation_heater,0.8206,1,1,0.1763
+anti_condensation_heater,Anti-condensation heater,결로 방지 히터,anti_condensation_heater,0.8206,1,1,0.2366
+anti_condensation_heater,Space heater,스페이스 히터,anti_condensation_heater,0.8546,1,1,0.2606
+anti_condensation_heater,스페이스 히터,Space heater,anti_condensation_heater,0.8546,1,1,0.2395
+spring_charging_motor,스프링 충전 전동기,Spring charge motor,spring_charging_motor,0.8822,1,1,0.2465
+spring_charging_motor,Spring charge motor,Spring charging motor,spring_charging_motor,0.9739,1,1,0.3294
+spring_charging_motor,Spring charging motor,Spring charge motor,spring_charging_motor,0.9739,1,1,0.33
+spring_charging_motor,Motor driven spring charge,Spring charge motor,spring_charging_motor,0.9259,1,1,0.2955
+spring_charging_motor,Motor for spring,Spring charging motor,spring_charging_motor,0.855,1,1,0.2491
+ct_polarity,변류기 극성,Polarity of current transformer,ct_polarity,0.8251,1,1,0.1685
+ct_polarity,CT polarity,Polarity of current transformer,ct_polarity,0.913,1,1,0.2983
+ct_polarity,Polarity of current transformer,CT polarity,ct_polarity,0.913,1,1,0.2979
+ct_polarity,Polarity of all current,Polarity of current transformer,ct_polarity,0.7717,1,1,0.0902
+buchholz_relay,부흐홀츠 계전기,부흐홀츠,buchholz_relay,0.8642,1,1,0.2056
+buchholz_relay,Buchholz relay,부흐홀츠 계전기,buchholz_relay,0.7905,1,1,0.1238
+buchholz_relay,Buchholz,부흐홀츠,buchholz_relay,0.8358,1,1,0.274
+buchholz_relay,부흐홀츠,브흐홀쯔,buchholz_relay,0.8824,1,1,0.2799
+buchholz_relay,브흐홀쯔,부흐홀츠,buchholz_relay,0.8824,1,1,0.2815
+off_load_tap_changer,무부하 탭 절환기,무부하 탭 절환,off_load_tap_changer,0.9567,1,1,0.2167
+off_load_tap_changer,Off-load tap changer,No-load tap changer,off_load_tap_changer,0.9141,1,1,0.2568
+off_load_tap_changer,Off-load tap-changing,Off-load tap changer,off_load_tap_changer,0.8555,1,1,0.1766
+off_load_tap_changer,Off-circuit tap,Off-load tap-changing,off_load_tap_changer,0.807,1,1,0.1678
+off_load_tap_changer,No-load tap changer,Off-load tap changer,off_load_tap_changer,0.9141,1,1,0.1922
+off_load_tap_changer,무부하 탭 절환,무부하 탭 절환기,off_load_tap_changer,0.9567,1,1,0.1972
+sound_level,소음,소음도,sound_level,0.8759,1,1,0.265
+sound_level,Sound level,소음 레벨,sound_level,0.8787,1,1,0.2616
+sound_level,Audible sound level,Sound level,sound_level,0.7932,1,1,0.1826
+sound_level,Noise level,소음 레벨,sound_level,0.8569,1,1,0.2232
+sound_level,소음 레벨,Sound level,sound_level,0.8787,1,1,0.2055
+sound_level,소음도,소음,sound_level,0.8759,1,1,0.2431
+cooling_type,냉각 방식,Cooling type,cooling_type,0.8339,1,1,0.1057
+cooling_type,Cooling type,Cooling method,cooling_type,0.8476,1,1,0.1847
+cooling_type,Cooling method,Cooling type,cooling_type,0.8476,1,1,0.1944
+cooling_type,Cooling system,Cooling method,cooling_type,0.7451,1,1,0.1289
+insulation_medium,절연 방식,절연유,insulation_medium,0.8102,1,1,0.082
+insulation_medium,Insulation medium,Insulating medium,insulation_medium,0.9268,1,1,0.2793
+insulation_medium,Insulating medium,Insulation medium,insulation_medium,0.9268,1,1,0.2774
+insulation_medium,절연유,절연 방식,insulation_medium,0.8102,1,1,0.1099
+warranty_period,보증기간,유지보수 기간,maintenance_period,0.7795,0,1,0.0172
+warranty_period,Warranty period,보증기간,warranty_period,0.7623,1,1,0.0348
+warranty_period,Warranty,Warranty period,warranty_period,0.7471,1,1,0.1192
+std_lead_time,표준 납기,Standard lead time,std_lead_time,0.8484,1,1,0.1575
+std_lead_time,Standard lead time,Lead time,std_lead_time,0.8526,1,1,0.1616
+std_lead_time,Delivery time,Lead time,std_lead_time,0.7682,1,1,0.1408
+std_lead_time,납기,표준 납기,std_lead_time,0.8064,1,1,0.1572
+std_lead_time,Lead time,Standard lead time,std_lead_time,0.8526,1,1,0.2199
+minimum_order_quantity,최소 주문 수량,Minimum order quantity,minimum_order_quantity,0.8787,1,1,0.1879
+minimum_order_quantity,Minimum order quantity,최소 주문 수량,minimum_order_quantity,0.8787,1,1,0.2554
+minimum_order_quantity,MOQ,Minimum order quantity,minimum_order_quantity,0.869,1,1,0.2425
+list_price,목록 가격,가격,list_price,0.821,1,1,0.1694
+list_price,List price,목록 가격,list_price,0.7531,1,1,0.1658
+list_price,Price,가격,list_price,0.7569,1,1,0.1503
+list_price,가격,목록 가격,list_price,0.821,1,1,0.1517
+list_price,단가,가격,list_price,0.7502,1,1,0.0999
+maintenance_period,유지보수 기간,Maintenance period,maintenance_period,0.811,1,1,0.0314
+maintenance_period,Maintenance period,유지보수 기간,maintenance_period,0.811,1,1,0.0835
+maintenance_period,Service period,Service life,service_life,0.8189,0,0,0.0734
+service_life,설계 수명,사용 수명,service_life,0.8732,1,1,0.1639
+service_life,Service life,Service period,maintenance_period,0.8189,0,1,0.0308
+service_life,Design life,설계 수명,service_life,0.6954,1,1,0.121
+service_life,사용 수명,설계 수명,service_life,0.8732,1,1,0.1446

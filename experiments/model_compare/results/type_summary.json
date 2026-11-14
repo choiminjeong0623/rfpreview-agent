@@ -1,0 +1,170 @@
+{
+  "Gemini 3.8 Flash (10-25 기록)": {
+    "score": {
+      "hit": 57,
+      "n": 100,
+      "clear_hit": 43,
+      "clear_n": 68,
+      "diff_hit": 29,
+      "diff_n": 70,
+      "same_hit": 28,
+      "same_n": 30
+    },
+    "src": "기록"
+  },
+  "Jev (10-25 기록)": {
+    "score": {
+      "hit": 64,
+      "n": 100,
+      "clear_hit": 49,
+      "clear_n": 68,
+      "diff_hit": 36,
+      "diff_n": 70,
+      "same_hit": 28,
+      "same_n": 30
+    },
+    "src": "기록",
+    "cost_krw": "약 8원(기록)"
+  },
+  "섞기 Jev≥0.9+3.8 Flash (10-25 기록)": {
+    "score": {
+      "hit": 66,
+      "n": 100,
+      "clear_hit": 48,
+      "clear_n": 68,
+      "diff_hit": 38,
+      "diff_n": 70,
+      "same_hit": 28,
+      "same_n": 30
+    },
+    "src": "기록으로 계산"
+  },
+  "현재_3.8flash (지금 프롬프트)": {
+    "score": {
+      "hit": 93,
+      "n": 100,
+      "clear_hit": 67,
+      "clear_n": 68,
+      "diff_hit": 65,
+      "diff_n": 70,
+      "same_hit": 28,
+      "same_n": 30
+    },
+    "src": "새로 잼",
+    "seconds": 7.9,
+    "calls": 3,
+    "input_tokens": 3809,
+    "output_tokens": 2018,
+    "thinking_tokens": 0,
+    "cost_krw": "15.6원"
+  },
+  "섞기 Jev≥0.9+현재_3.8flash": {
+    "score": {
+      "hit": 94,
+      "n": 100,
+      "clear_hit": 67,
+      "clear_n": 68,
+      "diff_hit": 66,
+      "diff_n": 70,
+      "same_hit": 28,
+      "same_n": 30
+    },
+    "src": "Jev 기록 + 새로 잰 답"
+  },
+  "3.5lite (지금 프롬프트)": {
+    "score": {
+      "hit": 87,
+      "n": 100,
+      "clear_hit": 63,
+      "clear_n": 68,
+      "diff_hit": 61,
+      "diff_n": 70,
+      "same_hit": 26,
+      "same_n": 30
+    },
+    "src": "새로 잼",
+    "seconds": 3.3,
+    "calls": 3,
+    "input_tokens": 3809,
+    "output_tokens": 2249,
+    "thinking_tokens": 0,
+    "cost_krw": "10.1원"
+  },
+  "섞기 Jev≥0.9+3.5lite": {
+    "score": {
+      "hit": 91,
+      "n": 100,
+      "clear_hit": 65,
+      "clear_n": 68,
+      "diff_hit": 63,
+      "diff_n": 70,
+      "same_hit": 28,
+      "same_n": 30
+    },
+    "src": "Jev 기록 + 새로 잰 답"
+  },
+  "3.5lite_생각최소 (지금 프롬프트)": {
+    "score": {
+      "hit": 87,
+      "n": 100,
+      "clear_hit": 63,
+      "clear_n": 68,
+      "diff_hit": 61,
+      "diff_n": 70,
+      "same_hit": 26,
+      "same_n": 30
+    },
+    "src": "새로 잼",
+    "seconds": 2.9,
+    "calls": 3,
+    "input_tokens": 3809,
+    "output_tokens": 2244,
+    "thinking_tokens": 0,
+    "cost_krw": "10.1원"
+  },
+  "섞기 Jev≥0.9+3.5lite_생각최소": {
+    "score": {
+      "hit": 90,
+      "n": 100,
+      "clear_hit": 65,
+      "clear_n": 68,
+      "diff_hit": 62,
+      "diff_n": 70,
+      "same_hit": 28,
+      "same_n": 30
+    },
+    "src": "Jev 기록 + 새로 잰 답"
+  },
+  "3.1lite (지금 프롬프트)": {
+    "score": {
+      "hit": 83,
+      "n": 100,
+      "clear_hit": 60,
+      "clear_n": 68,
+      "diff_hit": 59,
+      "diff_n": 70,
+      "same_hit": 24,
+      "same_n": 30
+    },
+    "src": "새로 잼",
+    "seconds": 2.6,
+    "calls": 3,
+    "input_tokens": 3809,
+    "output_tokens": 1922,
+    "thinking_tokens": 0,
+    "cost_krw": "5.8원"
+  },
+  "섞기 Jev≥0.9+3.1lite": {
+    "score": {
+      "hit": 87,
+      "n": 100,
+      "clear_hit": 62,
+      "clear_n": 68,
+      "diff_hit": 61,
+      "diff_n": 70,
+      "same_hit": 26,
+      "same_n": 30
+    },
+    "src": "Jev 기록 + 새로 잰 답"
+  }
+}

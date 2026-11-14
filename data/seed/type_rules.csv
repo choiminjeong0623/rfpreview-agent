@@ -1,0 +1,44 @@
+rule_code,pattern,type_code,match_kind,priority
+T-TEST-01,Type Test,TEST,WORD,10
+T-TEST-02,Routine Test,TEST,WORD,10
+T-TEST-03,test report,TEST,WORD,20
+T-TEST-04,형식시험,TEST,WORD,10
+T-TEST-05,출하시험,TEST,WORD,10
+T-QUAL-01,ISO 9001,MAKER_QUAL,WORD,10
+T-QUAL-02,experience,MAKER_QUAL,WORD,20
+T-QUAL-03,authorization letter,MAKER_QUAL,WORD,10
+T-QUAL-04,제작 실적,MAKER_QUAL,WORD,20
+T-COST-01,$/kW,COST,WORD,5
+T-COST-02,capitalized,COST,WORD,5
+T-COST-03,spare parts,COST,WORD,30
+T-COST-04,evaluated price,COST,WORD,5
+T-STD-01,"\b(IEC|IEEE|ANSI|NEMA|UL|KS C|ES-)\s?[0-9]",STANDARD_CERT,REGEX,40
+T-SITE-01,ambient temperature,SITE_ENV,WORD,30
+T-SITE-02,altitude,SITE_ENV,WORD,30
+T-SITE-03,주위 온도,SITE_ENV,WORD,30
+T-SITE-04,seismic,SITE_ENV,WORD,30
+T-TECH-01,loss,TECH_PERF,WORD,50
+T-TECH-02,rated,TECH_PERF,WORD,60
+T-TECH-03,정격,TECH_PERF,WORD,60
+T-COST-05,liquidated damages,COST,WORD,25
+T-COST-06,delay damages,COST,WORD,25
+T-COST-07,지체상금,COST,REGEX,25
+T-COST-08,(?i)\b(defects? (liability|notification) period|warranty period|guarantee period)\b,COST,REGEX,25
+T-COST-09,하자\s?(보수|보증|담보),COST,REGEX,25
+T-COST-10,(?i)\b(performance (security|bond|guarantee)|advance payment (guarantee|security))\b|이행\s?보증,COST,REGEX,25
+T-COST-11,(?i)\b(terms of payment|payment terms|advance payment)\b|지급\s?조건,COST,REGEX,25
+T-COST-12,(?i)\b(bid validity|remain valid for)\b,COST,REGEX,25
+T-COST-13,\b(Incoterms|CIF|CIP|FOB|DAP|DDP|EXW)\b|(?i:\bdelivery terms\b),COST,REGEX,25
+T-COST-14,(?i)\b(exchange rate|currency of (the )?(bid|contract)|bid currency)\b|환율,COST,REGEX,25
+T-COST-15,(?i)\b(limitation of liability|total liability|unlimited liability)\b|책임\s?한도,COST,REGEX,25
+T-COST-16,(?i)\bspares\b|예비품,COST,REGEX,25
+T-COST-17,(?i)\b(special tools)\b|특수\s?공구,COST,REGEX,25
+T-COST-18,(?i)\b(packing|packaging|transportation|freight)\b|운반|포장,COST,REGEX,25
+T-COST-19,(?i)\b(witness(ed|ing)?)\b|입회,COST,REGEX,25
+T-COST-20,(?i)\b(supervision of (installation|erection|commissioning)|site supervision)\b|설치\s?감독,COST,REGEX,25
+T-COST-21,(?i)\btraining\b|교육\s?훈련,COST,REGEX,25
+T-COST-22,(?i)\b(free of charge|at no (additional|extra) cost|at the Contractor'?s (cost|expense))\b|무상,COST,REGEX,25
+T-STD-02,(?i)\b(?:IEC|IEEE|ANSI|NEMA|UL)(?:/(?:IEC|IEEE|ANSI|NEMA|UL))*\s+standards?\b,STANDARD_CERT,REGEX,65
+T-COST-23,(?i)\b(unit prices?|price basis|commercial proposal|price validity)\b|(?<![가-힣])단가,COST,REGEX,25
+T-QUAL-05,(?i)\bmanufacturer(?:'s)? authori[sz]ation\b|\bproduction facility\b|\bafter-sales\b,MAKER_QUAL,REGEX,20
+T-TECH-04,(?i)\b(?:gas )?leakage\b|\bpartial discharge\b|누설,TECH_PERF,REGEX,50

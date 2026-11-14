@@ -1,0 +1,32 @@
+/* 목업 v4.96 요약 상자(.ais) 규칙 원본 그대로 (change add-screen-summary). 검토 상세·홈이 같이 쓴다.
+   목업 이름 "AI 요약" 대신 "요약" + "코드가 씀" 꼬리표(결정 Q1). .ais-tag·.ais-err만 더함. */
+.ais{position:relative;display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:14px 18px;border-radius:8px;background:#F5F8FD;border:1px solid #D6E2F3;overflow:hidden}
+.ais::before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(0,52,120,.07) 50%,transparent 70%);transform:translateX(-100%);animation:aisSweep 1.4s ease-out .1s 1 both;pointer-events:none}
+.ais-ic{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#003478;color:#fff}
+.ais-ic .ms{font-size:17px;animation:aisTw 1.6s ease-in-out 0s 2}
+.ais-b{flex:1;min-width:0}
+.ais-h{display:flex;align-items:center;gap:8px;font-size:var(--fs-xs);color:#475467}
+.ais-h b{font-weight:600;color:#003478}
+.ais-h .ais-t{color:#667085}
+.ais-h .ais-m{color:#475467}
+.ais-h .ais-m b{color:#1F2937;font-weight:600}
+.ais-h button{all:unset;margin-left:auto;display:inline-flex;align-items:center;gap:4px;cursor:pointer;color:#0569A0;font-size:var(--fs-xs)}
+.ais-h button:hover{text-decoration:underline}
+.ais-h button:focus-visible{outline:2px solid #0569A0;outline-offset:2px;border-radius:2px}
+.ais-h button .ms{font-size:15px}
+.ais-h button[disabled]{opacity:.5;cursor:default;text-decoration:none}
+.ais-tag{display:inline-block;padding:0 6px;border-radius:4px;background:#E3EAF4;color:#003478;font-size:11px;font-weight:600;line-height:18px}
+.ais-sk{display:grid;gap:7px;margin-top:8px}
+.ais-sk i{display:block;height:10px;border-radius:5px;background:linear-gradient(90deg,#E3EAF4 25%,#EEF3F9 50%,#E3EAF4 75%);background-size:200% 100%;animation:aisSk 1s linear infinite}
+.ais-sk i:nth-child(2){width:72%}
+.ais-p{margin:6px 0 0;font-size:var(--fs-md,14px);line-height:1.65;color:#1F2937}
+.ais-p .sn{opacity:0;animation:aisIn .5s ease-out both}
+.ais-p a{color:#003478;font-weight:600;text-decoration:none;border-bottom:1px solid rgba(0,52,120,.25);cursor:pointer}
+.ais-p a:hover{border-bottom-color:#003478}
+.ais-p .rd{color:#B42318;font-weight:600}
+.ais-err{margin:6px 0 0;font-size:var(--fs-sm);color:#B42318}
+@keyframes aisIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@keyframes aisSk{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes aisSweep{to{transform:translateX(100%)}}
+@keyframes aisTw{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.18) rotate(15deg)}}
+@media (prefers-reduced-motion: reduce){.ais::before,.ais-ic .ms,.ais-sk i{animation:none}.ais-p .sn{animation:none;opacity:1}}

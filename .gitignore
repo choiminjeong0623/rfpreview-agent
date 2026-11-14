@@ -1,0 +1,22 @@
+# 고객사 RFP 원문·제품표 (data/private/README.md)
+data/private/*
+!data/private/README.md
+
+.env
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+node_modules/
+dist/
+.DS_Store
+
+# 화면 E2E 결과
+frontend/test-results/
+frontend/playwright-report/
+frontend/compare-out/
+
+# 고객 RFP 문장이 든 실험 정답지·결과 (클렌징본이라도 저장소에 올리지 않음)
+experiments/model_compare/정답지_*.csv
+experiments/model_compare/results/type_details.csv

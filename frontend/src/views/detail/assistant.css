@@ -1,0 +1,29 @@
+/* 검토 도우미 창 (add-review-assistant, update-assistant-panel). 목업에 없는 요소라 오른쪽 창으로 붙인다 (SCR-08_공유.md) */
+.as{position:fixed;top:0;right:0;bottom:0;z-index:90;width:min(460px,100vw);background:var(--c-white);border-left:1px solid var(--c-line);box-shadow:-16px 0 32px var(--c-shade);display:flex;flex-direction:column}
+.as-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px 12px 20px;border-bottom:1px solid var(--c-line)}
+.as-h h2{margin:0;font-size:var(--fs-h3)}
+.as-f{display:flex;gap:8px;padding:12px 16px 8px 20px;align-items:flex-end}
+.as-f textarea{flex:1;resize:vertical;min-height:44px;box-sizing:border-box}
+.as-ex{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;padding:0 16px 12px 20px;border-bottom:1px solid var(--c-line-soft)}
+.as-ex .chip{flex:none;white-space:nowrap;border:1px solid var(--c-line);background:var(--c-white);border-radius:4px;padding:3px 8px;font-size:var(--fs-xs);cursor:pointer;color:var(--c-text-2)}
+.as-ex .chip:hover:not(:disabled){background:var(--c-bg-hover)}
+.as-b{flex:1;overflow:auto;padding:12px 16px 24px 20px;font-size:var(--fs-sm)}
+.as-b h3{margin:16px 0 6px;font-size:var(--fs-sm);color:var(--c-text-2)}
+.as-empty{color:var(--c-muted)}
+.as-mode{margin:0;font-size:var(--fs-xs);color:var(--c-text-3)}
+.as-none{margin:10px 0 0;color:var(--c-text-2)}
+.as-ans{margin:10px 0 0;padding-left:20px;line-height:1.6}
+.as-cite{margin-left:2px;padding:0 1px;border:0;background:none;color:var(--c-link-strong);font-size:var(--fs-xs);cursor:pointer;vertical-align:super}
+.as-evs,.as-steps{margin:0;padding:0;list-style:none}
+.as-ev{border:1px solid var(--c-line-soft);border-radius:6px;padding:8px 10px;margin-bottom:8px}
+.as-evh{display:flex;gap:8px;align-items:baseline}
+.as-no{flex:none;min-width:18px;text-align:center;font-size:var(--fs-xs);font-weight:600;color:var(--c-text-2);background:var(--c-bg-grey);border-radius:4px}
+.as-loc{color:var(--c-muted);font-size:var(--fs-xs)}
+.as-tags{display:flex;gap:6px;align-items:baseline;margin-top:4px;font-size:var(--fs-xs)}
+.as-tag{color:var(--c-text-2);background:var(--c-bg-grey);border-radius:4px;padding:0 6px}
+.as-item{color:var(--c-text-3)}
+.as-txt{margin:4px 0 0;line-height:1.5}
+.as-val{margin:2px 0 0;color:var(--c-text-3);font-size:var(--fs-xs)}
+.as-how{margin-top:12px;color:var(--c-text-3);font-size:var(--fs-xs)}
+.as-how summary{cursor:pointer}
+.as-steps li{margin-top:4px}

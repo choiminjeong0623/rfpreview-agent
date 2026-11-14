@@ -1,0 +1,32 @@
+﻿표준 항목키,product_master 열 (또는 고정값),용도,비고
+manufacturer,(회사 고정값) LS ELECTRIC,보증값 작성,제조사명은 고정값
+country_of_origin,(회사 고정값) Korea,보증값 작성,
+model_number,product_name,보증값 작성,형식명이 없으면 확인 필요
+rated_voltage_um,rated_voltage_kv,비교 / 보증값 작성,
+rated_current,rated_current_a,비교 / 보증값 작성,
+short_time_current,short_circuit_ka (+ description의 시간),비교 / 보증값 작성,시간 조건은 description에서 코드로 추출
+breaking_current,short_circuit_ka,비교 / 보증값 작성,
+rated_frequency,rated_frequency,비교,적재할 때 description(예: 주파수 50/60 Hz)에서 옮김
+standard,standards,비교,
+ip_rating,ip_rating,비교 / 보증값 작성,
+weight,weight_kg,보증값 작성,
+ambient_temp_max,operating_temp,비교,
+rated_capacity,rated_capacity,비교,변압기 정격 용량. 단위가 다르면 비교 안 함
+lightning_impulse,lightning_impulse_kv,비교,
+power_freq_withstand,power_freq_withstand_kv,비교,
+switching_impulse,switching_impulse_kv,비교,
+peak_current,peak_current_ka,비교,
+making_current,making_current_ka,비교,
+breaking_time,breaking_time_ms,비교,
+closing_time,closing_time_ms,비교,
+gas_leakage_rate,gas_leakage_percent,비교,
+partial_discharge,partial_discharge_pc,비교,
+cooling_type,cooling_type,비교 / 보증값 작성,
+insulation_medium,insulation_medium,비교 / 보증값 작성,
+warranty_period,warranty_months,비교 / 보증값 작성,
+std_lead_time,std_lead_time_weeks,비교 / 보증값 작성,
+minimum_order_quantity,moq,비교 / 보증값 작성,
+list_price,list_price_usd,비교 / 보증값 작성,
+maintenance_period,maintenance_months,비교 / 보증값 작성,
+service_life,service_life_years,비교 / 보증값 작성,
+그 외 항목,—,확인 필요,product_master에 없는 값은 지어내지 않음

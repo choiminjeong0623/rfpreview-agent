@@ -1,0 +1,66 @@
+/* 목업 v4.96 Detail 화면 CSS 중 v4.57에 없던 머리글·탭·아래 행동 줄 규칙만 원본 그대로 (update-detail-header, docs/screens/_디자인.md 1장). 고치지 않는다.
+   v4.57 Detail.css 위에 덧붙여 쓴다. 전체를 v4.96으로 바꾸면 v4.57 탭 화면 규칙이 바뀌어 화면마다 차례로 옮길 때 바꾼다. */
+.fmore{all:unset;cursor:pointer;font-size:var(--fs-xs);color:#0569A0;margin-top:6px;display:inline-block}
+.dpb{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;margin:4px 0 12px}
+.dpb i{display:block;min-width:6px}
+.dpl{display:flex;flex-direction:column;gap:4px}
+.dpl>*{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:var(--fs-sm);color:#344054}
+.dpl>*:hover{background:#F5F8FB}
+.dpl>*:focus-visible{outline:2px solid #0569A0}
+.dpl .dt{width:10px;height:10px;border-radius:3px;flex:none}
+.dpl b{margin-left:auto;font-weight:600;color:#1F2937;white-space:nowrap}
+.dpl .sx{font-size:var(--fs-xs);color:#667085}
+.dpl .ms{font-size:16px;color:#98A2B3}
+.hc{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;margin-top:16px;background:#fff;border:1px solid #DCE3EC;border-radius:8px;padding:14px 20px}
+@media (max-width:1100px){.hc{grid-template-columns:1fr}}
+.hc-kv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
+.hc-kv>*{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:4px 16px 4px 0;min-width:0}
+.hc-kv>*+*{padding-left:16px;border-left:1px solid #EEF2F6}
+.hc-kv>*:hover .l{color:#1F2937;text-decoration:underline}
+.hc-kv>*:focus-visible{outline:2px solid #0569A0;outline-offset:2px}
+.hc-kv .l{font-size:var(--fs-sm);color:#475467}
+.hc-kv b{font-size:22px;font-weight:600;line-height:1.25;font-variant-numeric:tabular-nums;color:#1F2937}
+.hc-kv b small{font-size:var(--fs-sm);font-weight:500;margin-left:2px}
+.hc-kv .s{font-size:var(--fs-xs);color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hc .dpb{margin:12px 0 0}
+.hc-f{margin:0;display:flex;flex-direction:column;gap:6px;padding-left:20px;border-left:1px solid #EEF2F6;font-size:var(--fs-sm)}
+.hc-f>div{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:center;gap:8px}
+.hc-f dt{color:#667085}
+.hc-f dd{margin:0;color:#1F2937;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hc-f select.fi{height:30px;width:100%}
+.exw,.more{position:relative}
+.pgtabs2{position:sticky;top:64px;z-index:20;display:flex;align-items:center;gap:2px;margin:16px 0 20px;background:#F7F9FC;border-bottom:1px solid #DCE3EC}
+.pgtabs2>button,.more>button{display:inline-flex;align-items:center;gap:4px;height:42px;padding:0 14px;border:0;background:none;font:inherit;font-size:var(--fs-body);color:#667085;font-weight:500;cursor:pointer;margin-bottom:-1px;border-bottom:2px solid transparent;white-space:nowrap}
+.pgtabs2>button:hover,.more>button:hover{color:#1F2937}
+.pgtabs2>button.on,.more>button.on{color:#0A1E5A;font-weight:600;border-bottom-color:#0A1E5A}
+.more>button .ms{font-size:18px}
+.more .mm{right:auto;left:0}
+.pgtabs2 .snap{display:none;align-items:center;gap:8px;min-width:0;max-width:420px;margin-right:12px;padding-right:12px;border-right:1px solid #DCE3EC;font-size:var(--fs-sm);color:#475467}
+.pgtabs2 .snap .ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.pgtabs2[data-stuck] .snap{display:flex}
+.pgtabs2[data-stuck]{box-shadow:0 4px 8px -6px rgba(16,24,40,.2)}
+.ttl1{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ttl1 h1{margin:0}
+.ttl2{margin-top:4px;font-size:var(--fs-sm);color:#667085;display:flex;align-items:center;gap:10px}
+.hc{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.35fr) !important;gap:0 !important;padding:14px 0 !important}
+.hf{min-width:0;padding:0 20px}
+.hf+.hf{border-left:1px solid #EEF2F6}
+.hf h3{margin:0 0 8px;font-size:var(--fs-xs);font-weight:600;color:#667085;letter-spacing:.02em}
+.hf dl{margin:0;display:flex;flex-direction:column;gap:5px;font-size:var(--fs-sm)}
+.hf dl>div{display:grid;grid-template-columns:104px minmax(0,1fr);align-items:center;gap:8px;min-height:24px}
+.hf dt{color:#667085}
+.hf dd{margin:0;color:#1F2937;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hf dd select.fi{height:28px;width:100%}
+.hf-k .hc-kv{grid-template-columns:minmax(0,1fr) minmax(0,.8fr) minmax(0,.9fr) minmax(0,1.45fr)}
+.hf-k .hc-kv>*:last-child b{font-size:18px;line-height:1.4}
+.hf-k .hc-kv>*{padding:2px 10px 2px 0}
+.hf-k .hc-kv>*+*{padding-left:10px}
+.hf-k .hc-kv b{font-size:20px}
+@media (max-width:1100px){.hc{grid-template-columns:1fr 1fr !important}.hf-k{grid-column:1 / -1;border-left:0 !important;margin-top:14px}}
+.ftb{position:sticky;bottom:0;z-index:15;display:flex;align-items:center;flex-wrap:wrap;gap:6px 18px;margin-top:24px;padding:12px 20px;background:#fff;border:1px solid #DCE3EC;border-radius:8px 8px 0 0;box-shadow:0 -6px 16px -8px rgba(16,24,40,.18);font-size:var(--fs-sm);color:#475467}
+.ftb b{color:#1F2937;font-weight:600}
+.ftb .lnk{margin-left:4px}
+.ftb .bp,.ftb .bo{height:36px}.mm>button,.mm>a{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 12px;border-radius:5px;font-size:var(--fs-sm);color:#1F2937;white-space:nowrap}
+.mm>button.on{font-weight:600;color:#0A1E5A}
+.mm>button:hover,.mm>a:hover{background:#F2F5F9}
+.mm{position:absolute;right:0;top:calc(100% + 4px);z-index:40;min-width:200px;background:#fff;border:1px solid #DCE3EC;border-radius:8px;box-shadow:0 12px 28px rgba(16,24,40,.14);padding:4px;display:flex;flex-direction:column}

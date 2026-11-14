@@ -1,0 +1,38 @@
+/* 목업 CSS(mockup/Main.css)에 없는 것만 더한다. 목업은 사용자 칩이 <a>, 앱은 사용자 바꾸기 <button>이다 (SCR-00_공유.md). */
+.hd button.user{border:0;background:none;font:inherit;cursor:pointer;text-align:left}
+.ntp button.nti{display:flex;width:100%;border:0;background:none;font:inherit;text-align:left;cursor:pointer}
+.ntp button.nti.un{background:var(--c-bg-unread)}
+.ntp button.nti .ic{font-weight:700;font-size:13px}
+.nth .smp{margin-left:6px;font-size:11px;vertical-align:1px}
+/* 아직 만들지 않은 화면 자리 */
+
+/* 머리글 분석 진행 표시 (SCR-00 v4.96 4장, 목업 v4.60 .anb·.anp, update-header-progress). 값은 목업 그대로, 토큰으로 */
+.anb{border:0;background:var(--c-bg-hover);font:inherit;font-size:var(--t-sm);color:var(--c-text);height:32px;padding:0 12px 0 8px;border-radius:16px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;box-shadow:inset 0 0 0 1px var(--c-line)}
+.anb:hover{background:var(--c-bg-blue)}
+.anb:focus-visible{outline:2px solid var(--c-link);outline-offset:2px}
+.anb b{font-weight:600;font-variant-numeric:tabular-nums}
+.anr{width:18px;height:18px;border-radius:50%;background:conic-gradient(var(--c-navy) var(--p),var(--c-line) 0);position:relative;flex:none}
+.anr::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--c-bg-hover)}
+.anb.warn{background:var(--c-orange-bg);box-shadow:inset 0 0 0 1px var(--c-orange-line)}
+.anb.warn .anr{background:conic-gradient(var(--c-orange-mid) var(--p),var(--c-orange-line) 0)}
+.anb.warn .anr::after{background:var(--c-orange-bg)}
+.anp{position:absolute;top:calc(100% + 6px);right:-8px;z-index:60;width:360px;background:var(--c-white);border:1px solid var(--c-line);border-radius:10px;box-shadow:var(--sh-pop);padding:6px 0;font-size:var(--t-sm);color:var(--c-text);max-height:70vh;overflow:auto}
+.anp h4{margin:6px 16px 4px;font-size:var(--t-xs);color:var(--c-muted);font-weight:500}
+.ani{padding:10px 16px;border-top:1px solid var(--c-line-soft)}
+.ani .t{display:flex;gap:8px;align-items:baseline;min-width:0}
+.ani .t span{color:var(--c-text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ani .s{display:flex;justify-content:space-between;gap:8px;margin-top:4px;color:var(--c-text-3);font-size:var(--t-xs)}
+.ani .s b{color:var(--c-text);font-variant-numeric:tabular-nums}
+.ani .w{color:var(--c-orange);font-size:var(--t-xs);margin-top:4px}
+.ani .a{display:flex;justify-content:flex-end;margin-top:6px}
+.ani .a a{font-size:var(--t-xs);font-weight:600}
+.anbar{height:4px;border-radius:2px;background:var(--c-bar);margin-top:6px;overflow:hidden}
+.anbar i{display:block;height:100%;background:var(--c-navy);border-radius:2px;transition:width .4s}
+.ani.warn .anbar i{background:var(--c-orange-mid)}
+/* 검토 목록 줄 진행 (목업 v4.96 목록 줄 진행 막대) */
+.lprog{min-width:120px;max-width:220px;margin-top:6px}
+.lprog .anbar{height:3px;margin-top:0}
+.lprog-t{margin-top:5px;font-size:var(--t-xs);line-height:1.3;color:var(--c-text-3);white-space:nowrap}
+.lprog.warn .anbar i{background:var(--c-orange-mid)}
+.lprog.warn .lprog-t{color:var(--c-orange)}
+.anf{padding:10px 16px 6px;border-top:1px solid var(--c-line-soft);font-size:var(--t-xs);color:var(--c-muted)}

@@ -1,0 +1,43 @@
+﻿표준 항목키,한글 이름,같은 뜻의 원문 표현(;로 구분),기본 비교 방향,강점 방향,비고
+rated_voltage_um,설비 최고 전압 (정격 전압),Rated voltage; Highest voltage for equipment; Highest system voltage; Rated Voltage (Ur); 설비 최고 전압; 정격전압,≥,강점 아님,공칭 전압과 다름. 사례 13
+nominal_voltage,공칭 계통 전압,Nominal system voltage; Nominal voltage; 공칭전압,=,강점 아님,계통 이름표 전압. 제품 판정보다 계통 확인용
+rated_current,정격 전류,Rated normal current; Rated continuous current; Continuous current; Current rating; 정격전류,≥,클수록 좋음,부위·베이별로 값이 다를 수 있음(모선/피더)
+rated_frequency,정격 주파수,Rated frequency; Frequency; 정격주파수,=,강점 아님,50/60 겸용 제품은 요구값 포함 여부로 판정
+short_time_current,정격 단시간 내전류,Rated short-time withstand current; Short-duration withstand current; Short circuit breaking current (2seconds); 단시간 전류; 정격단시간내전류,≥ (+시간 조건),클수록 좋음,시간(1s·2s·3s)은 A-3 규칙
+breaking_current,정격 차단 전류,Rated short-circuit breaking current; Short circuit breaking current; Nominal interrupting capacity; 정격차단전류,≥,클수록 좋음,
+peak_current,정격 최대 순간 전류,Rated peak withstand current; Peak withstand current; 최대 순간 전류,≥,클수록 좋음,⑦ B-1 규칙(×2.5/×2.6) 대상
+making_current,정격 투입 전류,Rated short-circuit making current; Rated closing and latching current; 정격투입전류,≥,클수록 좋음,⑦ B-1 규칙 대상
+lightning_impulse,뇌 임펄스 내전압,Rated lightning impulse withstand voltage; Lightning impulse withstand voltage at 1.2/50 μs; BIL; 뇌임펄스 내전압,≥,클수록 좋음,
+power_freq_withstand,상용주파 내전압,Rated short-duration power-frequency withstand voltage; Short-duration power frequency withstand voltage for 60 sec; withstand voltage; 상용주파 내전압,≥,클수록 좋음,
+switching_impulse,개폐 충격 내전압,Rated switching withstand voltage; Switching impulse withstand voltage; 개폐충격 내전압,≥,클수록 좋음,"300 kV 미만 장비는 해당 없음(부록 B-3, 제안 규칙·미채택)"
+gas_leakage_rate,가스 누설률,Annual leakage rate for each gas compartment; gas leakage rate; 가스 누설률; 가스 누기량; 누설량,≤ / < (원문 기호 따름),작을수록 좋음,"사례 1(경계값), 사례 6(0.5/1 %)"
+partial_discharge,부분 방전,Partial discharge; PD; 부분방전,≤ / < (원문 기호 따름),작을수록 좋음,
+breaking_time,차단 시간,Total Breaking Time; Maximum interrupting time; Rated breaking time; 정격차단시간,≤,작을수록 좋음,cycle↔ms 환산은 단위 환산(제안·미채택) → 단위 다르면 확인 필요
+closing_time,투입 시간,Total Closing Time; No-load closing time; 무부하 투입시간,≤,작을수록 좋음,
+operating_sequence,동작 책무,Rated operation cycle; Rated operation sequences; Operating sequence; 표준 동작책무,= (문자열),강점 아님,표기 방식 다르면 확인 필요
+control_voltage,제어 전원 전압,Trip coil and closing coil voltage; Control circuit voltage; Mechanism voltage; 제어전원,포함,강점 아님,제품 지원 전압 목록에 요구값이 포함되면 준수
+aux_circuit_voltage,보조 회로 정격 전압,Rated voltage of auxiliary circuits; Rated supply voltage of auxiliary circuits; Rated voltage of auxiliary and control circuits; Rated supply voltage of auxiliary and control circuits; 보조회로 정격전압; 보조회로 전압,포함,강점 아님,설비 최고 전압(rated_voltage_um)과 다름. "Rated voltage"로 시작해 잘못 연결되던 문제(10-31 버그 8). 제품표 연결 없음 → 판정은 확인 필요
+trip_coil_count,트립 코일 수,No. of tripping coils; Number of trip coil; 트립코일 수,≥,강점 아님,2차 트립 코일 옵션 여부 확인
+ip_rating,외함 보호 등급,Protection class of enclosure; IP rating; 보호등급,≥ (IP 코드 비교),클수록 좋음,IP 두 자리 각각 비교
+ambient_temp_max,최고 주위 온도,Ambient temperature; maximum ambient temperature; 주위 최고 온도,≥ (제품 허용 범위가 요구 포함),클수록 좋음,온도 상승(K)과 혼동 금지(전수분석 오탐 사례)
+altitude,설치 고도,Altitude; Altitude above sea level; 해발 고도,≥ (제품 허용 고도),클수록 좋음,ft·m 단위 확인
+standard,적용 규격,Standard; Applicable Standard; 적용규격,포함 (규격 번호 일치),강점 아님,판본(연도) 차이는 확인 필요
+manufacturer,제조사,Manufacturer; Manufacturer’s name; 제조사,작성,강점 아님,보증값 작성 (회사 고정값)
+country_of_origin,원산지,Country of Origin; 원산지,작성,강점 아님,보증값 작성 (회사 고정값)
+model_number,형식·모델 번호,Type designation and type ref or model number; 형식,작성,강점 아님,보증값 작성 (product_name)
+weight,중량,Weight of complete 3-phase breaker; Weight; 중량,작성,강점 아님,보증값 작성 (weight_kg)
+rated_capacity,정격 용량,Rated capacity; Rated power; Capacity; 정격용량; 용량,≥,강점 아님,팀 추가(2단계): UPS·변압기 용량. 사례 7
+anti_condensation_heater,결로 방지 히터,Anti-condensation heater; Space heater; 결로 방지 히터; 스페이스 히터,= (문자열),강점 아님,팀 추가(FR-15): 현장 이력 연결표 항목
+spring_charging_motor,스프링 충전 전동기,Spring charge motor; Spring charging motor; Motor driven spring charge; Motor for spring; 스프링 충전 전동기,= (문자열),강점 아님,팀 추가(FR-15): 현장 이력 연결표 항목
+ct_polarity,변류기 극성,CT polarity; Polarity of current transformer; Polarity of all current; 변류기 극성,= (문자열),강점 아님,팀 추가(FR-15): 현장 이력 연결표 항목. 극성 시험 요구
+buchholz_relay,부흐홀츠 계전기,Buchholz relay; Buchholz; 부흐홀츠; 브흐홀쯔,= (문자열),강점 아님,팀 추가(FR-15): 현장 이력 연결표 항목
+off_load_tap_changer,무부하 탭 절환기,Off-load tap changer; Off-load tap-changing; Off-circuit tap; No-load tap changer; 무부하 탭 절환,= (문자열),강점 아님,팀 추가(FR-15): 현장 이력 연결표 항목
+sound_level,소음,Sound level; Audible sound level; Noise level; 소음 레벨; 소음도,≤,작을수록 좋음,팀 추가(FR-15): 현장 이력 연결표 항목. dB(A)
+cooling_type,냉각 방식,Cooling type; Cooling method; 냉각 방식; Cooling system,= (문자열),강점 아님,제품 데이터별 냉각 방식 비교
+insulation_medium,절연 방식,Insulation medium; Insulating medium; 절연유; 절연 방식,= (문자열),강점 아님,유입·건식·가스 절연 등 분류
+warranty_period,보증기간,Warranty period; Warranty; 보증기간,≥,클수록 좋음,개월 단위로 비교
+std_lead_time,표준 납기,Standard lead time; Delivery time; 납기; Lead time,≤,작을수록 좋음,주 단위로 비교
+minimum_order_quantity,최소 주문 수량,Minimum order quantity; MOQ; 최소 주문 수량,≤,작을수록 좋음,수량 단위로 비교
+list_price,목록 가격,List price; Price; 가격; 단가,≤,작을수록 좋음,USD 단위로 비교
+maintenance_period,유지보수 기간,Maintenance period; Service period; 유지보수 기간,≥,클수록 좋음,개월 단위로 비교
+service_life,설계 수명,Service life; Design life; 설계 수명; 사용 수명,≥,클수록 좋음,년 단위로 비교

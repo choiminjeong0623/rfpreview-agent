@@ -1,0 +1,80 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: rfp
+      POSTGRES_PASSWORD: rfp
+      POSTGRES_DB: rfp
+    ports:
+      # 맥·윈도우에 PostgreSQL이 따로 켜져 있어도 겹치지 않게 내 컴퓨터 쪽은 5433번을 쓴다
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rfp -d rfp"]
+      interval: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://rfp:rfp@db:5432/rfp
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.8-flash}
+      # AI 사용 방식 (add-ai-mode): gemini(외부 전송) | local(사내 주소) | off(규칙만, 키가 있어도 안 보냄)
+      RFP_AI_MODE: ${RFP_AI_MODE:-gemini}
+      RFP_LOCAL_LLM_URL: ${RFP_LOCAL_LLM_URL:-}
+      RFP_LOCAL_LLM_MODEL: ${RFP_LOCAL_LLM_MODEL:-}
+      RFP_LOCAL_LLM_KEY: ${RFP_LOCAL_LLM_KEY:-}
+      RFP_LOCAL_EMBED_MODEL: ${RFP_LOCAL_EMBED_MODEL:-}
+      RFP_LLM_WORKERS: ${RFP_LLM_WORKERS:-4}
+      RFP_LLM_TIMEOUT_S: ${RFP_LLM_TIMEOUT_S:-120}
+      RFP_DOC_WORKERS: ${RFP_DOC_WORKERS:-2}
+      RFP_OCR: ${RFP_OCR:-on}
+      # 협조 요청 메일 (update-role-handoff-mail). 기본은 Mailpit이라 밖으로 나가지 않는다
+      RFP_SMTP_HOST: ${RFP_SMTP_HOST:-mailpit}
+      RFP_SMTP_PORT: ${RFP_SMTP_PORT:-1025}
+      RFP_SMTP_USER: ${RFP_SMTP_USER:-}
+      RFP_SMTP_PASSWORD: ${RFP_SMTP_PASSWORD:-}
+      RFP_MAIL_FROM: ${RFP_MAIL_FROM:-rfp-agent@example.com}
+      RFP_MAIL_COST: ${RFP_MAIL_COST:-cost@example.com}
+      RFP_MAIL_QUALITY: ${RFP_MAIL_QUALITY:-quality@example.com}
+      RFP_MAIL_SALES: ${RFP_MAIL_SALES:-sales@example.com}
+    volumes:
+      # 화면에서 올린 docx를 data/private/uploads에 저장하므로 쓰기 가능하게 붙인다
+      - ./data/private:/app/data/private
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  frontend:
+    image: node:22-slim
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev -- --port 5173"
+    environment:
+      VITE_API_TARGET: http://backend:8000
+      # 윈도우·맥에서 고친 파일을 컨테이너 안 개발 서버가 알아채게 한다 (vite.config.ts)
+      VITE_USE_POLLING: "1"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+  # 확인용 메일 서버: 시스템이 보낸 협조 요청 메일을 http://localhost:8025 에서 본다 (밖으로 보내지 않음)
+  mailpit:
+    image: axllent/mailpit:v1.21.8
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+volumes:
+  pgdata:

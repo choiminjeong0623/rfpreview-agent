@@ -1,0 +1,95 @@
+/* 디자인 토큰 (add-ui-foundation). 값은 목업 v4.96 CSS 그대로이고 이름만 붙였다.
+   목업 CSS(mockup/*.css)는 그대로 두고, 우리가 쓴 CSS·화면 코드는 색을 직접 쓰지 않고 이 변수만 쓴다.
+   검사: scripts/check-tokens.mjs (npm run lint). 쓰는 법: docs/screens/_디자인.md 2장, _프런트원칙.md 5장 */
+:root {
+  /* 주 색 · 링크 */
+  --c-navy: #0A1E5A;          /* 주 버튼, 탭 밑줄, 왼쪽 메뉴 */
+  --c-navy-press: #1B3275;
+  --c-navy-deep: #0C2468;     /* 메뉴 바탕 위 */
+  --c-navy-darker: #08184A;   /* 메뉴 바탕 아래 */
+  --c-link: #0569A0;          /* 링크, 정보 */
+  --c-link-press: #04507A;
+  --c-link-strong: #175CD3;
+  --c-brand-deep: #003478;
+
+  /* 글자 */
+  --c-text: #1F2937;          /* 본문 */
+  --c-text-2: #344054;        /* 진한 보조 */
+  --c-text-3: #475467;        /* 보조 */
+  --c-muted: #667085;         /* 흐림 */
+  --c-disabled: #98A2B3;      /* 꺼짐 */
+  --c-white: #fff;
+
+  /* 선 · 바탕 */
+  --c-line: #DCE3EC;          /* 표·상자 테두리 */
+  --c-line-strong: #C3CDDA;
+  --c-line-soft: #EEF2F6;     /* 표 줄 사이 */
+  --c-line-grey: #EAECF0;
+  --c-line-pale: #EEF1F5;
+  --c-line-blue: #E3EAF4;
+  --c-bg-page: #F7F9FC;       /* 화면 바탕, 표 머리 */
+  --c-bg-hover: #F2F5FA;      /* 마우스 올림 */
+  --c-bg-selected: #EDF3FA;   /* 고른 줄 */
+  --c-bg-unread: #F7FAFE;
+  --c-bg-soft: #F8FAFC;
+  --c-bg-info: #EFF8FF;
+  --c-bg-blue: #E8F1FB;
+  --c-bg-grey: #F2F4F7;
+  --c-bar: #E4E9F0;           /* 진행 막대 바탕 */
+
+  /* 상태 (글자 / 바탕) */
+  --c-red: #B42318;      --c-red-bg: #FEF3F2;    --c-red-line: #FECDCA;   --c-red-dot: #F97066;
+  --c-orange: #B54708;   --c-orange-bg: #FFFAEB; --c-orange-line: #FEDF89; --c-orange-mid: #DC6803; --c-orange-dot: #FDB022;
+  --c-green: #067647;    --c-green-bg: #ECFDF3;  --c-green-line: #ABEFC6; --c-green-deep: #05603A; --c-green-pale: #D1FADF; --c-green-dot: #47CD89;
+  --c-grey: #475467;     --c-grey-bg: #F2F4F7;
+  --c-blue: #0569A0;     --c-blue-bg: #EDF3FA;
+  --c-purple: #5925DC;
+
+  /* 둥글기 */
+  --r-xs: 2px;
+  --r-sm: 4px;
+  --r-md: 6px;           /* 버튼·입력 */
+  --r-lg: 8px;           /* 상자·창 */
+  --r-xl: 12px;
+  --r-pill: 999px;
+
+  /* 간격 (4px 단계) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+
+  /* 글자 크기 (.fs-s와 같음) */
+  --t-title: 24px;
+  --t-h2: 18px;
+  --t-h3: 16px;
+  --t-body: 14px;
+  --t-sm: 13px;
+  --t-xs: 12px;
+  --t-2xs: 11px;
+
+  /* 높이 */
+  --h-control: 36px;     /* 버튼·입력 */
+  --h-control-sm: 28px;
+  --h-header: 64px;
+
+  /* 그림자 */
+  --sh-card: 0 1px 1px rgba(16,24,40,.06);
+  --sh-pop: 0 12px 32px rgba(16,24,40,.16);       /* 겹창·알림 */
+  --sh-toast: 0 8px 24px rgba(16,24,40,.24);
+  --sh-focus: 0 0 0 3px rgba(5,105,160,.22);
+  --c-overlay: rgba(16,24,40,.45);                /* 창 뒤 막 */
+  --c-overlay-strong: rgba(16,24,40,.48);
+  --c-shade: rgba(16,24,40,.12);
+  --c-shade-strong: rgba(16,24,40,.24);
+  --c-shade-pop: rgba(16,24,40,.16);
+
+  /* 겹침 순서 */
+  --z-pop: 120;
+  --z-modal: 150;
+  --z-toast: 170;
+}

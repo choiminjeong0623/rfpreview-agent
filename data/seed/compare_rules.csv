@@ -1,0 +1,40 @@
+﻿대상 표,항목 번호,원문 항목명,표준 항목키,단위,요구값 형태,비교 방향,강점 방향,처리,비고(사례)
+파일1 TS-115-GIS (115 kV GIS),1,Manufacturer’s name,manufacturer,,빈칸,작성,,보증값 작성,
+파일1 TS-115-GIS (115 kV GIS),2,Standard,standard,,문장,포함,,규격 번호 비교 → 준수/확인 필요,
+파일1 TS-115-GIS (115 kV GIS),3,Type designation and type ref or model number,model_number,,빈칸,작성,,보증값 작성,
+파일1 TS-115-GIS (115 kV GIS),4,Country of Origin,country_of_origin,,빈칸,작성,,보증값 작성,
+파일1 TS-115-GIS (115 kV GIS),5,Type of Construction,—,,문장,AI 읽기,,AI 후보 → 사람 확인,Double busbar 등 구성 설명
+파일1 TS-115-GIS (115 kV GIS),6,System neutral earthing,—,,문장,=,,계통 조건 확인용 (제품 판정 아님),
+파일1 TS-115-GIS (115 kV GIS),7,Nominal system voltage,nominal_voltage,kV,숫자,=,,계통 확인용,
+파일1 TS-115-GIS (115 kV GIS),8,Rated voltage,rated_voltage_um,kV,숫자,≥,,제품 Um ≥ 125 → 준수,"125는 표준값 아님(사례 13, 질의 후보)"
+파일1 TS-115-GIS (115 kV GIS),9,Type of Phase Design,—,,문장,=,,3상 일괄/단상 확인,
+파일1 TS-115-GIS (115 kV GIS),10,Rated normal current - Main busbar,rated_current,A,숫자,≥,,"제품 ≥ 3,000 → 준수",사례 3
+파일1 TS-115-GIS (115 kV GIS),11,Rated frequency,rated_frequency,Hz,숫자,=,,제품 지원 주파수에 50 포함 → 준수,사례 3
+파일1 TS-115-GIS (115 kV GIS),12,Rated lightning impulse withstand voltage (peak),lightning_impulse,kV,숫자,≥,,,
+파일1 TS-115-GIS (115 kV GIS),13,Rated switching withstand voltage,switching_impulse,kV,숫자,≥,,제품 값 없으면 확인 필요,300 kV 미만에는 해당 없음 가능(사례 2)
+파일1 TS-115-GIS (115 kV GIS),14,Rated short-duration power-frequency withstand voltage (rms),power_freq_withstand,kV,숫자,≥,,,
+파일1 TS-115-GIS (115 kV GIS),15,Power-frequency withstand voltage at atmospheric pressure,power_freq_withstand,kV,계산식,≥,,1.1×125/√3 ≈ 79.4 계산 후 비교; 제품 값 없으면 확인 필요,
+파일1 TS-115-GIS (115 kV GIS),16,"Rated short-time withstand current, (1 sec.)",short_time_current,kA,숫자+시간,≥ (+시간),,A-3: 제품 시간 ≥ 1s면 준수,사례 1
+파일1 TS-115-GIS (115 kV GIS),17,Rated peak withstand current,peak_current,kA,숫자,≥,,⑦ B-1: 40×2.5=100 검산(Should),사례 1
+파일1 TS-115-GIS (115 kV GIS),18,Internal arc enclosure burn-through time,—,sec,숫자,≥,,제품 값 없으면 확인 필요,
+파일1 TS-115-GIS (115 kV GIS),19,Annual leakage rate for each gas compartment,gas_leakage_rate,%/년,숫자+기호,<,,"A-4: 제품이 ""≤0.5""면 경계값 → 확인 필요",사례 1
+파일1 TS-115-GIS (115 kV GIS),20,Allowed temperature rise of GIS enclosure (하위 3줄),—,K,숫자,≤,,제품 값 없으면 확인 필요,
+파일1 TS-115-GIS (115 kV GIS),21,Partial discharge (하위 6줄),partial_discharge,pC,숫자+기호,< / ≤ / >,,원문 기호 그대로; 개시 전압(>1.1 p.u.)은 ≥,
+파일1 TS-115-GIS (115 kV GIS),22~24,Control wire / motor / transformer test voltage,—,V/1min,숫자,≥,,제품 값 없으면 확인 필요,
+파일1 TS-115-GIS (115 kV GIS),25,Material of GIS enclosure,—,,문장,포함,,AI 후보 → 사람 확인,
+파일1 TS-115-GIS (115 kV GIS),26,Protection class of enclosure,ip_rating,,문장,≥,,IP54 이상이면 준수,
+파일1 TS-115-GIS (115 kV GIS),27,Size of Enclosure,—,,위임(-),작성,,보증값 작성,
+파일1 TS-SG (22 kV 수배전반) III 차단기,1,Type,—,,문장,=,,"Vacuum, 3-poles 확인",
+파일1 TS-SG (22 kV 수배전반) III 차단기,2,Rated voltage,rated_voltage_um,kV,숫자,≥,,24 kV,
+파일1 TS-SG (22 kV 수배전반) III 차단기,4,Short-duration power frequency withstand voltage for 60 sec,power_freq_withstand,kVrms,숫자,≥,,50 kV,
+파일1 TS-SG (22 kV 수배전반) III 차단기,4,Lightning impulse withstand voltage at 1.2/50 μs,lightning_impulse,kVp,숫자,≥,,125 kV,
+파일1 TS-SG (22 kV 수배전반) III 차단기,5,Rated frequency,rated_frequency,Hz,숫자,=,,50 Hz,
+파일1 TS-SG (22 kV 수배전반) III 차단기,5-1),Continuous current - Bus section / Incoming / Outgoing,rated_current,A,숫자(두 값),≥,,"3,000/2500 → 질의 후보(어느 값인지), 600/630 → 630 기준",VCB 정격 행 3개로 판정
+파일1 TS-SG (22 kV 수배전반) III 차단기,5-2),Short circuit breaking current (2seconds),breaking_current,kA,숫자+시간,≥ (+시간),,A-3 시간 규칙,
+파일1 TS-SG (22 kV 수배전반) III 차단기,5-3),Rated peak withstand current,peak_current,kA,숫자,≥,,2.5×25=62.5 vs 63 → 확인 필요(반올림),⑦ B-1
+파일1 TS-SG (22 kV 수배전반) III 차단기,5-4),Maximum interrupting time,breaking_time,cycles,숫자,≤,,3 ≤ 5 → 준수,
+파일1 TS-SG (22 kV 수배전반) III 차단기,6,Operating mechanism type,—,,문장,=,,Spring-charged motor operated,
+파일1 TS-SG (22 kV 수배전반) III 차단기,6,Mechanism voltage / Control circuit voltage,control_voltage,Vdc,숫자+허용범위,포함,,110 V DC 지원 여부,
+파일1 TS-SG (22 kV 수배전반) III 차단기,6,Number of trip coil,trip_coil_count,No.,숫자,≥,,2 → 2차 트립 코일 옵션 필요,
+파일1 TS-SG (22 kV 수배전반) III 차단기,7,Rated operation sequences,operating_sequence,,문장,= (문자열),,CO-180s-CO vs 카탈로그 표기 → 확인 필요,
+파일1 TS-SG (22 kV 수배전반) III 차단기,11,Weight of complete 3-phase breaker,weight,kg,빈칸,작성,,보증값 작성 (weight_kg),

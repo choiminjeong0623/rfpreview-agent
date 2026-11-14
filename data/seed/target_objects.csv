@@ -1,0 +1,28 @@
+term,target_object,parent_object
+gis,GIS,
+가스절연개폐장치,GIS,
+gas insulated switchgear,GIS,
+차단기,차단기,GIS
+circuit breaker,차단기,GIS
+단로기,단로기,GIS
+disconnector,단로기,GIS
+접지개폐기,접지개폐기,GIS
+earthing switch,접지개폐기,GIS
+변류기,변류기,GIS
+current transformer,변류기,GIS
+계기용변압기,계기용변압기,GIS
+voltage transformer,계기용변압기,GIS
+케이블,케이블,
+cable,케이블,
+ups,UPS,
+무정전전원,UPS,
+변압기,변압기,
+transformer,변압기,
+배전반,배전반,
+switchgear,배전반,
+전동기,전동기,
+motor,전동기,
+조작반,조작반,
+control panel,조작반,
+전선,케이블,
+조작감시반,조작반,

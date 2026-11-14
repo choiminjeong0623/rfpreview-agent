@@ -1,0 +1,20 @@
+번호,text,expected,value,unit,note
+1,The switchgear shall comply with IEC 62271-203 and IEC 62271-1.,REQUIREMENT,,,규격 준수
+2,The maximum ambient temperature for the GIS enclosure shall be 40 °C.,REQUIREMENT,40,°C,
+3,Cable current ratings shall be based on an ambient temperature of 50 °C.,REQUIREMENT,50,°C,케이블 기준 온도(주위 온도와 다름)
+4,UPS : 5kVA (수상전기실) 10kVA (154kV 변전소),REQUIREMENT,5,kVA,장소가 다른 값 두 개 중 첫째
+5,"The supply shall include all accessories, including but not limited to cables, supports and earthing materials.",REQUIREMENT,,,
+6,Any item not listed in the deviation list shall be deemed to be accepted by the Vendor.,REQUIREMENT,,,
+7,Rated voltage,REQUIREMENT,170,kV,TS-154-GIS 1
+8,"Rated short-time withstand current, (1 sec.)",REQUIREMENT,40,kA,TS-154-GIS 2
+9,Annual leakage rate for each gas compartment,REQUIREMENT,<0.5,%,"TS-154-GIS 3, 값은 원문 글자로 비교"
+10,Rated voltage of auxiliary circuits,REQUIREMENT,,,TS-154-GIS 4 [REDACTED] → 값 없음(CR-05)
+11,Rated normal current,REQUIREMENT,3150,A,TS-154-GIS 5
+12,- Feeder bays,REQUIREMENT,2000,A,TS-154-GIS 5 하위 항목
+13,- Bus coupler,REQUIREMENT,3150,A,TS-154-GIS 5 하위 항목
+14,Rated peak withstand current,REQUIREMENT,100,kA,TS-154-GIS 6 계산식 2.5 x 40
+15,Type Test Report,REQUIREMENT,Required,,TS-154-GIS 7
+16,또 가스의 경우는 가스 누설량이 연간 1 % 이내로 되어야 한다.,REQUIREMENT,1,%,차단기 가스 누설
+17,Any item not listed in the deviation list shall be deemed to be accepted by the Vendor.,BLANKET,,,포괄 조항
+18,"The supply shall include all accessories, including but not limited to cables, supports and earthing materials.",OPEN_SCOPE,,,범위 모호
+19,또 가스의 경우는 가스 누설량이 연간 1 % 이내로 되어야 한다.,VALUE_MISMATCH,,,표 <0.5 %(GIS)와 문장 1 %(차단기)
