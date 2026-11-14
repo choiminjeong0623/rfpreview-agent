@@ -1,0 +1,63 @@
+# 프롬프트 평가 (add-prompt-eval, FR-18·NFR-13).
+# 프롬프트가 든 파일(llm/tasks.py)이나 공개 평가셋이 바뀐 PR에서만 공개 평가셋을 Gemini로 한 번 평가한다.
+# 결과 표는 작업 요약에 남기고, 저장소의 기준선 파일(data/eval/baseline.json)과 비교해 회귀면 실패한다.
+# 저장소 비밀값 GEMINI_API_KEY가 없으면(포크 PR 포함) "평가하지 않음"으로 건너뛴다(실패 아님).
+name: Prompt eval
+
+on:
+  pull_request:
+    paths:
+      - backend/src/rfp_agent/llm/tasks.py
+      - data/eval/**
+      - .github/workflows/prompt-eval.yml
+
+jobs:
+  prompt-eval:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: rfp
+          POSTGRES_PASSWORD: rfp
+          POSTGRES_DB: rfp
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U rfp" --health-interval 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      RFP_AI_MODE: gemini
+      DATABASE_URL: postgresql://rfp:rfp@localhost:5432/rfp
+    steps:
+      - name: 키 확인
+        id: key
+        working-directory: .
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+            echo "## 프롬프트 평가" >> "$GITHUB_STEP_SUMMARY"
+            echo "AI 키(GEMINI_API_KEY)가 없어 평가하지 않음" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.key.outputs.has_key == 'true'
+      - uses: astral-sh/setup-uv@v6
+        if: steps.key.outputs.has_key == 'true'
+      - if: steps.key.outputs.has_key == 'true'
+        run: uv sync --frozen && uv run rfp-db migrate
+      - name: 공개 평가셋 평가 (반복 1회, 비용 상한 그대로)
+        if: steps.key.outputs.has_key == 'true'
+        run: |
+          set +e
+          uv run rfp-db eval-prompts --set public --baseline-file ../data/eval/baseline.json \
+            --report "$RUNNER_TEMP/prompt-eval.md"
+          code=$?
+          set -e
+          if [ -f "$RUNNER_TEMP/prompt-eval.md" ]; then
+            cat "$RUNNER_TEMP/prompt-eval.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit $code

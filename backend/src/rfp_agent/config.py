@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     rfp_local_llm_model: str | None = None
     rfp_local_llm_key: str | None = None
     rfp_local_embed_model: str | None = None    # 없으면 사내 방식에서 뜻 찾기 건너뜀
+    # 프롬프트 평가 한 번의 비용 상한(원, 팀 가정 단가로 어림). 넘으면 --yes 없이는 시작하지 않음
+    rfp_eval_max_krw: int = 500
     migrations_dir: Path = REPO_ROOT / "db" / "migrations"
     seed_dir: Path = REPO_ROOT / "data" / "seed"
     # RFP 원문처럼 저장소에 올리지 않는 자료 (data/private/README.md)

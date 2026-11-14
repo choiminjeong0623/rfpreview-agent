@@ -1,0 +1,34 @@
+{
+  "classify": {
+    "version": "c2",
+    "sha256": "74159955c0fe5682"
+  },
+  "label": {
+    "version": "l2",
+    "sha256": "3ba0e289eea15667"
+  },
+  "type": {
+    "version": "t2",
+    "sha256": "1421468d4f1659af"
+  },
+  "risk": {
+    "version": "r2",
+    "sha256": "252a4ee32f9afd9d"
+  },
+  "verify": {
+    "version": "v2",
+    "sha256": "e29dc34101b846ab"
+  },
+  "draft": {
+    "version": "d2",
+    "sha256": "de2fa2039b962efe"
+  },
+  "handoff": {
+    "version": "h2",
+    "sha256": "08d31a534da95ac4"
+  },
+  "assistant": {
+    "version": "a3",
+    "sha256": "d14f4e28f62a8064"
+  }
+}

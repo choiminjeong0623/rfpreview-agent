@@ -99,8 +99,12 @@ class RunContext:
 
     @property
     def processing_key(self) -> str:
-        """문서 처리 결과를 다시 쓸 수 있는 조건: 사전 판 + 처리 코드 판 + AI 모델·프롬프트 판."""
-        ai = f"{self.llm.model}/{tasks.PROMPT_VERSION}" if self.llm else "rule"
+        """문서 처리 결과를 다시 쓸 수 있는 조건: 사전 판 + 처리 코드 판 + AI 모델·프롬프트 판.
+
+        프롬프트 판은 문서 처리에 쓰는 역할(분류·구분·유형)만 본다. 위험 설명 등 뒤 단계 역할의
+        판이 바뀌어도 문서는 다시 쓴다 (add-prompt-eval).
+        """
+        ai = f"{self.llm.model}/{tasks.doc_prompt_tag()}" if self.llm else "rule"
         # OCR 엔진 판이 바뀌면 같은 파일도 새로 분석한다 (add-ocr, CR-11)
         return f"{self.version}-{code_version()}-{ai}-{ocr.version_tag()}"
 
@@ -115,7 +119,7 @@ def create_run(conn: psycopg.Connection, version: str, llm: LLM | None,
            VALUES (%s, 'PROCESSING', %s, %s, %s) RETURNING run_id""",
         (started_by, version, llm.model if llm else None,
          Jsonb({"step": "created", "code_version": code_version(),
-                "prompt_version": tasks.PROMPT_VERSION})),
+                "prompt_versions": tasks.prompt_versions()})),
     ).fetchone()[0]
     conn.commit()
     return run_id

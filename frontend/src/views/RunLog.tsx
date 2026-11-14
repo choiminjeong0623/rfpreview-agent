@@ -39,6 +39,26 @@ function Steps({ r }: { r: RunLogItem }) {
   )
 }
 
+const ROLE_NAMES: Record<string, string> = {
+  classify: '문서 분류', label: '문장 구분', type: '유형', risk: '위험 설명',
+  verify: '검증', draft: '문장 초안', handoff: '협조 질문', assistant: '검토 도우미',
+}
+
+/** 프롬프트 판 (add-prompt-eval): 역할별 판, 예전 실행은 전체 판 하나 */
+function Prompts({ r }: { r: RunLogItem }) {
+  if (!r.llm_model) return null
+  const roles = r.prompt_versions ? Object.entries(r.prompt_versions) : []
+  if (!roles.length && !r.prompt_version) return null
+  return (
+    <p className="en" style={{ margin: '8px 0 0' }}>
+      <b>프롬프트 판</b>{' '}
+      {roles.length
+        ? roles.map(([role, v]) => `${ROLE_NAMES[role] ?? role} ${v}`).join(' · ')
+        : `전체 ${r.prompt_version} (역할별 판 도입 전)`}
+    </p>
+  )
+}
+
 /** 흐름 기록 (add-flow-history, C2): 저장된 흐름 상태로 단계마다 바뀐 건수·사람 동작·멈춘 자리. 보기만 한다 */
 function Flow({ runId }: { runId: number }) {
   const flow = useLoad(() => api.runFlow(runId), [runId])
@@ -173,7 +193,7 @@ export function RunLog() {
                   <td style={{ textAlign: 'right' }}>{num(r.judgments)}</td>
                   <td style={{ textAlign: 'right' }}>{r.retries}</td>
                 </tr>
-                {open === r.run_id && <tr className="rlopen"><td colSpan={12}><Steps r={r} /><Flow runId={r.run_id} /></td></tr>}
+                {open === r.run_id && <tr className="rlopen"><td colSpan={12}><Steps r={r} /><Prompts r={r} /><Flow runId={r.run_id} /></td></tr>}
               </Fragment>
             ))}
           </tbody>

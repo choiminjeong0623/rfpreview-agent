@@ -5285,6 +5285,97 @@
         }
       }
     },
+    "/api/prompt-evals": {
+      "get": {
+        "tags": [
+          "프롬프트 평가"
+        ],
+        "summary": "Evals",
+        "operationId": "evals_api_prompt_evals_get",
+        "parameters": [
+          {
+            "name": "set",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Set"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromptEvalList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prompt-evals/{eval_id}": {
+      "get": {
+        "tags": [
+          "프롬프트 평가"
+        ],
+        "summary": "Detail",
+        "operationId": "detail_api_prompt_evals__eval_id__get",
+        "parameters": [
+          {
+            "name": "eval_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Eval Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromptEvalDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/health": {
       "get": {
         "summary": "Health",
@@ -13167,6 +13258,435 @@
         ],
         "title": "ProductUse"
       },
+      "PromptEvalCount": {
+        "properties": {
+          "num": {
+            "type": "integer",
+            "title": "Num"
+          },
+          "den": {
+            "type": "integer",
+            "title": "Den"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "num",
+          "den",
+          "value"
+        ],
+        "title": "PromptEvalCount",
+        "description": "정답 출처 하나의 지표 재료 (add-prompt-eval). value는 % (평균 도구 호출 수만 평균)."
+      },
+      "PromptEvalDetail": {
+        "properties": {
+          "run": {
+            "$ref": "#/components/schemas/PromptEvalRun"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PromptEvalItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "run",
+          "items"
+        ],
+        "title": "PromptEvalDetail"
+      },
+      "PromptEvalItem": {
+        "properties": {
+          "repeat_no": {
+            "type": "integer",
+            "title": "Repeat No"
+          },
+          "item_id": {
+            "type": "string",
+            "title": "Item Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "made_by": {
+            "type": "string",
+            "enum": [
+              "HUMAN",
+              "CODE",
+              "CLAUDE_DRAFT"
+            ],
+            "title": "Made By"
+          },
+          "ok": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ok"
+          },
+          "answer": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "repeat_no",
+          "item_id",
+          "role",
+          "made_by",
+          "ok",
+          "answer",
+          "error"
+        ],
+        "title": "PromptEvalItem"
+      },
+      "PromptEvalList": {
+        "properties": {
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/PromptEvalRun"
+            },
+            "type": "array",
+            "title": "Runs"
+          },
+          "latest_by_model": {
+            "items": {
+              "$ref": "#/components/schemas/PromptEvalRun"
+            },
+            "type": "array",
+            "title": "Latest By Model"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "runs",
+          "latest_by_model"
+        ],
+        "title": "PromptEvalList",
+        "description": "평가 기록(최신순)과 평가셋·모델마다 가장 최근 끝난 평가 (모델 비교, NFR-07)."
+      },
+      "PromptEvalMetric": {
+        "properties": {
+          "by_source": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PromptEvalCount"
+            },
+            "propertyNames": {
+              "enum": [
+                "HUMAN",
+                "CODE",
+                "CLAUDE_DRAFT",
+                "ALL"
+              ]
+            },
+            "type": "object",
+            "title": "By Source"
+          },
+          "basis": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "HUMAN",
+                  "CODE",
+                  "CLAUDE_DRAFT",
+                  "ALL"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basis"
+          },
+          "weak": {
+            "type": "boolean",
+            "title": "Weak"
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min"
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max"
+          },
+          "mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean"
+          },
+          "repeats": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Repeats"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "by_source",
+          "basis",
+          "weak",
+          "min",
+          "max",
+          "mean",
+          "repeats"
+        ],
+        "title": "PromptEvalMetric",
+        "description": "지표 하나: 출처별 값, 기준 출처(사람 → 코드 → Claude 초안), 반복 최소·최대·평균."
+      },
+      "PromptEvalRun": {
+        "properties": {
+          "eval_id": {
+            "type": "integer",
+            "title": "Eval Id"
+          },
+          "set_name": {
+            "type": "string",
+            "title": "Set Name"
+          },
+          "set_version": {
+            "type": "string",
+            "title": "Set Version"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "ai_mode": {
+            "type": "string",
+            "title": "Ai Mode"
+          },
+          "prompt_versions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Prompt Versions"
+          },
+          "code_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code Version"
+          },
+          "repeat": {
+            "type": "integer",
+            "title": "Repeat"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DONE",
+              "SKIPPED",
+              "FAILED"
+            ],
+            "title": "Status"
+          },
+          "skip_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skip Reason"
+          },
+          "metrics": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/PromptEvalMetric"
+              },
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Metrics"
+          },
+          "injection_effect": {
+            "type": "integer",
+            "title": "Injection Effect"
+          },
+          "calls": {
+            "type": "integer",
+            "title": "Calls"
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens"
+          },
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens"
+          },
+          "cost_krw": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Krw"
+          },
+          "seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seconds"
+          },
+          "is_baseline": {
+            "type": "boolean",
+            "title": "Is Baseline"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "run_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "eval_id",
+          "set_name",
+          "set_version",
+          "model",
+          "ai_mode",
+          "prompt_versions",
+          "code_version",
+          "repeat",
+          "status",
+          "skip_reason",
+          "metrics",
+          "injection_effect",
+          "calls",
+          "input_tokens",
+          "output_tokens",
+          "cost_krw",
+          "seconds",
+          "is_baseline",
+          "note",
+          "run_by",
+          "created_at"
+        ],
+        "title": "PromptEvalRun",
+        "description": "프롬프트 평가 한 번 (add-prompt-eval, FR-18). 비용은 팀 가정 단가로 어림."
+      },
       "Proposal": {
         "properties": {
           "point_id": {
@@ -15641,6 +16161,31 @@
             "type": "integer",
             "title": "Lines Reprocessed",
             "default": 0
+          },
+          "prompt_versions": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Versions"
+          },
+          "prompt_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Version"
           },
           "explanations_unverified": {
             "type": "integer",

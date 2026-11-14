@@ -1106,6 +1106,70 @@ export type ProductUse = {
   due_date?: string | null
 }
 
+/** 정답 출처 하나의 지표 재료 (add-prompt-eval). value는 % (평균 도구 호출 수만 평균). */
+export type PromptEvalCount = {
+  num: number
+  den: number
+  value: number | null
+}
+
+export type PromptEvalDetail = {
+  run: PromptEvalRun
+  items: PromptEvalItem[]
+}
+
+export type PromptEvalItem = {
+  repeat_no: number
+  item_id: string
+  role: string
+  made_by: 'HUMAN' | 'CODE' | 'CLAUDE_DRAFT'
+  ok: boolean | null
+  answer: Record<string, unknown> | null
+  error: string | null
+}
+
+/** 평가 기록(최신순)과 평가셋·모델마다 가장 최근 끝난 평가 (모델 비교, NFR-07). */
+export type PromptEvalList = {
+  runs: PromptEvalRun[]
+  latest_by_model: PromptEvalRun[]
+}
+
+/** 지표 하나: 출처별 값, 기준 출처(사람 → 코드 → Claude 초안), 반복 최소·최대·평균. */
+export type PromptEvalMetric = {
+  by_source: Record<string, PromptEvalCount>
+  basis: 'HUMAN' | 'CODE' | 'CLAUDE_DRAFT' | 'ALL' | null
+  weak: boolean
+  min: number | null
+  max: number | null
+  mean: number | null
+  repeats: (number | null)[]
+}
+
+/** 프롬프트 평가 한 번 (add-prompt-eval, FR-18). 비용은 팀 가정 단가로 어림. */
+export type PromptEvalRun = {
+  eval_id: number
+  set_name: string
+  set_version: string
+  model: string | null
+  ai_mode: string
+  prompt_versions: Record<string, string>
+  code_version: string | null
+  repeat: number
+  status: 'DONE' | 'SKIPPED' | 'FAILED'
+  skip_reason: string | null
+  metrics: Record<string, Record<string, PromptEvalMetric>>
+  injection_effect: number
+  calls: number
+  input_tokens: number
+  output_tokens: number
+  cost_krw: number | null
+  seconds: number | null
+  is_baseline: boolean
+  note: string | null
+  run_by: string | null
+  created_at: string
+}
+
 export type Proposal = {
   point_id: number
   point_kind: 'MARGIN' | 'LOSS' | 'FIELD'
@@ -1439,6 +1503,8 @@ export type RunLogItem = {
   resumed_from?: string | null
   documents_reprocessed?: number
   lines_reprocessed?: number
+  prompt_versions?: Record<string, string> | null
+  prompt_version?: string | null
   explanations_unverified: number
   retries: number
   steps: RunStepTime[]

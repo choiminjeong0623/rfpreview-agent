@@ -37,6 +37,8 @@ def run_log(conn: psycopg.Connection, limit: int = 200) -> list[dict]:
                    r.retry_count AS retries,
                    COALESCE((r.graph_state->>'type_examples')::int, 0) AS type_examples,
                    r.graph_state->>'resumed_from' AS resumed_from,
+                   r.graph_state->'prompt_versions' AS prompt_versions,
+                   r.graph_state->>'prompt_version' AS prompt_version,
                    COALESCE((r.graph_state->>'documents_reprocessed')::int, 0)
                        AS documents_reprocessed,
                    COALESCE((r.graph_state->>'lines_reprocessed')::int, 0) AS lines_reprocessed,
