@@ -71,6 +71,23 @@ test('설정에 없는 capability·이어진 것이 없는 FR은 실패', () => 
   assert.ok(errors.some((e) => e.includes('FR-03에 이어진')))
 })
 
+// 명세 spec-verification "계획된 FR" (change add-prompt-eval)
+test('Scenario: 계획된 FR은 실패하지 않음', () => {
+  const x = input()
+  x.frs = [...x.frs, { id: 'FR-03', name: '셋', priority: 'Should' }]
+  x.config.fr['FR-03'] = { specs: [], planned: '명세서 v3 제안' }
+  const { text, errors } = build(x)
+  assert.deepEqual(errors, [])
+  assert.match(text, /\| FR-03 \| 셋 \| Should \| 계획됨: 명세서 v3 제안 \|/)
+})
+
+test('Scenario: 계획됨 표시가 남은 FR', () => {
+  const x = input()
+  x.config.fr['FR-01'] = { specs: ['cap-a'], planned: '진행 중' }
+  const { errors } = build(x)
+  assert.ok(errors.some((e) => e.includes('FR-01') && e.includes('계획됨 표시를 지우세요')), errors.join('\n'))
+})
+
 test('docstring 여러 줄의 Scenario와 줄 끝 —', () => {
   const t = parsePyTests('def test_b():\n    """Scenario: 가 ·\n    Scenario: 나 / 다 —\n    설명."""\n', 'x.py').map((x) => x.name)
   assert.deepEqual(t, ['가', '나', '다'])

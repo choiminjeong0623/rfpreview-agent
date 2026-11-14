@@ -122,7 +122,7 @@ export function build({ config, frs, specs, tests, screens, exists }) {
   const used = new Set()
   for (const [fr, v] of Object.entries(config.fr)) {
     if (!frs.some((f) => f.id === fr)) errors.push(`설정의 ${fr}가 명세서 FR 표에 없습니다`)
-    for (const c of v.specs) { used.add(c); if (!specs[c]) errors.push(`${fr}의 capability "${c}"가 openspec/specs에 없습니다`) }
+    for (const c of v.specs ?? []) { used.add(c); if (!specs[c]) errors.push(`${fr}의 capability "${c}"가 openspec/specs에 없습니다`) }
   }
   for (const [g, cs] of Object.entries(config.common)) for (const c of cs) { used.add(c); if (!specs[c]) errors.push(`공통 "${g}"의 capability "${c}"가 없습니다`) }
   for (const c of caps) if (!used.has(c)) errors.push(`capability "${c}"가 설정(fr·common)에 없습니다`)
@@ -150,7 +150,10 @@ export function build({ config, frs, specs, tests, screens, exists }) {
   for (const f of frs) {
     const n = (config.fr[f.id]?.specs ?? []).reduce((s, c) => s + (specs[c]?.length ?? 0), 0)
     const m = scrIds.filter((s) => config.screens[s].fr.includes(f.id)).reduce((s, x) => s + scrStat[x].rows.length, 0)
-    if (!n && !m) errors.push(`${f.id}에 이어진 시나리오·수용 기준이 하나도 없습니다`)
+    const planned = config.fr[f.id]?.planned
+    // 계획된 FR (add-prompt-eval): 명세서에 먼저 적고 스펙은 아직 없는 기능. 이어진 것이 생기면 표시를 지운다
+    if (planned && (n || m)) errors.push(`${f.id}에 시나리오가 이어졌습니다. 연결 설정의 계획됨 표시를 지우세요`)
+    else if (!planned && !n && !m) errors.push(`${f.id}에 이어진 시나리오·수용 기준이 하나도 없습니다`)
   }
 
   const allSc = caps.reduce((s, c) => s + capStat[c].rows.length, 0)
@@ -177,7 +180,7 @@ export function build({ config, frs, specs, tests, screens, exists }) {
     const ts = [...cs.flatMap((c) => capStat[c]?.rows.flatMap((r) => r.tests) ?? []),
       ...ss.flatMap((s) => scrStat[s].rows.flatMap((r) => r.tests)), ...flows.flatMap(linkOf)]
     const comps = [...new Set(ss.flatMap((s) => config.screens[s].components))].sort()
-    L.push(`| ${f.id} | ${f.name} | ${f.priority} | ${cs.map((c) => `\`${c}\` ${capStat[c]?.done ?? 0} / ${capStat[c]?.rows.length ?? 0}`).join('<br>') || '—'} | ${ss.map((s) => `${s} ${scrStat[s].done} / ${scrStat[s].rows.length}`).join('<br>') || '—'} | ${comps.map((c) => `\`${c}\``).join('<br>') || '—'} | ${uniqFiles(ts).map((x) => `\`${x}\``).join('<br>') || '—'}${flows.length ? `<br>핵심 흐름: ${flows.join(', ')}` : ''} |`)
+    L.push(`| ${f.id} | ${f.name} | ${f.priority} | ${cs.map((c) => `\`${c}\` ${capStat[c]?.done ?? 0} / ${capStat[c]?.rows.length ?? 0}`).join('<br>') || (config.fr[f.id]?.planned ? `계획됨: ${config.fr[f.id].planned}` : '—')} | ${ss.map((s) => `${s} ${scrStat[s].done} / ${scrStat[s].rows.length}`).join('<br>') || '—'} | ${comps.map((c) => `\`${c}\``).join('<br>') || '—'} | ${uniqFiles(ts).map((x) => `\`${x}\``).join('<br>') || '—'}${flows.length ? `<br>핵심 흐름: ${flows.join(', ')}` : ''} |`)
   }
   L.push('')
 
