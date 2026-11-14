@@ -152,6 +152,9 @@ def eval_prompts(set_name: str, repeat: int, baseline: bool, yes: bool, report_p
     from rfp_agent.pipeline import prompt_eval as pe
 
     settings = get_settings()
+    if (baseline or write_baseline_file) and repeat < pe.BASELINE_MIN_REPEAT:
+        sys.exit(f"기준선은 {pe.BASELINE_MIN_REPEAT}번 이상 반복해 만듭니다 "
+                 f"(--repeat {pe.BASELINE_MIN_REPEAT}).")
     try:
         evalset = pe.load_set(pe.find_set(set_name, settings))
     except pe.EvalError as exc:

@@ -35,22 +35,22 @@
 - [x] 4.8 `rfp-db eval-prompts --set 이름 [--repeat N] [--baseline] [--yes] [--report 경로] [--write-baseline-file]`
 - [x] 4.9 API `GET /api/prompt-evals?set=`(평가 기록, 모델별 최근), `GET /api/prompt-evals/{id}`(문항 결과), 스키마, `npm run gen:api`
 - [x] 4.10 설정 변수 `RFP_EVAL_MAX_KRW`: `config.py`, `.env.example`, `docker-compose.yml` 세 곳
-- [x] 4.11 테스트(FakeLLM): Scenario "사람 합의 유형 평가셋 평가", "호출 실패 문항", "문장 초안 검사 통과율", "정답 출처가 섞인 평가셋", "점수가 떨어진 새 판", "기준선 없음", "세 번 반복", "주입 영향 없음", "주입 영향 있음", "도우미 도구 사용 평가", "오픈 모델과 나란히", "상한을 넘는 평가", "키 없음"
+- [x] 4.11 테스트(FakeLLM): Scenario "사람 합의 유형 평가셋 평가", "호출 실패 문항", "문장 초안 검사 통과율", "정답 출처가 섞인 평가셋", "점수가 떨어진 새 판", "기준선 없음", "세 번 반복", "주입 영향 없음", "주입 영향 있음", "지시문 없는 판도 틀리면 주입 영향이 아님", "한 번 돌린 실행은 기준선이 되지 않음", "도우미 도구 사용 평가", "오픈 모델과 나란히", "상한을 넘는 평가", "키 없음"
 
 ## 5. CI
 
 - [x] 5.1 `.github/workflows/prompt-eval.yml`: 경로 거르기, 키 없으면 건너뜀, 작업 요약에 보고서, 기준선 파일과 비교해 회귀면 실패
-- [ ] 5.2 `data/eval/baseline.json` 만들기(로컬에서 Gemini로 공개 평가셋 1회, 기준선)
+- [x] 5.2 `data/eval/baseline.json` 만들기(로컬에서 Gemini로 공개 평가셋 1회, 기준선)
 - [x] 5.3 테스트: Scenario "프롬프트 파일을 바꾼 PR", "프롬프트와 무관한 PR" (워크플로 경로 거르기를 읽어 확인하는 도구 테스트)
 
 ## 6. 측정과 문서
 
-- [ ] 6.1 실제 측정 1회: 공개 평가셋을 Gemini 3.8 Flash로 3번 반복, 오픈 모델 1종(`local`, Ollama)으로 1번. 결과를 `docs/05-evaluation.md`에 "프롬프트 평가" 절로
-- [ ] 6.2 `docs/03-adr.md`에 ADR-009(평가를 직접 만든 이유와 대안), `docs/02-architecture.md` AI 역할 표에 프롬프트 판·평가 연결
-- [ ] 6.3 `docs/06-my-contribution.md`에 "팀 프로젝트 이후 개인 개선" 절, README "한눈에 보기" 성과 칸 갱신
-- [ ] 6.4 명세서 FR-18 상태 표시를 [제안] → 구현 완료로, 가안 숫자를 design 값으로
+- [x] 6.1 실제 측정 1회: 공개 평가셋을 Gemini 3.8 Flash로 3번 반복, 오픈 모델 1종(`local`, Ollama)으로 1번. 결과를 `docs/05-evaluation.md`에 "프롬프트 평가" 절로
+- [x] 6.2 `docs/03-adr.md`에 ADR-009(평가를 직접 만든 이유와 대안), `docs/02-architecture.md` AI 역할 표에 프롬프트 판·평가 연결
+- [x] 6.3 `docs/06-my-contribution.md`에 "팀 프로젝트 이후 개인 개선" 절, README "한눈에 보기" 성과 칸 갱신
+- [x] 6.4 명세서 FR-18 상태 표시를 [제안] → 구현 완료로, 가안 숫자를 design 값으로
 
 ## 7. 마무리
 
-- [ ] 7.1 AGENTS.md 7장 검사 전부(ruff·pytest·lint·check:api·check:trace·build·`openspec validate --all --strict`)
-- [ ] 7.2 `npx --yes @fission-ai/openspec@1.14.3 archive add-prompt-eval --yes`, `docs/추적_연결.json`의 FR-18을 `specs: ["prompt-evaluation"]`로, AGENTS.md change 표에 128번 줄(마이그레이션 0040), `npm run trace`
+- [x] 7.1 AGENTS.md 7장 검사 전부(ruff·pytest·lint·check:api·check:trace·build·`openspec validate --all --strict`)
+- [x] 7.2 `npx --yes @fission-ai/openspec@1.14.3 archive add-prompt-eval --yes`, `docs/추적_연결.json`의 FR-18을 `specs: ["prompt-evaluation"]`로, AGENTS.md change 표에 128번 줄(마이그레이션 0040), `npm run trace`

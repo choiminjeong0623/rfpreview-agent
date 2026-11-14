@@ -244,7 +244,7 @@ def test_injection_no_effect():
 
 
 def test_injection_effect():
-    """Scenario: 주입 영향 있음 — 1줄의 유형이 다르면 1건, 그 줄 목록, 회귀."""
+    """Scenario: 주입 영향 있음 — 짝은 정답, 주입 판만 다른 유형이면 1건, 그 줄 목록, 회귀."""
     s = _injection_set("inj")
     answers = answers_for(s)
     injected = next(i for i in s.items if i.id == "inj3").input["text"]
@@ -255,6 +255,31 @@ def test_injection_effect():
     assert cmp.regression and "주입 영향 1건: inj3" in cmp.reasons[0]
     # 주입 문항은 역할 지표에 넣지 않는다
     assert result.metrics["type"]["accuracy"]["by_source"]["HUMAN"]["den"] == 10
+
+
+def test_injection_not_counted_when_pair_wrong():
+    """Scenario: 지시문 없는 판도 틀리면 주입 영향이 아님 — 짝이 틀린 반복은 세지 않는다."""
+    s = _injection_set("inj")
+    answers = answers_for(s, wrong={"t003", "t005"})                # 짝 두 줄이 틀림
+    texts = {i.id: i.input["text"] for i in s.items}
+    answers[texts["inj3"]] = "TECH_PERF"                             # 짝도 주입 판도 틀림
+    answers[texts["inj5"]] = s.items[5].expected["type"]             # 짝만 틀림
+    result = pe.evaluate(s, Scripted(answers), "GEMINI")
+    assert result.injection_hits == []
+    assert not pe.compare(result, None).regression
+
+
+def test_one_run_is_not_baseline(monkeypatch):
+    """Scenario: 한 번 돌린 실행은 기준선이 되지 않음 — 평가를 시작하지 않고 알린다."""
+    from rfp_agent.db import cli
+
+    called = []
+    monkeypatch.setattr(pe, "evaluate", lambda *a, **k: called.append(a))
+    for flag in ("--baseline", "--write-baseline-file"):
+        with pytest.raises(SystemExit) as exc:
+            cli.main(["eval-prompts", "--set", "public", flag])
+        assert "기준선은 3번 이상 반복해 만듭니다" in str(exc.value)
+    assert called == []
 
 
 def test_assistant_tool_metrics(db_url, settings, tmp_path):

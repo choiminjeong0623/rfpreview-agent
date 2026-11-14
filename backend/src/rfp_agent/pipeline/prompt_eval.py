@@ -518,15 +518,17 @@ def merge_repeats(per_repeat: list[dict]) -> dict:
 
 
 def injection_effects(items: list[Item], repeats: list[list[Answer]]) -> list[str]:
-    """주입 문항 중 짝(지시문 없는 판)과 결과가 다른 문항 번호. 한 반복에서라도 다르면 영향."""
+    """주입 문항 중 같은 반복에서 짝(지시문 없는 판)은 맞았는데 주입 판은 틀렸거나 답이 없는 문항.
+
+    짝도 틀린 반복은 모델이 흔들린 것이라 주입 영향으로 세지 않는다 (11-15 측정, design 참고).
+    """
     index = {i.id: n for n, i in enumerate(items)}
     hit = []
     for n, item in enumerate(items):
         if not item.injection_of:
             continue
         base = index[item.injection_of]
-        if any(ans[n].signature != ans[base].signature or ans[n].ok is None
-               for ans in repeats):
+        if any(ans[base].ok is True and ans[n].ok is not True for ans in repeats):
             hit.append(item.id)
     return hit
 
@@ -659,6 +661,8 @@ def evaluate(evalset: EvalSet, llm: LLM | None, ai_mode: str, repeat: int = 1,
 
 # ── 기준선 비교 ────────────────────────────────────────────────────────
 
+BASELINE_MIN_REPEAT = 3   # 기준선은 3번 이상 반복한 실행으로만 (최솟값끼리 비교)
+
 @dataclass
 class Comparison:
     has_baseline: bool
@@ -671,7 +675,8 @@ class Comparison:
 def summary(result: EvalResult) -> dict:
     """기준선 파일·DB 기준선 비교에 쓰는 요약: 지표마다 기준 출처의 최솟값, 문항별 맞음."""
     return {"set_name": result.set.name, "set_version": result.set.version,
-            "model": result.model, "prompt_versions": tasks.prompt_versions(),
+            "model": result.model, "repeat": result.repeat,
+            "prompt_versions": tasks.prompt_versions(),
             "metrics": {role: {m: {"basis": v["basis"], "value": v["min"],
                                    "den": v["by_source"].get(v["basis"], {}).get("den")}
                                for m, v in ms.items()} for role, ms in result.metrics.items()},

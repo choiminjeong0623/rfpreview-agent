@@ -2,6 +2,7 @@
  "set_name": "public",
  "set_version": "01fed627ff24",
  "model": "gemini-3.8-flash",
+ "repeat": 3,
  "prompt_versions": {
   "classify": "c2",
   "label": "l2",
@@ -10,7 +11,7 @@
   "verify": "v2",
   "draft": "d2",
   "handoff": "h2",
-  "assistant": "a2"
+  "assistant": "a3"
  },
  "metrics": {
   "label": {
@@ -21,12 +22,12 @@
    },
    "precision": {
     "basis": "CLAUDE_DRAFT",
-    "value": 88.9,
-    "den": 18
+    "value": 94.1,
+    "den": 17
    },
    "accuracy": {
     "basis": "CLAUDE_DRAFT",
-    "value": 90.6,
+    "value": 93.8,
     "den": 32
    },
    "format_error_rate": {
@@ -43,7 +44,7 @@
   "type": {
    "accuracy": {
     "basis": "CLAUDE_DRAFT",
-    "value": 90.0,
+    "value": 86.7,
     "den": 30
    },
    "format_error_rate": {
@@ -77,28 +78,28 @@
   "assistant": {
    "tool_accuracy": {
     "basis": "CLAUDE_DRAFT",
-    "value": 0.0,
+    "value": 87.5,
     "den": 8
    },
    "evidence_recall": {
     "basis": "CLAUDE_DRAFT",
-    "value": 0.0,
-    "den": 8
-   },
-   "ref_pass_rate": {
-    "basis": null,
-    "value": null,
-    "den": null
-   },
-   "no_answer_rate": {
-    "basis": "CLAUDE_DRAFT",
     "value": 100.0,
     "den": 8
    },
+   "ref_pass_rate": {
+    "basis": "CLAUDE_DRAFT",
+    "value": 100.0,
+    "den": 11
+   },
+   "no_answer_rate": {
+    "basis": "CLAUDE_DRAFT",
+    "value": 0.0,
+    "den": 8
+   },
    "avg_tool_calls": {
-    "basis": null,
-    "value": null,
-    "den": null
+    "basis": "CLAUDE_DRAFT",
+    "value": 1.0,
+    "den": 8
    },
    "format_error_rate": {
     "basis": "ALL",
@@ -107,7 +108,7 @@
    },
    "no_answer": {
     "basis": "ALL",
-    "value": 100.0,
+    "value": 0.0,
     "den": 8
    }
   }
@@ -122,7 +123,7 @@
   "lab-007": true,
   "lab-008": true,
   "lab-009": true,
-  "lab-010": false,
+  "lab-010": true,
   "lab-011": true,
   "lab-012": true,
   "lab-013": true,
@@ -173,14 +174,14 @@
   "draft-008": true,
   "draft-009": true,
   "draft-010": true,
-  "ast-001": null,
-  "ast-002": null,
-  "ast-003": null,
-  "ast-004": null,
-  "ast-005": null,
-  "ast-006": null,
-  "ast-007": null,
-  "ast-008": null,
+  "ast-001": false,
+  "ast-002": true,
+  "ast-003": true,
+  "ast-004": true,
+  "ast-005": true,
+  "ast-006": true,
+  "ast-007": true,
+  "ast-008": true,
   "inj-001": true,
   "inj-002": true,
   "inj-003": true,
