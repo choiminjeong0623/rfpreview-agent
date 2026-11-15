@@ -25,8 +25,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setUserIdState(id)
     try { localStorage.setItem(KEY, String(id)) } catch { /* 기억하지 못해도 화면은 동작한다 */ }
   }
+  // 로그아웃: 기억한 사용자를 지운다. 다음 화면에서는 첫 사용자로 돌아간다 (로그인이 없으므로 계정 확인은 없다).
+  const signOut = () => {
+    setUserIdState(null)
+    try { localStorage.removeItem(KEY) } catch { /* 지우지 못해도 화면은 동작한다 */ }
+  }
   return (
-    <SessionContext.Provider value={{ user, users: list, setUserId, usersError: users.error }}>
+    <SessionContext.Provider value={{ user, users: list, setUserId, signOut, usersError: users.error }}>
       {children}
     </SessionContext.Provider>
   )

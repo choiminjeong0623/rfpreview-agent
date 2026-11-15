@@ -53,6 +53,23 @@ test('사용자 바꾸기', async ({ page }) => {
   await expect(chip).toContainText('기본 승인자')   // 고른 사용자를 기억한다
 })
 
+test('로그아웃', async ({ page }) => {
+  // change add-logout-button. 고른 사용자를 지우고 예시 로그인 화면으로 간다
+  await page.goto('/#/reviews')
+  const chip = page.getByRole('button', { name: '사용자 바꾸기' })
+  await chip.click()
+  await page.getByRole('button', { name: /기본 승인자/ }).click()
+  await expect(chip).toContainText('기본 승인자')
+  await chip.click()
+  await page.getByRole('button', { name: '로그아웃' }).click()
+  await expect(page).toHaveURL(/#\/login$/)
+  await page.getByLabel('사번 또는 회사 이메일').fill('20261234')
+  await page.getByLabel('비밀번호', { exact: true }).fill('example')
+  await page.getByRole('button', { name: '로그인', exact: true }).click()
+  await expect(page).toHaveURL(/#\/$/, { timeout: 10_000 })
+  await expect(page.getByRole('button', { name: '사용자 바꾸기' })).not.toContainText('기본 승인자')
+})
+
 test('알림은 예시로 보인다', async ({ page }) => {
   await page.goto('/#/reviews')
   await page.getByRole('button', { name: /알림 \d건/ }).click()
