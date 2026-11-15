@@ -5,6 +5,7 @@
 (CR-12). 결과는 모두 run_id에 묶인다.
 """
 
+import contextvars
 import logging
 import threading
 from collections.abc import Callable
@@ -21,7 +22,7 @@ from langgraph.types import interrupt
 from psycopg.types.json import Jsonb
 
 from rfp_agent.config import get_settings
-from rfp_agent.llm import tasks
+from rfp_agent.llm import tasks, trace
 from rfp_agent.llm.client import FAILURE_MESSAGE, LLM, LLMConfigError, LLMFailure, Usage, usage_of
 from rfp_agent.llm.evidence import EvidenceSpan, evidence_id, parse_evidence_id
 from rfp_agent.llm.parallel import run_ordered, workers_of
@@ -162,6 +163,9 @@ def _close_step(conn: psycopg.Connection, run_id: int) -> None:
 
 def _set_step(conn: psycopg.Connection, run_id: int, step: str, token: str | None = None) -> None:
     check_cancel(conn, run_id, token)
+    # 앞 단계의 AI 호출 기록을 저장하고 이 단계로 바꾼다 (add-ai-call-trace)
+    trace.flush(conn)
+    trace.set_step(step)
     # 실행 기록(add-run-log): 앞 단계를 닫고 이 단계 시작 시각을 적는다. attempt = 다시 시도 횟수
     _close_step(conn, run_id)
     conn.execute(
@@ -288,7 +292,9 @@ def _process_all(ctx: RunContext, run_id: int, paths: list[str], choices: dict[s
     outcomes: list[DocumentResult | BaseException] = []
     with ThreadPoolExecutor(max_workers=min(workers, len(paths)),
                             thread_name_prefix="rfp-doc") as pool:
-        futures = [pool.submit(job, i, p) for i, p in enumerate(paths)]
+        # 문서마다 부르는 쪽 문맥(AI 호출 기록 세션)을 이어받는다 (add-ai-call-trace)
+        futures = [pool.submit(contextvars.copy_context().run, job, i, p)
+                   for i, p in enumerate(paths)]
         for fut in futures:
             try:
                 outcomes.append(fut.result())
@@ -653,6 +659,15 @@ def execute_run(ctx: RunContext, run_id: int, paths: list[Path],
                  (Jsonb({"inputs": {"paths": [str(p) for p in paths],
                                     "choices": choices or {}}}), run_id))
     conn.commit()
+    # AI 호출 기록 (add-ai-call-trace): 이 실행의 호출을 모아 단계마다·끝에 저장한다
+    with trace.session(run_id, "analysis", ctx.token):
+        trace.purge(conn)
+        return _execute(ctx, run_id, paths, choices, rewind)
+
+
+def _execute(ctx: RunContext, run_id: int, paths: list[Path], choices: dict[str, dict] | None,
+             rewind: str | None) -> str:
+    conn = ctx.conn
     usage = usage_of(ctx.llm)
     before = usage.copy() if usage else None
     inputs = {"run_id": run_id, "paths": [str(p) for p in paths], "choices": choices or {},
@@ -670,6 +685,8 @@ def execute_run(ctx: RunContext, run_id: int, paths: list[Path],
             state = graph.invoke(start, config)
     except Exception as exc:
         conn.rollback()
+        trace.flush(conn)                       # 실패·취소해도 그때까지의 호출은 남긴다
+        conn.commit()
         if isinstance(exc, RunSuperseded):
             # 새 실행이 맡았다: 아무것도 쓰지 않는다 (add-run-queue, NFR-12)
             log.info("검토 실행 %s: 소유권을 잃어 멈춤", run_id)
@@ -705,6 +722,7 @@ def execute_run(ctx: RunContext, run_id: int, paths: list[Path],
     if not done:
         conn.rollback()
         return "SUPERSEDED"
+    trace.flush(conn)
     _finish_log(conn, run_id, usage, before)
     conn.commit()
     return "ENGINEER_REVIEW"

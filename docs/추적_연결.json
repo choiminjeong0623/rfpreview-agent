@@ -21,7 +21,7 @@
     "FR-18": { "specs": ["prompt-evaluation"] },
     "FR-19": { "specs": ["document-intake"] },
     "FR-20": { "specs": ["review-run"] },
-    "FR-21": { "specs": [], "planned": "명세서 v3 제안 — change 작성 전" },
+    "FR-21": { "specs": ["review-run"] },
     "FR-22": { "specs": [], "planned": "명세서 v3 제안 — change 작성 전" }
   },
   "common": {

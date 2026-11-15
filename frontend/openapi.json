@@ -257,6 +257,90 @@
         }
       }
     },
+    "/api/runs/{run_id}/ai-calls": {
+      "get": {
+        "tags": [
+          "검토 실행"
+        ],
+        "summary": "Run Ai Calls",
+        "description": "AI 호출 기록 (add-ai-call-trace, FR-21): 호출마다 단계·역할·모델·판·시간·토큰·결과·해시.",
+        "operationId": "run_ai_calls_api_runs__run_id__ai_calls_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiCalls"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/ai-calls/otel": {
+      "get": {
+        "tags": [
+          "검토 실행"
+        ],
+        "summary": "Run Ai Calls Otel",
+        "description": "AI 호출 기록을 OpenTelemetry 형식(OTLP JSON)으로 내려받는다. 외부로 보내지 않는다.",
+        "operationId": "run_ai_calls_otel_api_runs__run_id__ai_calls_otel_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/requirements/{requirement_id}": {
       "get": {
         "tags": [
@@ -5571,6 +5655,201 @@
         "type": "object",
         "title": "ActorBody"
       },
+      "AiCall": {
+        "properties": {
+          "call_id": {
+            "type": "integer",
+            "title": "Call Id"
+          },
+          "feature": {
+            "type": "string",
+            "title": "Feature"
+          },
+          "step": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "prompt_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Version"
+          },
+          "attempt": {
+            "type": "integer",
+            "title": "Attempt"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "ended_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ended At"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens"
+          },
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens"
+          },
+          "thinking_tokens": {
+            "type": "integer",
+            "title": "Thinking Tokens"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "OK",
+              "FORMAT_ERROR",
+              "CONFIG_ERROR",
+              "TIMEOUT",
+              "CONNECTION_ERROR"
+            ],
+            "title": "Result"
+          },
+          "dropped_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dropped Reason"
+          },
+          "input_hash": {
+            "type": "string",
+            "title": "Input Hash"
+          },
+          "output_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Hash"
+          },
+          "batch_lines": {
+            "type": "integer",
+            "title": "Batch Lines"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "call_id",
+          "feature",
+          "step",
+          "role",
+          "model",
+          "prompt_version",
+          "attempt",
+          "started_at",
+          "ended_at",
+          "duration_ms",
+          "input_tokens",
+          "output_tokens",
+          "thinking_tokens",
+          "result",
+          "dropped_reason",
+          "input_hash",
+          "output_hash",
+          "batch_lines"
+        ],
+        "title": "AiCall",
+        "description": "AI 호출 한 건 (add-ai-call-trace, FR-21). 원문은 없고 해시만."
+      },
+      "AiCalls": {
+        "properties": {
+          "calls": {
+            "items": {
+              "$ref": "#/components/schemas/AiCall"
+            },
+            "type": "array",
+            "title": "Calls"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "by_result": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Result"
+          },
+          "step_ms": {
+            "items": {
+              "$ref": "#/components/schemas/StepMs"
+            },
+            "type": "array",
+            "title": "Step Ms"
+          },
+          "different_answers": {
+            "type": "integer",
+            "title": "Different Answers"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "calls",
+          "count",
+          "by_result",
+          "step_ms",
+          "different_answers"
+        ],
+        "title": "AiCalls",
+        "description": "검토의 AI 호출 기록과 요약: 결과별 수, 단계별 AI 시간 합, 같은 입력·다른 답 수."
+      },
       "AiUsage": {
         "properties": {
           "days": {
@@ -10565,6 +10844,22 @@
             "type": "integer",
             "title": "Jobs Queued",
             "default": 0
+          },
+          "trace_raw": {
+            "type": "boolean",
+            "title": "Trace Raw",
+            "default": false
+          },
+          "trace_raw_warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trace Raw Warning"
           }
         },
         "type": "object",
@@ -17116,6 +17411,25 @@
         ],
         "title": "StepDetail",
         "description": "문서 읽기 단계 안의 세부 진행 (처리 상태 화면). AI 일만 줄 수가 있다."
+      },
+      "StepMs": {
+        "properties": {
+          "step": {
+            "type": "string",
+            "title": "Step"
+          },
+          "ms": {
+            "type": "integer",
+            "title": "Ms"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "step",
+          "ms"
+        ],
+        "title": "StepMs"
       },
       "SubmissionCheck": {
         "properties": {

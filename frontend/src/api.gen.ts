@@ -31,6 +31,37 @@ export type ActorBody = {
   actor_id?: number | null
 }
 
+/** AI 호출 한 건 (add-ai-call-trace, FR-21). 원문은 없고 해시만. */
+export type AiCall = {
+  call_id: number
+  feature: string
+  step: string | null
+  role: string | null
+  model: string | null
+  prompt_version: string | null
+  attempt: number
+  started_at: string
+  ended_at: string
+  duration_ms: number
+  input_tokens: number
+  output_tokens: number
+  thinking_tokens: number
+  result: 'OK' | 'FORMAT_ERROR' | 'CONFIG_ERROR' | 'TIMEOUT' | 'CONNECTION_ERROR'
+  dropped_reason: string | null
+  input_hash: string
+  output_hash: string | null
+  batch_lines: number
+}
+
+/** 검토의 AI 호출 기록과 요약: 결과별 수, 단계별 AI 시간 합, 같은 입력·다른 답 수. */
+export type AiCalls = {
+  calls: AiCall[]
+  count: number
+  by_result: Record<string, number>
+  step_ms: StepMs[]
+  different_answers: number
+}
+
 export type AiUsage = {
   days: number
   items: AiUsageRow[]
@@ -756,6 +787,8 @@ export type Health = {
   run_mode?: 'INLINE' | 'WORKER'
   workers_alive?: number
   jobs_queued?: number
+  trace_raw?: boolean
+  trace_raw_warning?: string | null
 }
 
 export type HTTPValidationError = {
@@ -1628,6 +1661,11 @@ export type StepDetail = {
   total: number | null
   file_index: number
   file_count: number
+}
+
+export type StepMs = {
+  step: string
+  ms: number
 }
 
 export type SubmissionCheck = {
