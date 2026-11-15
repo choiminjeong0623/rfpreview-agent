@@ -1618,3 +1618,59 @@ class PromptOverview(Out):
     doc_key: str
     roles: list[PromptRole]
     langfuse: PromptLangfuse
+
+
+# ── 프롬프트 고치기 (add-prompt-editor) ─────────────────────────────────
+
+class PromptSide(Out):
+    """Langfuse의 한 표시(production·staging)에 붙은 판."""
+    version: int
+    text: str
+    usable: bool                             # 코드 검사(자리표시자·데이터 규칙·코드 판) 통과
+    problem: str | None
+    commit_message: str | None
+
+
+class PromptEvalMetric(Out):
+    name: str
+    now: float | None                        # 이번 평가 반복 최솟값 %
+    baseline: float | None
+
+
+class PromptEvalJob(Out):
+    job_id: int
+    role: str
+    staging_version: int
+    started_by: str
+    started_at: str
+    status: Literal["RUNNING", "DONE", "FAILED"]
+    finished_at: str | None
+    eval_id: int | None
+    message: str | None
+    metrics: list[PromptEvalMetric]
+    regression: bool
+    reasons: list[str]
+    promote_block: str | None                # 없으면 운영으로 올릴 수 있음
+    promoted_version: int | None
+
+
+class PromptDetail(Out):
+    role: str
+    code_version: str
+    code_template: str
+    slots: list[str]
+    data_rule: str
+    langfuse_name: str
+    connected: bool
+    editable_reason: str | None              # 고칠 수 없는 이유 (Langfuse 연결 없음 등)
+    evaluable: bool                          # 공개 평가셋에 이 역할 문항이 있음
+    ai_ready: bool                           # AI 방식이 꺼져 있지 않음(평가에 필요)
+    production: PromptSide | None
+    staging: PromptSide | None
+    evaluation: PromptEvalJob | None
+
+
+class PromptSaved(Out):
+    role: str
+    version: int
+    label: str

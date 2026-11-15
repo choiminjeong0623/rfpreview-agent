@@ -28,7 +28,8 @@ class FakeLangfuse:
         self.traces: list[dict] = []
         self.down = False
 
-    def add(self, role: str, text: str, labels: list[str], code_version: str | None = None) -> int:
+    def add(self, role: str, text: str, labels: list[str], code_version: str | None = None,
+            message: str | None = None) -> int:
         name = prompt_source.name_of(role)
         versions = self.prompts.setdefault(name, [])
         for v in versions:
@@ -36,7 +37,8 @@ class FakeLangfuse:
         n = len(versions) + 1
         versions.append({"name": name, "type": "text", "prompt": text, "version": n,
                          "labels": list(labels), "tags": [],
-                         "config": {"code_version": code_version or tasks.PROMPTS[role]}})
+                         "config": {"code_version": code_version or tasks.PROMPTS[role]},
+                         "commitMessage": message})
         return n
 
     def handler(self, request: httpx.Request) -> httpx.Response:
@@ -53,7 +55,8 @@ class FakeLangfuse:
         if request.method == "POST" and path == "/api/public/v2/prompts":
             body = json.loads(request.content)
             role = body["name"].removeprefix(prompt_source.NAME_PREFIX)
-            n = self.add(role, body["prompt"], body["labels"], body["config"]["code_version"])
+            n = self.add(role, body["prompt"], body["labels"], body["config"]["code_version"],
+                         body.get("commitMessage"))
             return httpx.Response(201, json=self.prompts[body["name"]][n - 1])
         if request.method == "PATCH" and "/versions/" in path:
             _, name, _, version = path.rsplit("/", 3)
@@ -73,8 +76,8 @@ class FakeLangfuse:
         return sum(1 for r in self.requests if r.method == "GET")
 
 
-@pytest.fixture
-def langfuse(monkeypatch):
+def fake_langfuse(monkeypatch):
+    """가짜 Langfuse를 켠다. 다른 시험 파일의 고정물도 이것을 쓴다."""
     fake = FakeLangfuse()
     monkeypatch.setenv("RFP_LANGFUSE", "on")
     monkeypatch.setenv("LANGFUSE_HOST", "http://langfuse.local:3000")
@@ -85,6 +88,12 @@ def langfuse(monkeypatch):
     prompt_source.clear_cache()
     yield fake
     prompt_source.clear_cache()
+    get_settings.cache_clear()          # 다음 시험이 켜 둔 설정을 쓰지 않게
+
+
+@pytest.fixture
+def langfuse(monkeypatch):
+    yield from fake_langfuse(monkeypatch)
     get_settings.cache_clear()
 
 

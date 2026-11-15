@@ -139,3 +139,8 @@
 .rlfilter label{display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);font-weight:600}
 .rlfilter select.fi{min-width:160px}
 .rlempty{padding:16px;text-align:center;color:var(--c-text-3)}
+/* 프롬프트 관리 편집 패널 (SCR-26, add-prompt-editor): 프롬프트 글과 평가 결과 상자 */
+.pt{display:block;width:100%;box-sizing:border-box;margin:6px 0;padding:10px;border:1px solid var(--c-line);border-radius:6px;background:var(--c-bg-soft);color:var(--c-text);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:var(--fs-xs);line-height:1.5;white-space:pre-wrap;word-break:break-word;resize:vertical;max-height:420px;overflow:auto}
+textarea.pt{background:var(--c-white);min-height:240px}
+textarea.pt:focus{outline:0;border-color:var(--c-link)}
+.pjob{margin-top:10px;padding:10px 12px;border:1px solid var(--c-line);border-radius:8px;background:var(--c-bg-page);font-size:var(--fs-sm)}

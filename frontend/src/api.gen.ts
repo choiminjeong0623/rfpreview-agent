@@ -31,6 +31,10 @@ export type ActorBody = {
   actor_id?: number | null
 }
 
+export type ActorIn = {
+  actor_id: number
+}
+
 /** AI 호출 한 건 (add-ai-call-trace, FR-21). 원문은 없고 해시만. */
 export type AiCall = {
   call_id: number
@@ -613,6 +617,12 @@ export type DocumentPreview = {
   unread_reason?: 'OCR_OFF' | 'OCR_MISSING' | 'OCR_LOW_CONF' | 'OCR_EMPTY' | null
 }
 
+export type DraftIn = {
+  actor_id: number
+  text: string
+  message?: string | null
+}
+
 export type EngineeringCheck = {
   check_id: number
   rule_code: string
@@ -1149,6 +1159,27 @@ export type ProductUse = {
   due_date?: string | null
 }
 
+export type PromoteIn = {
+  actor_id: number
+  job_id: number
+}
+
+export type PromptDetail = {
+  role: string
+  code_version: string
+  code_template: string
+  slots: string[]
+  data_rule: string
+  langfuse_name: string
+  connected: boolean
+  editable_reason: string | null
+  evaluable: boolean
+  ai_ready: boolean
+  production: PromptSide | null
+  staging: PromptSide | null
+  evaluation: PromptEvalJob | null
+}
+
 /** 정답 출처 하나의 지표 재료 (add-prompt-eval). value는 % (평균 도구 호출 수만 평균). */
 export type PromptEvalCount = {
   num: number
@@ -1173,23 +1204,27 @@ export type PromptEvalItem = {
   error: string | null
 }
 
+export type PromptEvalJob = {
+  job_id: number
+  role: string
+  staging_version: number
+  started_by: string
+  started_at: string
+  status: 'RUNNING' | 'DONE' | 'FAILED'
+  finished_at: string | null
+  eval_id: number | null
+  message: string | null
+  metrics: rfp_agent__api__schemas__PromptEvalMetric__2[]
+  regression: boolean
+  reasons: string[]
+  promote_block: string | null
+  promoted_version: number | null
+}
+
 /** 평가 기록(최신순)과 평가셋·모델마다 가장 최근 끝난 평가 (모델 비교, NFR-07). */
 export type PromptEvalList = {
   runs: PromptEvalRun[]
   latest_by_model: PromptEvalRun[]
-}
-
-/** 지표 하나: 출처별 값, 기준 출처(사람 → 코드 → Claude 초안), 반복 최소·최대·평균. */
-export type PromptEvalMetric = {
-  by_source: Record<string, PromptEvalCount>
-  basis: 'HUMAN' | 'CODE' | 'CLAUDE_DRAFT' | 'ALL' | null
-  weak: boolean
-  min: number | null
-  max: number | null
-  mean: number | null
-  min_short?: number | null
-  questions?: number | null
-  repeats: (number | null)[]
 }
 
 /** 프롬프트 평가 한 번 (add-prompt-eval, FR-18). 비용은 팀 가정 단가로 어림. */
@@ -1204,7 +1239,7 @@ export type PromptEvalRun = {
   repeat: number
   status: 'DONE' | 'SKIPPED' | 'FAILED'
   skip_reason: string | null
-  metrics: Record<string, Record<string, PromptEvalMetric>>
+  metrics: Record<string, Record<string, rfp_agent__api__schemas__PromptEvalMetric__1>>
   injection_effect: number
   calls: number
   input_tokens: number
@@ -1246,6 +1281,21 @@ export type PromptRole = {
   langfuse_name: string
   langfuse_version: number | null
   fallback: string | null
+}
+
+export type PromptSaved = {
+  role: string
+  version: number
+  label: string
+}
+
+/** Langfuse의 한 표시(production·staging)에 붙은 판. */
+export type PromptSide = {
+  version: number
+  text: string
+  usable: boolean
+  problem: string | null
+  commit_message: string | null
 }
 
 export type PromptVersion = {
@@ -1412,6 +1462,25 @@ export type Rewind = {
   step: string
   reason: string
   actor_id?: number | null
+}
+
+/** 지표 하나: 출처별 값, 기준 출처(사람 → 코드 → Claude 초안), 반복 최소·최대·평균. */
+export type rfp_agent__api__schemas__PromptEvalMetric__1 = {
+  by_source: Record<string, PromptEvalCount>
+  basis: 'HUMAN' | 'CODE' | 'CLAUDE_DRAFT' | 'ALL' | null
+  weak: boolean
+  min: number | null
+  max: number | null
+  mean: number | null
+  min_short?: number | null
+  questions?: number | null
+  repeats: (number | null)[]
+}
+
+export type rfp_agent__api__schemas__PromptEvalMetric__2 = {
+  name: string
+  now: number | null
+  baseline: number | null
 }
 
 export type Risk = {
