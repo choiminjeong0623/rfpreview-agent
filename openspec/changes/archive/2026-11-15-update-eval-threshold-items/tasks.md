@@ -8,6 +8,6 @@
 
 ## 2. 재측정과 문서
 
-- [ ] 2.1 기준선 다시 만들기(문항 재료, 3번 반복)와 그 기준선으로 재측정(Gemini 3.8 Flash), 결과를 `docs/05-evaluation.md`에
-- [ ] 2.2 `docs/07-troubleshooting.md` 7-3 고침(CI가 아니라 로컬 실행이었음, 재측정에서 다시 나온 회귀와 이번 해결), `docs/03-adr.md` ADR-009 결과
-- [ ] 2.3 `data/eval/README.md` 회귀 규칙 설명
+- [x] 2.1 기준선 다시 만들기(문항 재료, 3번 반복)와 그 기준선으로 재측정(Gemini 3.8 Flash), 결과를 `docs/05-evaluation.md`에
+- [x] 2.2 `docs/07-troubleshooting.md` 7-3 고침(CI가 아니라 로컬 실행이었음, 재측정에서 다시 나온 회귀와 이번 해결), `docs/03-adr.md` ADR-009 결과
+- [x] 2.3 `data/eval/README.md` 회귀 규칙 설명
