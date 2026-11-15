@@ -3,12 +3,12 @@ import type {
   ActionResult, TypeEditResult, ApprovalScreen, AssignmentStatus, BulkResult, CompareTargets, CostSummary, PastCompare, BusinessDetail, BusinessList, BusinessLog,
   DecisionResult, DocumentChoice, DocumentPreview, HandoffResult, SalesHandoff,
   LossResult, ProductSwitch, RuleEdit,
-  RunFlow, RunLogItem, RunSummary, ScreenSummary, SendResult, StageResult, SubmitResult,
+  AiCalls, RunFlow, RunLogItem, RunSummary, ScreenSummary, SendResult, StageResult, SubmitResult,
   AnswerKey, EvalRun, EvalScore, RuleSuggestion, AssistantAnswer, MeaningCandidate, RiskMeaning, AiUsage, PeakCheck,
 } from './api.gen'
 
 export type {
-  AiUsage, AiUsageRow, PeakCheck,
+  AiCall, AiCalls, AiUsage, AiUsageRow, PeakCheck,
   ApprovalScreen, Assignment, BusinessDetail, CommercialImpact, CompareRow, CompareTarget, CompareTargets, PastCompare, CostCondition, CostSummary, BusinessEvent, BusinessList, BusinessListItem, BusinessLog, BusinessPerson,
   BusinessRange, CompareRule, Criterion, Datasheet, DatasheetInfo, DatasheetRow, DocKindRule,
   DocumentChoice, DocumentLines, DocumentPreview, EngineeringCheck,
@@ -235,6 +235,9 @@ export const api = {
   /** 날짜·기능별 AI 사용량, 분석 실행 포함 (add-ai-usage-log). 비용은 팀 가정 단가 */
   aiUsage: (days: number) => call<AiUsage>(`/ai-usage?days=${days}`),
   runFlow: (id: number) => call<RunFlow>(`/runs/${id}/flow`),
+  /** AI 호출 기록 (add-ai-call-trace, FR-21). 원문 없이 해시만 */
+  aiCalls: (id: number) => call<AiCalls>(`/runs/${id}/ai-calls`),
+  aiCallsOtelUrl: (id: number) => `/api/runs/${id}/ai-calls/otel`,
   // 정답지·채점 (add-evaluation). 정답지 넣기는 명령 `rfp-db load-answer-key`
   evalKeys: () => call<AnswerKey[]>('/eval/keys'),
   evalRuns: () => call<EvalRun[]>('/eval/runs'),

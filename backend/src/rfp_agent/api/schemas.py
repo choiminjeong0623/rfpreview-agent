@@ -1191,6 +1191,42 @@ class RunFlow(Out):
     steps: list[FlowStep]
 
 
+class AiCall(Out):
+    """AI 호출 한 건 (add-ai-call-trace, FR-21). 원문은 없고 해시만."""
+    call_id: int
+    feature: str
+    step: str | None
+    role: str | None
+    model: str | None
+    prompt_version: str | None
+    attempt: int
+    started_at: datetime
+    ended_at: datetime
+    duration_ms: int
+    input_tokens: int
+    output_tokens: int
+    thinking_tokens: int
+    result: Literal["OK", "FORMAT_ERROR", "CONFIG_ERROR", "TIMEOUT", "CONNECTION_ERROR"]
+    dropped_reason: str | None
+    input_hash: str
+    output_hash: str | None
+    batch_lines: int
+
+
+class StepMs(Out):
+    step: str
+    ms: int
+
+
+class AiCalls(Out):
+    """검토의 AI 호출 기록과 요약: 결과별 수, 단계별 AI 시간 합, 같은 입력·다른 답 수."""
+    calls: list[AiCall]
+    count: int
+    by_result: dict[str, int]
+    step_ms: list[StepMs]
+    different_answers: int
+
+
 class RunStepTime(Out):
     """실행 기록의 단계 하나 (add-run-log). 끝나지 않은 단계는 seconds가 null."""
     attempt: int                            # 0 = 처음 처리, 1 = 첫 다시 시도

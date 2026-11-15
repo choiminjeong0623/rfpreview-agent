@@ -148,6 +148,7 @@ def eval_prompts(set_name: str, repeat: int, baseline: bool, yes: bool, report_p
     import json
     import tempfile
 
+    from rfp_agent.llm import trace
     from rfp_agent.llm.client import ai_mode, make_llm
     from rfp_agent.pipeline import prompt_eval as pe
 
@@ -167,8 +168,9 @@ def eval_prompts(set_name: str, repeat: int, baseline: bool, yes: bool, report_p
             names = {i.input["fixture"] for i in evalset.items if i.role == "assistant"}
             if llm is not None and names:
                 fixture = pe.open_fixtures(names, settings, Path(tmp))
-            result = pe.evaluate(evalset, llm, mode, repeat, settings.rfp_eval_max_krw, yes,
-                                 fixture)
+            with trace.session(None, "eval") as calls:     # AI 호출 기록 (add-ai-call-trace)
+                result = pe.evaluate(evalset, llm, mode, repeat, settings.rfp_eval_max_krw, yes,
+                                     fixture)
     except pe.EvalError as exc:
         sys.exit(str(exc))
     finally:
@@ -183,6 +185,8 @@ def eval_prompts(set_name: str, repeat: int, baseline: bool, yes: bool, report_p
                 base = pe.db_baseline(conn, evalset.name)
             cmp = pe.compare(result, base) if result.status == "DONE" else None
             pe.save(conn, result, baseline=baseline)
+            trace.flush(conn, calls)
+            conn.commit()
     except psycopg.OperationalError:
         if result.status == "DONE":
             raise

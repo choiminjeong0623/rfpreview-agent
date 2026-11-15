@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 
 from rfp_agent.api.schemas import (
     ActionResult,
+    AiCalls,
     AiUsage,
     ApprovalScreen,
     Assignment,
@@ -68,6 +69,7 @@ from rfp_agent.config import get_settings
 from rfp_agent.db.connection import connect
 from rfp_agent.llm.client import make_llm
 from rfp_agent.pipeline import (
+    ai_calls,
     ai_usage,
     assignment_export,
     business,
@@ -383,6 +385,27 @@ def run_flow(run_id: int) -> RunFlow:
     _summary(run_id)
     with connect() as conn:
         return graph_flow.history(conn, run_id)
+
+
+@router.get("/runs/{run_id}/ai-calls")
+def run_ai_calls(run_id: int) -> AiCalls:
+    """AI 호출 기록 (add-ai-call-trace, FR-21): 호출마다 단계·역할·모델·판·시간·토큰·결과·해시."""
+    _summary(run_id)
+    with connect() as conn:
+        return ai_calls.summary(conn, run_id)
+
+
+@router.get("/runs/{run_id}/ai-calls/otel")
+def run_ai_calls_otel(run_id: int) -> Response:
+    """AI 호출 기록을 OpenTelemetry 형식(OTLP JSON)으로 내려받는다. 외부로 보내지 않는다."""
+    import json as _json
+
+    _summary(run_id)
+    with connect() as conn:
+        body = ai_calls.otel(conn, run_id)
+    return Response(_json.dumps(body, ensure_ascii=False), media_type="application/json",
+                    headers={"Content-Disposition":
+                             f'attachment; filename="ai-calls-run-{run_id}.otlp.json"'})
 
 
 @router.get("/requirements/{requirement_id}")

@@ -2,7 +2,10 @@ import json
 import logging
 import threading
 from dataclasses import astuple, dataclass, replace
+from datetime import UTC, datetime
 from typing import Protocol
+
+from rfp_agent.llm import trace
 
 log = logging.getLogger(__name__)
 
@@ -70,7 +73,23 @@ def _is_config_error(exc: Exception) -> bool:
     return isinstance(code, int) and code in CONFIG_ERROR_CODES
 
 
-def call_with_retry(llm: LLM, prompt: str, schema: dict, validate) -> dict:
+# 이 스레드의 마지막 요청이 쓴 토큰 (입력, 출력, 생각). 동시 호출이라 Usage 차이로는 한 요청을
+# 가를 수 없어 모델이 요청마다 적는다 (add-ai-call-trace)
+_tokens = threading.local()
+
+
+def _set_tokens(inp: int, out: int, think: int = 0) -> None:
+    _tokens.last = (inp, out, think)
+
+
+def _take_tokens() -> tuple[int, int, int]:
+    last = getattr(_tokens, "last", None) or (0, 0, 0)
+    _tokens.last = None
+    return last
+
+
+def call_with_retry(llm: LLM, prompt: str, schema: dict, validate,
+                    role: str | None = None) -> dict:
     """응답을 검증한다. 연결·시간 초과·서버 오류만 MAX_RETRIES번 더 시도한다 (CR-12).
 
     형식 오류(JSON 아님, 검사 실패)는 같은 질문에 같은 답이 나오므로 다시 묻지 않고
@@ -79,26 +98,40 @@ def call_with_retry(llm: LLM, prompt: str, schema: dict, validate) -> dict:
     """
     last: Exception | None = None
     usage = usage_of(llm)
+    model = getattr(llm, "model", None)
     for attempt in range(MAX_RETRIES + 1):
         if usage:
             usage.add(calls=1, retries=int(attempt > 0))
+        started = datetime.now(UTC)
+        _take_tokens()
+
+        def note(result: str, answer: dict | None = None, attempt: int = attempt,
+                 started: datetime = started) -> None:
+            # 시도마다 호출 기록 한 건 (add-ai-call-trace). 세션이 없으면 아무것도 하지 않는다
+            trace.record(role, model, attempt, started, prompt, schema, result, answer,
+                         _take_tokens())
         try:
             data = llm.generate_json(prompt, schema)
         except json.JSONDecodeError as exc:
             log.warning("언어 모델 답이 JSON이 아님: %s", exc)
+            note("FORMAT_ERROR")
             raise LLMFormatError(FAILURE_MESSAGE) from exc
         except Exception as exc:  # noqa: BLE001 - 연결·시간 초과·서버 오류는 재시도
             if _is_config_error(exc):
                 log.warning("언어 모델 설정 오류: %s", exc)
+                note("CONFIG_ERROR")
                 raise LLMConfigError(CONFIG_FAILURE_MESSAGE) from exc
             last = exc
+            note(trace.result_of(exc))
             log.warning("언어 모델 호출 실패 (%d/%d): %s", attempt + 1, MAX_RETRIES + 1, exc)
             continue
         try:
             validate(data)
         except Exception as exc:  # noqa: BLE001 - 검사 실패는 모두 형식 오류
             log.warning("언어 모델 답 형식 오류: %s", exc)
+            note("FORMAT_ERROR", data if isinstance(data, dict) else None)
             raise LLMFormatError(FAILURE_MESSAGE) from exc
+        note("OK", data)
         return data
     raise LLMFailure(FAILURE_MESSAGE) from last
 
@@ -151,9 +184,11 @@ class GeminiLLM:
         )
         meta = getattr(response, "usage_metadata", None)
         if meta is not None:
-            self.usage.add(input_tokens=meta.prompt_token_count or 0,
-                           output_tokens=meta.candidates_token_count or 0,
-                           thinking_tokens=getattr(meta, "thoughts_token_count", 0) or 0)
+            counts = (meta.prompt_token_count or 0, meta.candidates_token_count or 0,
+                      getattr(meta, "thoughts_token_count", 0) or 0)
+            self.usage.add(input_tokens=counts[0], output_tokens=counts[1],
+                           thinking_tokens=counts[2])
+            _set_tokens(*counts)
         return json.loads(response.text)
 
     def embed(self, texts: list[str]) -> list[list[float]]:
@@ -208,6 +243,7 @@ class LocalLLM:
         usage = data.get("usage") or {}
         self.usage.add(input_tokens=usage.get("prompt_tokens") or 0,
                        output_tokens=usage.get("completion_tokens") or 0)
+        _set_tokens(usage.get("prompt_tokens") or 0, usage.get("completion_tokens") or 0)
         return json.loads(data["choices"][0]["message"]["content"])
 
     def embed(self, texts: list[str]) -> list[list[float]]:

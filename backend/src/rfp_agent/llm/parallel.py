@@ -4,6 +4,7 @@
 결과는 보낸 순서대로 돌려주므로 동시 개수와 상관없이 같은 결과가 나온다(CR-11).
 """
 
+import contextvars
 from collections.abc import Callable, Sequence
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 
@@ -37,7 +38,9 @@ def run_ordered[T](jobs: Sequence[Callable[[], T]], workers: int,
     pool = ThreadPoolExecutor(max_workers=min(workers, len(jobs)),
                               thread_name_prefix="rfp-llm")
     try:
-        index: dict[Future, int] = {pool.submit(job): i for i, job in enumerate(jobs)}
+        # 일마다 부르는 쪽 문맥(AI 호출 기록 세션 등, add-ai-call-trace)을 이어받는다
+        index: dict[Future, int] = {pool.submit(contextvars.copy_context().run, job): i
+                                    for i, job in enumerate(jobs)}
         pending = set(index)
         while pending:
             done, pending = wait(pending, return_when=FIRST_COMPLETED)

@@ -10,6 +10,7 @@ import re
 import psycopg
 from psycopg.rows import dict_row
 
+from rfp_agent.llm import trace
 from rfp_agent.llm.client import LLM, LLMConfigError, LLMFailure
 from rfp_agent.llm.tasks import NUMBER, TYPE_CODES, assistant_step, one_line
 from rfp_agent.pipeline.queries import _locations
@@ -174,7 +175,16 @@ def _search_only(conn: psycopg.Connection, run_id: int, question: str, reason: s
 
 
 def ask(conn: psycopg.Connection, run_id: int, question: str, llm: LLM | None) -> dict:
-    """질문 하나에 답한다. 저장하지 않는다."""
+    """질문 하나에 답한다. 답은 저장하지 않고 AI 호출 기록만 남긴다 (add-ai-call-trace)."""
+    with trace.session(run_id, "assistant"):
+        try:
+            return _ask(conn, run_id, question, llm)
+        finally:
+            if trace.flush(conn):
+                conn.commit()
+
+
+def _ask(conn: psycopg.Connection, run_id: int, question: str, llm: LLM | None) -> dict:
     question = " ".join((question or "").split())
     if not 2 <= len(question) <= 500:
         raise ReviewError(400, "질문은 2자 이상 500자 이하로 넣어 주세요.")

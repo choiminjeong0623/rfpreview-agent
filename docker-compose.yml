@@ -39,6 +39,8 @@ services:
       RFP_RUN_WORKERS: ${RFP_RUN_WORKERS:-2}
       RFP_UPLOAD_MAX_MB: ${RFP_UPLOAD_MAX_MB:-100}
       RFP_REQUEST_MAX_MB: ${RFP_REQUEST_MAX_MB:-300}
+      # AI 호출 기록 원문 저장 (add-ai-call-trace): off = 해시만
+      RFP_TRACE_RAW: ${RFP_TRACE_RAW:-off}
       # 협조 요청 메일 (update-role-handoff-mail). 기본은 Mailpit이라 밖으로 나가지 않는다
       RFP_SMTP_HOST: ${RFP_SMTP_HOST:-mailpit}
       RFP_SMTP_PORT: ${RFP_SMTP_PORT:-1025}

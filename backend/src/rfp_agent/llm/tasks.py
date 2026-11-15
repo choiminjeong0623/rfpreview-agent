@@ -4,6 +4,7 @@ import re
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from rfp_agent.llm import trace
 from rfp_agent.llm.client import LLM, LLMFormatError, call_with_retry
 from rfp_agent.llm.evidence import EvidenceSpan, normalize_quote
 from rfp_agent.llm.parallel import run_ordered, workers_of
@@ -88,7 +89,7 @@ def classify_document(llm: LLM, file_name: str, first_page: str) -> str:
     def check(d):
         assert d["doc_kind"] in DOC_KINDS
 
-    return call_with_retry(llm, prompt, schema, check)["doc_kind"]
+    return call_with_retry(llm, prompt, schema, check, role="classify")["doc_kind"]
 
 
 def _numbered_schema(field: str, key: str, value: dict) -> dict:
@@ -123,7 +124,9 @@ def _pick_each(llm: LLM, items: list[str], field: str, choices: list[str], promp
         assert all(x["v"] in choices for x in d[field])
 
     try:
-        return [x["v"] for x in _in_order(call_with_retry(llm, prompt, schema, check)[field])]
+        role = {"labels": "label", "types": "type"}.get(field)     # 호출 기록 (add-ai-call-trace)
+        answer = call_with_retry(llm, prompt, schema, check, role=role)
+        return [x["v"] for x in _in_order(answer[field])]
     except LLMFormatError:
         if len(items) == 1:
             raise
@@ -292,6 +295,12 @@ def _numbers(text: str) -> set[str]:
     return {n.replace(",", "") for n in NUMBER.findall(text)}
 
 
+def _dropped(reason: str) -> "DroppedExplanation":
+    """코드 검사로 버린 설명. 호출 기록에도 버린 이유를 적는다 (add-ai-call-trace)."""
+    trace.drop(reason)
+    return DroppedExplanation(reason)
+
+
 def explain_risk(llm: LLM, kind: str, facts: str,
                  spans: list[EvidenceSpan]) -> RiskExplanation | DroppedExplanation:
     """위험 조건 설명을 문장(claim)마다 근거 조각 ID·원문 인용과 함께 받는다.
@@ -328,7 +337,7 @@ def explain_risk(llm: LLM, kind: str, facts: str,
             assert c["relation"] in RELATIONS
 
     try:
-        data = call_with_retry(llm, prompt, schema, check)
+        data = call_with_retry(llm, prompt, schema, check, role="risk")
     except LLMFormatError:
         return DroppedExplanation(FORMAT_ERROR)  # 후보는 남고 처리는 계속된다
     sources = {s.evidence_id: s.text[:800] for s in spans}
@@ -336,15 +345,15 @@ def explain_risk(llm: LLM, kind: str, facts: str,
                          c["relation"]) for c in data["claims"])
     for c in claims:
         if any(i not in sources for i in c.evidence_ids):
-            return DroppedExplanation(UNKNOWN_EVIDENCE)
+            return _dropped(UNKNOWN_EVIDENCE)
         quote = normalize_quote(unescape_doc(c.quote))     # 바꿔 보낸 글자를 되돌려 대조
         if not any(quote in normalize_quote(sources[i]) for i in c.evidence_ids):
-            return DroppedExplanation(QUOTE_NOT_FOUND)
+            return _dropped(QUOTE_NOT_FOUND)
         # 숫자·배수 말은 사실과 이 문장이 댄 근거 조각에 있어야 한다 (다른 조각의 숫자는 안 됨)
         basis = facts + " " + " ".join(sources[i] for i in c.evidence_ids)
         if (not _numbers(c.text) <= _numbers(basis)
                 or not _quantity_words(c.text) <= _quantity_words(basis)):
-            return DroppedExplanation(NUMBER_NOT_ALLOWED)
+            return _dropped(NUMBER_NOT_ALLOWED)
     return RiskExplanation("\n".join(c.text for c in claims), claims)
 
 
@@ -377,7 +386,8 @@ def check_support(llm: LLM, claims: tuple[Claim, ...], sources: dict[str, str]) 
         assert all(x["v"] in VERDICTS for x in d["verdicts"])
 
     try:
-        return [x["v"] for x in _in_order(call_with_retry(llm, prompt, schema, check)["verdicts"])]
+        answer = call_with_retry(llm, prompt, schema, check, role="verify")
+        return [x["v"] for x in _in_order(answer["verdicts"])]
     except LLMFormatError:
         return ["UNSURE"] * len(claims)
 
@@ -420,11 +430,15 @@ def draft_sentences(llm: LLM, purpose: str,
             _check_numbers(d["texts"], len(part), "texts")
 
         try:
-            answers = _in_order(call_with_retry(llm, prompt, schema, check)["texts"])
+            answers = _in_order(call_with_retry(llm, prompt, schema, check,
+                                                role="draft")["texts"])
         except LLMFormatError:
             return [None] * len(part)       # 그 묶음은 코드 기본 문장 (다시 묻지 않음)
-        return [text if _usable_draft(text := a["text"].strip(), marks) else None
-                for a, (_, marks) in zip(answers, part, strict=True)]
+        out = [text if _usable_draft(text := a["text"].strip(), marks) else None
+               for a, (_, marks) in zip(answers, part, strict=True)]
+        if None in out:                     # 코드 기본 문장으로 바꾼 줄 수 (add-ai-call-trace)
+            trace.drop(f"DRAFT_REJECTED {out.count(None)}/{len(out)}")
+        return out
 
     # 40줄 묶음을 동시에 묻고 묶음 순서대로 잇는다 (NFR-10)
     jobs = [lambda part=items[start:start + CHUNK]: ask(part)
@@ -471,7 +485,8 @@ def department_questions(llm: LLM, role: str, items: list[str]) -> list[str | No
         def check(d):
             _check_numbers(d["asks"], len(part), "asks")
 
-        answers = _in_order(call_with_retry(llm, prompt, schema, check)["asks"])
+        answers = _in_order(call_with_retry(llm, prompt, schema, check,
+                                            role="handoff")["asks"])
         return [text if usable_question(text := " ".join(a["text"].split())) else None
                 for a in answers]
 
@@ -532,4 +547,4 @@ def assistant_step(llm: LLM, question: str, observations: str, can_search: bool)
         if d["action"] == "answer":
             assert isinstance(d.get("sentences", []), list)
 
-    return call_with_retry(llm, prompt, schema, check)
+    return call_with_retry(llm, prompt, schema, check, role="assistant")

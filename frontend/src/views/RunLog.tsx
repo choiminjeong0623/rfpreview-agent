@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react'
-import { api, type AiUsageRow, type RunLogItem } from '../api'
+import { api, type AiCall, type AiUsageRow, type RunLogItem } from '../api'
 import { AiModeLine } from '../components/AiMode'
 import './detail.css'
 import { stamp } from '../components/format'
@@ -81,6 +81,64 @@ function Flow({ runId }: { runId: number }) {
         ))}
       </ol>
       {stopText && <p className="rlstop">{stopText}</p>}
+    </div>
+  )
+}
+
+const RESULT_NAMES: Record<AiCall['result'], string> = {
+  OK: '성공', FORMAT_ERROR: '형식 오류', CONFIG_ERROR: '설정 오류', TIMEOUT: '시간 초과', CONNECTION_ERROR: '연결 오류',
+}
+
+/** AI 호출 기록 (add-ai-call-trace, FR-21): 호출마다 단계·역할·모델·판·시간·토큰·결과. 원문은 없고 해시만 */
+function AiCalls({ runId }: { runId: number }) {
+  const data = useLoad(() => api.aiCalls(runId), [runId])
+  const [step, setStep] = useState<string | null>(null)
+  const [role, setRole] = useState<string | null>(null)
+  const [slow, setSlow] = useState(false)
+  if (data.error) return <p className="c-red">{data.error}</p>
+  if (!data.data) return <p className="dimv">AI 호출 기록 불러오는 중…</p>
+  const d = data.data
+  if (d.count === 0) return <div className="rlflow"><b>AI 호출</b><p className="dimv">호출 기록 없음</p></div>
+  const steps = [...new Set(d.calls.map((c) => c.step ?? '—'))]
+  const roles = [...new Set(d.calls.map((c) => c.role ?? '—'))]
+  const shown = d.calls.filter((c) => (!step || (c.step ?? '—') === step) && (!role || (c.role ?? '—') === role))
+  const rows = slow ? [...shown].sort((a, b) => b.duration_ms - a.duration_ms) : shown
+  const most = Math.max(1, ...d.step_ms.map((s) => s.ms))
+  const fails = Object.entries(d.by_result).filter(([k]) => k !== 'OK')
+  return (
+    <div className="rlflow rlcalls">
+      <b>AI 호출 {num(d.count)}건
+        <span className="en">{fails.length ? fails.map(([k, n]) => `${RESULT_NAMES[k as AiCall['result']] ?? k} ${n}`).join(' · ') : '모두 성공'}
+          {' · '}같은 입력에 다른 답 {d.different_answers}건 · 원문 없이 해시만 저장</span></b>
+      <ol className="rlbars" aria-label="단계별 AI 시간">
+        {d.step_ms.map((s) => (
+          <li key={s.step}><span>{STEP_NAMES[s.step] ?? s.step}</span>
+            <span className="rlbar"><i style={{ width: `${(s.ms / most) * 100}%` }} /></span><span>{secs(s.ms / 1000)}</span></li>
+        ))}
+      </ol>
+      <div className="rlchips">
+        <button type="button" className={'chip' + (!step ? ' on' : '')} aria-pressed={!step} onClick={() => setStep(null)}>모든 단계</button>
+        {steps.map((s) => <button key={s} type="button" className={'chip' + (step === s ? ' on' : '')} aria-pressed={step === s}
+          onClick={() => setStep(step === s ? null : s)}>{STEP_NAMES[s] ?? s}</button>)}
+        <span className="rlsep" />
+        <button type="button" className={'chip' + (!role ? ' on' : '')} aria-pressed={!role} onClick={() => setRole(null)}>모든 역할</button>
+        {roles.map((r) => <button key={r} type="button" className={'chip' + (role === r ? ' on' : '')} aria-pressed={role === r}
+          onClick={() => setRole(role === r ? null : r)}>{ROLE_NAMES[r] ?? r}</button>)}
+        <span className="rlsep" />
+        <button type="button" className={'chip' + (slow ? ' on' : '')} aria-pressed={slow} onClick={() => setSlow(!slow)}>느린 순</button>
+        <a className="lnk" href={api.aiCallsOtelUrl(runId)} download>OpenTelemetry로 내보내기</a>
+      </div>
+      <table className="mini"><thead><tr><th>시각</th><th>단계</th><th>역할</th><th>모델 · 판</th><th>걸린 시간</th><th>토큰 입력/출력</th><th>줄</th><th>결과</th></tr></thead>
+        <tbody>{rows.map((c) => (
+          <tr key={c.call_id}>
+            <td>{stamp(c.started_at)}</td><td>{STEP_NAMES[c.step ?? ''] ?? c.step ?? '—'}</td>
+            <td>{ROLE_NAMES[c.role ?? ''] ?? c.role ?? '—'}{c.attempt > 0 && <span className="en"> 재시도 {c.attempt}</span>}</td>
+            <td className="en">{c.model} · {c.prompt_version ?? '—'}</td>
+            <td>{secs(c.duration_ms / 1000)}</td><td>{num(c.input_tokens)} / {num(c.output_tokens)}</td><td>{c.batch_lines || '—'}</td>
+            <td>{c.result === 'OK' ? '성공' : <span className="c-ora">{RESULT_NAMES[c.result]}</span>}
+              {c.dropped_reason && <div className="en">버림: {c.dropped_reason}</div>}</td>
+          </tr>
+        ))}</tbody></table>
     </div>
   )
 }
@@ -193,7 +251,7 @@ export function RunLog() {
                   <td style={{ textAlign: 'right' }}>{num(r.judgments)}</td>
                   <td style={{ textAlign: 'right' }}>{r.retries}</td>
                 </tr>
-                {open === r.run_id && <tr className="rlopen"><td colSpan={12}><Steps r={r} /><Prompts r={r} /><Flow runId={r.run_id} /></td></tr>}
+                {open === r.run_id && <tr className="rlopen"><td colSpan={12}><Steps r={r} /><Prompts r={r} /><Flow runId={r.run_id} /><AiCalls runId={r.run_id} /></td></tr>}
               </Fragment>
             ))}
           </tbody>

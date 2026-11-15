@@ -69,6 +69,13 @@
 .rwbox .en{flex-basis:100%;margin:0}
 /* 흐름 기록 (add-flow-history) */
 .rlflow{margin-top:12px;padding-top:10px;border-top:1px solid var(--c-line)}
+/* AI 호출 기록 (add-ai-call-trace) */
+.rlcalls .rlbars{grid-template-columns:auto 1fr auto}
+.rlbar{display:block;height:8px;background:var(--c-line);border-radius:4px;overflow:hidden;align-self:center}
+.rlbar i{display:block;height:100%;background:var(--c-blue)}
+.rlchips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+.rlsep{width:1px;height:16px;background:var(--c-line)}
+.rlcalls table{width:100%}
 .rlflow b{font-size:var(--fs-sm)}
 .rlflow ol{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:auto auto 1fr;gap:2px 24px}
 .rlflow li{display:contents;font-size:var(--fs-sm)}

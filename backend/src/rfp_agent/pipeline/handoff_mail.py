@@ -21,7 +21,7 @@ import psycopg
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 
-from rfp_agent.llm import tasks
+from rfp_agent.llm import tasks, trace
 from rfp_agent.llm.client import LLMFailure
 from rfp_agent.notify.mail import MailFailure, get_mailer, send_with_retry
 from rfp_agent.pipeline import queries
@@ -172,7 +172,9 @@ def send_requests(conn: psycopg.Connection, run_id: int, assignment_ids: list[in
                          (NO_ADDRESS, ids))
             out["no_address"] += len(ids)
             continue
-        asks = questions(llm, role, items)
+        with trace.session(run_id, "handoff"):     # AI 호출 기록 (add-ai-call-trace)
+            asks = questions(llm, role, items)
+            trace.flush(conn)
         message = build_message(run, role, items, names, mailer.sender(), to, date.today(), asks)
         try:
             send_with_retry(mailer, message)

@@ -19,6 +19,7 @@ from rfp_agent.api import (
 )
 from rfp_agent.config import get_settings
 from rfp_agent.db.connection import connect
+from rfp_agent.llm import trace
 from rfp_agent.llm.client import ai_mode, ai_model
 from rfp_agent.pipeline import ocr, run_queue
 
@@ -62,6 +63,13 @@ class Health(BaseModel):
     run_mode: Literal["INLINE", "WORKER"] = "INLINE"
     workers_alive: int = 0
     jobs_queued: int = 0
+    # AI 호출 기록 원문 저장 (add-ai-call-trace). 켜져 있으면 안내 문장
+    trace_raw: bool = False
+    trace_raw_warning: str | None = None
+
+
+TRACE_RAW_WARNING = ("AI 호출 원문을 7일 동안 저장하고 있습니다. 고객 문서를 다루는 환경에서는 "
+                     "RFP_TRACE_RAW를 끄세요.")
 
 
 @app.get("/api/health", response_model=Health)
@@ -74,6 +82,7 @@ def health() -> Health:
                 "SELECT max(version) FROM schema_migration"
             ).fetchone()
             queue = run_queue.status(conn)
+            trace.purge(conn)                # 보관 기간이 지난 AI 호출 원문 (add-ai-call-trace)
         database, version = "ok", row[0] if row else None
     except Exception:  # noqa: BLE001 - 상태 점검은 어떤 DB 오류든 "down"으로 알린다
         database, version = "down", None
@@ -90,6 +99,8 @@ def health() -> Health:
         ocr_engine=ocr.engine_version() if ocr.available() else None,
         run_mode="WORKER" if settings.rfp_run_mode == "worker" else "INLINE",
         workers_alive=queue["workers_alive"], jobs_queued=queue["jobs_queued"],
+        trace_raw=settings.rfp_trace_raw == "on",
+        trace_raw_warning=TRACE_RAW_WARNING if settings.rfp_trace_raw == "on" else None,
     )
 
 
