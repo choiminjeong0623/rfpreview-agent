@@ -178,6 +178,7 @@ openspec/
 | 137 | `archive/2026-11-15-update-runlog-detail` | 실행 기록 상세 화면: 줄을 누르거나 Enter를 누르면 `#/runlog/:id`(요약 칸·단계별 걸린 시간·프롬프트 판·흐름 기록·AI 호출, [← 실행 기록]), 목록 펼치기 없앰. AI를 켠 검토의 AI 호출 목록이 "서버 응답이 정해진 모양과 맞지 않아"로 막히던 것(응답에 내보내기용 `run_token`이 실림) 고침. 마이그레이션 없음 (완료) |
 | 138 | `archive/2026-11-15-update-runlog-fiori` | 실행 기록 상세 화면 Fiori 정리: 단계 시각을 `clock_timestamp()`로 적어 시간이 다음 단계로 밀리던 버그 고침(위험 조건 찾기 1분이 제품 비교 판정에 붙음), 단계별 처리 한 표(걸린 시간 막대·AI 시간·바뀐 것, 가장 오래 걸린 줄 강조), 머리글 KPI "가장 오래 걸린 단계", 구역 이동·카드, AI 호출 이름 붙은 거르기·[초기화]·결과 없음 안내·"분석 밖", 프롬프트 판 접기·ⓘ 설명. 마이그레이션 없음 (완료) |
 | 139 | `archive/2026-11-15-add-prompt-view` | 프롬프트 관리 화면(SCR-26, 보기 전용): 시스템 관리 > 프롬프트 관리(`#/prompts`)에 역할 8개마다 지금 판, 판 기록(처음·마지막으로 쓴 때·검토 실행·AI 호출), 판별 최근 평가 주 지표. `GET /api/prompts`(실행 기록·AI 호출·평가 기록에서 모음). 프롬프트 글은 코드에서만, 편집·배포는 다음 단계 Langfuse 설계(ADR-010). 마이그레이션 없음 (완료) |
+| 140 | `archive/2026-11-15-add-langfuse-prompts` | Langfuse 프롬프트 연동(ADR-011): 역할 8개 프롬프트를 코드 틀(`tasks.TEMPLATES`, `{{이름}}`)로(보내는 글·해시 그대로), `RFP_LANGFUSE=on`이면 self-host Langfuse `rfp-<역할>`의 `RFP_LANGFUSE_LABEL`(기본 production) 판을 가져오되 코드 판·자리표시자·데이터 규칙(CR-14) 검사를 통과한 것만, 아니면·닿지 못하면 그 역할은 코드 판(`llm/prompt_source.py`). 판 이름 `t2+lf4`를 실행 기록·재사용 열쇠·AI 호출 기록에, 한 실행은 시작할 때 고른 판. `rfp-db langfuse-push-prompts`·`eval-prompts --promote`(staging 판이 3번 반복·기준선·회귀 없음일 때만 production)·`langfuse-push-traces`(해시만, 프롬프트 버전 연결). `/api/health` `prompt_source`, 프롬프트 관리 "가져온 곳". 기본 off, 마이그레이션 없음 (완료) |
 
 ## 3. 작업 흐름
 

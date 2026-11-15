@@ -6,7 +6,7 @@
 |---|---|
 | [01-problem.md](01-problem.md) | 문제 정의: 누구의 어떤 일, 데이터로 확인한 어려움, 시스템 정체성, 지표 |
 | [02-architecture.md](02-architecture.md) | 아키텍처: 처리 흐름, AI 역할 7개와 검증 코드, 판정 5종, 기술 스택, 코드 지도 |
-| [03-adr.md](03-adr.md) | 의사결정 기록 10건 |
+| [03-adr.md](03-adr.md) | 의사결정 기록 11건 |
 | [04-incidents.md](04-incidents.md) | 장애 분석 9건 |
 | [05-evaluation.md](05-evaluation.md) | 평가 결과: 실제 RFP 1건 결과, 지표별 측정, 개선 기록, 한계 |
 | [06-my-contribution.md](06-my-contribution.md) | 내 기여 (최민정, 조장·PM·DB) |

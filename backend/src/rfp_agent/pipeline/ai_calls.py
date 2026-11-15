@@ -5,6 +5,7 @@
 """
 
 import hashlib
+import re
 from collections import Counter
 
 import psycopg
@@ -52,6 +53,9 @@ def _nanos(dt) -> str:
     return str(int(dt.timestamp() * 1_000_000_000))
 
 
+_LF_VERSION = re.compile(r"\+lf(\d+)$")
+
+
 def _attr(key: str, value) -> dict:
     if isinstance(value, bool):
         return {"key": key, "value": {"boolValue": value}}
@@ -78,6 +82,11 @@ def otel(conn: psycopg.Connection, run_id: int) -> dict:
                  "rfp.batch_lines": c["batch_lines"]}
         if c["dropped_reason"]:
             attrs["rfp.dropped_reason"] = c["dropped_reason"]
+        # Langfuse 판으로 부른 호출은 그 프롬프트 버전과 잇는다 (add-langfuse-prompts)
+        lf = _LF_VERSION.search(c["prompt_version"] or "")
+        if lf and c["role"]:
+            attrs["langfuse.observation.prompt.name"] = f"rfp-{c['role']}"
+            attrs["langfuse.observation.prompt.version"] = int(lf.group(1))
         spans.append({
             "traceId": _hex(f"run-{run_id}-{c['run_token'] or ''}", 32),
             "spanId": _hex(f"call-{c['call_id']}", 16),

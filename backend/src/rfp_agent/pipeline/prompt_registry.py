@@ -1,7 +1,8 @@
 """프롬프트 관리 화면용 조회 (add-prompt-view). 읽기만 한다.
 
 프롬프트 글과 판은 코드(`llm/tasks.py`의 PROMPTS)가 정한다. 화면에서 고치지 않는다:
-판을 올리면 해시 테스트와 평가를 거치게 하려는 것(design.md).
+판을 올리면 해시 테스트와 평가를 거치게 하려는 것(design.md). Langfuse를 켜면(add-langfuse-prompts)
+글은 Langfuse에서 고치고, 이 화면은 지금 어느 판을 가져왔는지만 보인다.
 판마다 쓴 기간·검토 수는 실행 기록(review_run.graph_state)에서, AI 호출 수는 ai_call에서,
 평가 점수는 prompt_eval_run에서 모은다. 새 표는 없다.
 """
@@ -9,7 +10,8 @@
 import psycopg
 from psycopg.rows import dict_row
 
-from rfp_agent.llm import tasks
+from rfp_agent.config import get_settings
+from rfp_agent.llm import prompt_source, tasks
 from rfp_agent.pipeline import prompt_eval
 
 ROLE_LABELS = {
@@ -67,8 +69,12 @@ def _evals(conn: psycopg.Connection) -> dict[tuple[str, str], dict]:
 def overview(conn: psycopg.Connection) -> dict:
     """역할마다 지금 판과 판 기록(쓴 기간·검토 수·AI 호출 수·평가 점수). 판은 처음 쓴 순서."""
     usage, calls, evals = _usage(conn), _calls(conn), _evals(conn)
+    # 지금 쓰는 판: Langfuse를 켰으면 가져온 판, 아니면 코드 판 (add-langfuse-prompts)
+    found = prompt_source.resolve()
     roles = []
-    for role, current in tasks.PROMPTS.items():
+    for role in tasks.PROMPTS:
+        now = found[role]
+        current = now.version
         vers = {v for (r, v) in (*usage, *calls, *evals) if r == role} | {current}
         rows = []
         for v in vers:
@@ -85,5 +91,12 @@ def overview(conn: psycopg.Connection) -> dict:
             "role": role, "label": ROLE_LABELS.get(role, role), "current": current,
             "evaluated": role in prompt_eval.METRICS,
             "in_doc_key": role in tasks.DOC_ROLES, "versions": rows,
+            "prompt_source": now.source, "langfuse_name": prompt_source.name_of(role),
+            "langfuse_version": now.langfuse_version,
+            "fallback": prompt_source.FALLBACKS.get(now.fallback) if now.fallback else None,
         })
-    return {"source": SOURCE, "doc_key": tasks.doc_prompt_tag(), "roles": roles}
+    s = get_settings()
+    return {"source": SOURCE, "doc_key": ".".join(found[r].version for r in tasks.DOC_ROLES),
+            "roles": roles,
+            "langfuse": {"enabled": prompt_source.enabled(), "label": s.rfp_langfuse_label,
+                         "host": s.langfuse_host if prompt_source.enabled() else None}}
