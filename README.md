@@ -97,7 +97,10 @@ cd ../frontend && npm install && npm run dev
 # 1. Langfuse 공식 docker compose로 띄움(https://github.com/langfuse/langfuse). 이 저장소 DB가 5433이라 포트는 겹치지 않음
 #    Langfuse 화면(http://localhost:3000)에서 프로젝트를 만들고 공개 키·비밀 키를 받음
 # 2. .env: RFP_LANGFUSE=on, LANGFUSE_HOST, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
-#    (docker compose 안의 백엔드에서는 LANGFUSE_HOST=http://host.docker.internal:3000)
+#    (docker compose 안의 백엔드에서는 LANGFUSE_HOST=http://host.docker.internal:3000,
+#     화면 링크가 브라우저에서 열리게 RFP_LANGFUSE_UI_URL=http://localhost:3000)
+#    보내기 시간 제한은 RFP_LANGFUSE_SEND_TIMEOUT_S(기본 30초). Langfuse ClickHouse는 메모리를 많이 써서
+#    Docker 메모리가 모자라면 보내기·화면이 "timed out"으로 끝남
 cd backend
 uv run rfp-db langfuse-push-prompts --label staging        # 코드 틀을 Langfuse에 올림
 #    Langfuse 화면에서 rfp-<역할> 프롬프트를 고쳐 staging 표시로 저장
