@@ -11,6 +11,7 @@
 import math
 import re
 from collections import Counter
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import pdfplumber
@@ -154,25 +155,33 @@ def _add_paragraphs(blocks: list[Block], lines: list[dict], gap: float | None = 
 OCR_DPI = 300
 
 
-def _ocr_page(page) -> list[dict]:
-    """글자 층이 없는 쪽을 그림으로 만들어 OCR한 줄 (add-ocr). 위치는 쪽 좌표로 바꾼다."""
+def _ocr_page(page) -> tuple[list[dict], ocr.OcrResult | None]:
+    """글자 층이 없는 쪽을 그림으로 만들어 OCR한 줄 (add-ocr). 위치는 쪽 좌표로 바꾼다.
+
+    OCR을 쓸 수 없으면 ([], None). 읽은 결과(버린 줄 수 포함)는 쪽 기록에 쓴다 (add-unread-pages).
+    """
     if not ocr.available():
-        return []
+        return [], None
     image = page.to_image(resolution=OCR_DPI).original
     scale = page.height / image.height
+    found = ocr.read(image)
     return [{"text": ln.text, "top": ln.top * scale, "bottom": ln.bottom * scale,
-             "x0": 0, "x1": page.width, "ocr": True} for ln in ocr.read_lines(image)]
+             "x0": 0, "x1": page.width, "ocr": True} for ln in found.lines], found
 
 
-def _ocr_region(page, bbox: tuple) -> list[dict]:
-    """글자 쪽에 박은 그림 영역을 OCR한 줄 (update-pdf-drawings). 위치는 쪽 좌표로 바꾼다."""
-    if not ocr.available():
-        return []
+def _ocr_region(page, bbox: tuple) -> tuple[list[dict], str | None]:
+    """글자 쪽에 박은 그림 영역을 OCR한 줄과 읽지 못한 이유 (update-pdf-drawings, add-unread-pages).
+
+    위치는 쪽 좌표로 바꾼다.
+    """
+    if (why := ocr.unavailable_reason()) is not None:
+        return [], why
     image = page.crop(bbox).to_image(resolution=OCR_DPI).original
     scale = (bbox[3] - bbox[1]) / image.height
     top = bbox[1]
+    found = ocr.read(image)
     return [{"text": ln.text, "top": top + ln.top * scale, "bottom": top + ln.bottom * scale,
-             "x0": 0, "x1": page.width, "ocr": True} for ln in ocr.read_lines(image)]
+             "x0": 0, "x1": page.width, "ocr": True} for ln in found.lines], found.reason
 
 
 def _page_figures(page) -> list[tuple]:
@@ -214,10 +223,11 @@ def _drawing_caption(tables, lines: list[dict]) -> str:
     return " · ".join(["도면" + (f" {number}" if number else "")] + ([title] if title else []))
 
 
-def _add_figure(blocks: list[Block], caption: str | None, ocr_lines: list[dict]) -> None:
-    """그림 블록(빈 글자, 그림 위치 기록)과 그림 속 OCR 단락."""
+def _add_figure(blocks: list[Block], caption: str | None, ocr_lines: list[dict],
+                reason: str | None = None) -> None:
+    """그림 블록(빈 글자, 그림 위치·OCR로 읽지 못한 이유 기록)과 그림 속 OCR 단락."""
     blocks.append(Block(seq=len(blocks), kind="P", text="", line_no=_next_line(blocks),
-                        line_count=1, has_figure=True, caption=caption))
+                        line_count=1, has_figure=True, caption=caption, ocr_reason=reason))
     _add_paragraphs(blocks, ocr_lines)
 
 
@@ -285,33 +295,80 @@ def _mark_rows(blocks: list[Block]) -> list[Block]:
     return out
 
 
+@dataclass
+class PageScan:
+    """쪽마다 읽은 결과 (add-unread-pages, CR-13). 쪽을 읽는 그 자리에서 기록한다.
+
+    unread: 읽지 못한 쪽 [{page, reason, dropped, dropped_conf}] (쪽 순서). 빈 쪽은 수만 센다.
+    """
+
+    page_count: int = 0
+    pages_read: int = 0
+    pages_blank: int = 0
+    unread: list[dict] = field(default_factory=list)
+
+    def note(self, page_no: int, read: bool, reason: str | None = None,
+             found: "ocr.OcrResult | None" = None) -> None:
+        if read:
+            self.pages_read += 1
+        elif reason == ocr.BLANK:
+            self.pages_blank += 1
+        else:
+            self.unread.append({"page": page_no, "reason": reason,
+                                "dropped": found.dropped if found else 0,
+                                "dropped_conf": found.dropped_conf if found else None})
+
+
+def _scan_page(page, lines: list[dict], found: "ocr.OcrResult | None") -> tuple[bool, str | None]:
+    """글자 층·표가 없는 쪽의 결과: (읽음, 이유). 쪽 그림이 없고 OCR도 읽지 못했으면 빈 쪽."""
+    if lines:
+        return True, None
+    if not page.images:
+        return False, ocr.BLANK
+    if found is None:
+        return False, ocr.unavailable_reason() or ocr.OCR_EMPTY
+    return False, found.reason
+
+
 def read_blocks(path: Path) -> list[Block]:
+    return read_pdf(path)[0]
+
+
+def read_pdf(path: Path) -> tuple[list[Block], PageScan]:
+    """PDF 블록과 쪽마다 읽은 결과."""
+    scan = PageScan()
     try:
         pdf = pdfplumber.open(str(path))
     except Exception:                                   # 암호·깨진 PDF: 판독 불가
-        return []
+        return [], scan
     with pdf:
         pages = []
-        for page in pdf.pages:
+        scan.page_count = len(pdf.pages)
+        for page_no, page in enumerate(pdf.pages, start=1):
             # 돌아간 글자는 줄로 읽지 않는다 (update-pdf-drawings)
             rotated = sum(1 for ch in page.chars if not _straight(ch) and ch["text"].strip())
             flat = page.filter(_straight) if rotated else page
             tables = flat.find_tables()
             lines = [ln for ln in flat.extract_text_lines() if ln["text"].strip()]
-            figures: list[tuple] = []                   # (위치, 설명, 그림 속 OCR 줄)
+            figures: list[tuple] = []                   # (위치, 설명, 그림 속 OCR 줄, 이유)
             if not lines and not tables:
-                lines = _ocr_page(page)                 # 스캔한 쪽 (add-ocr)
+                lines, found = _ocr_page(page)          # 스캔한 쪽 (add-ocr)
+                scan.note(page_no, *_scan_page(page, lines, found), found)
             elif _drawing_page(tables, lines):
+                scan.note(page_no, True)
                 # 도면 쪽: 라벨·치수·표제란은 읽지 않고 주기 줄만 한 줄씩
-                figures.append((0, _drawing_caption(tables, lines), []))
+                figures.append((0, _drawing_caption(tables, lines), [], None))
                 lines = [{**ln, "own": True} for ln in lines if NOTE.match(ln["text"])]
                 tables = []
             else:
+                scan.note(page_no, True)
                 # 글자층이 깔린 그림은 이미 읽은 글자라 OCR하지 않는다 (위치만 남김)
-                figures += [(box[1], None, [] if _text_inside(flat, box) >= FIGURE_TEXT_CHARS
-                             else _ocr_region(page, box)) for box in _page_figures(page)]
+                figures += [(box[1], None, *(([], None)
+                                             if _text_inside(flat, box) >= FIGURE_TEXT_CHARS
+                                             else _ocr_region(page, box)))
+                            for box in _page_figures(page)]
             if rotated:
-                figures.append((page.height, f"돌아간 글자 {rotated}자", []))
+                figures.append((page.height, f"돌아간 글자 {rotated}자", [], None))
             boxes = [t.bbox for t in tables]
             pages.append((page, tables, [ln for ln in lines if not _inside(ln, boxes)], figures))
         # 쪽 절반 이상(2쪽 이상)에서 같은 높이에 반복되는 줄은 머리말·꼬리말
@@ -326,7 +383,7 @@ def read_blocks(path: Path) -> list[Block]:
             items = [(ln["top"], "P", ln) for ln in lines
                      if _edge_key(ln, page.height) not in repeated]
             items += [(t.bbox[1], "T", t) for t in tables]
-            items += [(top, "F", (caption, found)) for top, caption, found in figures]
+            items += [(top, "F", (caption, found, why)) for top, caption, found, why in figures]
             items.sort(key=lambda it: (it[0], it[1]))   # 같은 높이면 그림 → 단락 → 표
             gap = line_gap([obj for _, kind, obj in items if kind == "P"])
             # 위에서 아래로: 표 사이의 글자 줄은 모아 두었다가 단락으로 묶는다
@@ -345,7 +402,7 @@ def read_blocks(path: Path) -> list[Block]:
             _add_paragraphs(blocks, pending, gap)
             for b in blocks[first:]:
                 b.page = page_no
-    return _mark_rows(blocks)
+    return _mark_rows(blocks), scan
 
 
 def page_starts(blocks: list[Block]) -> list[int] | None:

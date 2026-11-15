@@ -48,7 +48,7 @@ def test_read_check_list(db, run):
     rows = read_checks.read_checks(db, run)
     kinds = [r["kind"] for r in rows]
     assert kinds == sorted(kinds, key=read_checks.KINDS.index)
-    assert set(kinds) == set(read_checks.KINDS)
+    assert set(kinds) == set(read_checks.KINDS) - {"쪽"}     # docx는 쪽이 없다 (add-unread-pages)
     for r in rows:
         assert r["file_name"] == "synthetic_judgment.docx" and r["todo"] and r["problem"]
         assert r["checked_by"] is None and r["checked_at"] is None

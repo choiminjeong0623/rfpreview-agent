@@ -256,7 +256,12 @@ def _start(paths: list[Path], background: BackgroundTasks, info: dict,
     bundles = {name: c.bundle for name, c in (choices or {}).items() if c.bundle}
     with connect() as conn:
         # 판정할 문서가 없으면 10분 분석해도 판정이 0건이라 실행을 만들기 전에 거절한다 (CR-09)
-        if not preview.has_judge_target(conn, paths, bundles):
+        problem = preview.judge_target_problem(conn, paths, bundles)
+        if problem and problem[0] == "UNREAD":
+            # 판정 대상으로 고른 문서를 모두 읽지 못함 (add-unread-pages): 묶음 거절과 문구를 나눈다
+            raise HTTPException(400, f"판정할 문서를 읽지 못했습니다({problem[1]}). "
+                                     "다시 스캔한 파일이나 글자가 든 파일을 올려 주세요.")
+        if problem:
             raise HTTPException(400, NO_JUDGE_TARGET)
         # 검토 정보·사업 칸이 틀리면 실행을 만들기 전에 막는다
         _review(lambda: review_info.clean(info))

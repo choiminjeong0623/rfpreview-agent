@@ -576,6 +576,9 @@ export type DocumentPreview = {
   judge_target: boolean
   needs_review: boolean
   reason: string
+  page_count?: number | null
+  unread_pages?: number
+  unread_reason?: 'OCR_OFF' | 'OCR_MISSING' | 'OCR_LOW_CONF' | 'OCR_EMPTY' | null
 }
 
 export type EngineeringCheck = {
@@ -1420,6 +1423,9 @@ export type RunDocument = {
   reprocessed?: boolean
   reprocessed_lines?: number
   ocr_lines?: number
+  page_count?: number | null
+  pages_read?: number | null
+  pages_blank?: number | null
 }
 
 /** 검토 하나의 흐름 기록 (add-flow-history). 읽기 전용. */

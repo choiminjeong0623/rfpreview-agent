@@ -39,6 +39,7 @@ class Block:
     ocr: bool = False               # 그림·스캔 쪽에서 OCR로 읽은 단락 (add-ocr)
     caption: str | None = None      # 읽는 쪽이 정한 그림 설명 (PDF 도면 쪽, update-pdf-drawings)
     page: int | None = None         # PDF 쪽 번호 (1부터, add-pdf-page-location). docx는 없음
+    ocr_reason: str | None = None   # 그림을 OCR로 읽지 못한 이유 (add-unread-pages, ocr.OCR_*)
 
     @property
     def last_line(self) -> int:
@@ -59,11 +60,15 @@ def _cell_text(cell) -> str:
     return "\n".join(p.text for p in cell.paragraphs)
 
 
-def _figure_text(el, doc) -> list[str]:
-    """그림 단락 속 그림들을 OCR로 읽은 단락들 (add-ocr). 엔진이 없으면 빈 목록."""
-    if not ocr.available():
-        return []
-    out = []
+def _figure_text(el, doc) -> tuple[list[str], str | None]:
+    """그림 단락 속 그림들을 OCR로 읽은 단락들과 읽지 못한 이유 (add-ocr, add-unread-pages).
+
+    엔진이 없거나 꺼져 있으면 빈 목록과 그 이유. 읽은 줄이 하나라도 있으면 이유는 없다.
+    """
+    if (why := ocr.unavailable_reason()) is not None:
+        return [], why
+    out: list[str] = []
+    results = []
     for blip in el.iter(qn("a:blip")):
         part = doc.part.related_parts.get(blip.get(qn("r:embed")))
         if part is None:
@@ -72,8 +77,12 @@ def _figure_text(el, doc) -> list[str]:
             image = Image.open(io.BytesIO(part.blob))
         except Exception:                               # 그림이 아닌 개체(EMF 등)는 건너뜀
             continue
-        out += ocr.paragraphs(ocr.read_lines(image))
-    return out
+        found = ocr.read(image)
+        results.append(found)
+        out += ocr.paragraphs(found.lines)
+    if out or not results:
+        return out, None
+    return out, ocr.OCR_LOW_CONF if any(r.dropped for r in results) else ocr.OCR_EMPTY
 
 
 def read_blocks(path: Path) -> list[Block]:
@@ -88,9 +97,10 @@ def read_blocks(path: Path) -> list[Block]:
             figure = el.find(".//" + qn("w:drawing")) is not None \
                 or el.find(".//" + qn("w:pict")) is not None
             # 그림 속 글자는 그림 단락 바로 뒤 단락으로 더한다 (add-ocr)
-            items += [("O", t, None, [], []) for t in (_figure_text(el, doc) if figure else [])]
+            found, reason = _figure_text(el, doc) if figure else ([], None)
+            items += [("O", t, None, [], []) for t in found]
         else:
-            figure = False
+            figure, reason = False, None
             table_no += 1
             items = []
             for row_no, row in enumerate(Table(el, doc).rows):
@@ -110,6 +120,7 @@ def read_blocks(path: Path) -> list[Block]:
                 line_count=count, table_no=table_no if kind == "R" else None, row_no=row_no,
                 cells=cells, raw_cells=raw, has_figure=kind == "P" and figure and i == 0,
                 ocr=kind == "O",
+                ocr_reason=reason if kind == "P" and figure and i == 0 else None,
             ))
             line_no += count
     return blocks

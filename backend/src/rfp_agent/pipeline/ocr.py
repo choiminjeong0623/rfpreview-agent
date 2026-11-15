@@ -43,10 +43,41 @@ def version_tag() -> str:
     return f"ocr{engine_version()}" if available() else "ocr-off"
 
 
+# 읽지 못한 이유 (add-unread-pages, CR-13). BLANK는 글자·그림이 모두 없는 빈 쪽
+OCR_OFF, OCR_MISSING, OCR_LOW_CONF, OCR_EMPTY, BLANK = (
+    "OCR_OFF", "OCR_MISSING", "OCR_LOW_CONF", "OCR_EMPTY", "BLANK")
+
+
+def unavailable_reason() -> str | None:
+    """OCR을 쓸 수 없는 이유: 설정으로 끔이 먼저, 그다음 엔진 없음. 쓸 수 있으면 None."""
+    if get_settings().rfp_ocr == "off":
+        return OCR_OFF
+    return OCR_MISSING if engine_version() is None else None
+
+
+@dataclass
+class OcrResult:
+    lines: list[OcrLine]
+    dropped: int = 0                    # 신뢰도 기준 미만이라 버린 줄 수
+    dropped_conf: float | None = None   # 버린 줄의 평균 신뢰도
+
+    @property
+    def reason(self) -> str | None:
+        """남긴 줄이 없을 때 이유: 버린 줄만 있으면 신뢰도 낮음, 아무 줄도 없으면 글자 없음."""
+        if self.lines:
+            return None
+        return OCR_LOW_CONF if self.dropped else OCR_EMPTY
+
+
 def read_lines(image: Image.Image) -> list[OcrLine]:
     """그림을 줄로 읽는다. 엔진이 없으면 빈 목록."""
+    return read(image).lines
+
+
+def read(image: Image.Image) -> OcrResult:
+    """그림을 줄로 읽고, 신뢰도가 낮아 버린 줄 수와 평균 신뢰도도 돌려준다."""
     if not available():
-        return []
+        return OcrResult([])
     import pytesseract
 
     data = pytesseract.image_to_data(image.convert("L"), lang=LANGS, config=CONFIG,
@@ -57,17 +88,20 @@ def read_lines(image: Image.Image) -> list[OcrLine]:
             key = (data["block_num"][i], data["par_num"][i], data["line_num"][i])
             lines.setdefault(key, []).append(i)
     out = []
+    dropped: list[float] = []
     for key in sorted(lines, key=lambda k: min(data["top"][i] for i in lines[k])):
         idx = lines[key]
         conf = sum(float(data["conf"][i]) for i in idx) / len(idx)
         if conf < MIN_CONFIDENCE:
+            dropped.append(conf)
             continue
         out.append(OcrLine(
             text=" ".join(data["text"][i] for i in sorted(idx, key=lambda i: data["left"][i])),
             top=min(data["top"][i] for i in idx),
             bottom=max(data["top"][i] + data["height"][i] for i in idx),
             confidence=conf))
-    return out
+    return OcrResult(out, len(dropped),
+                     round(sum(dropped) / len(dropped), 1) if dropped else None)
 
 
 PARA_GAP = 1.5              # 줄 위아래 간격이 줄 높이의 이 배를 넘으면 새 단락 (pdf_reader와 같음)

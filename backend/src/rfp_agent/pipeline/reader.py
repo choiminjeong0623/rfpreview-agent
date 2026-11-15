@@ -14,5 +14,12 @@ def read_document(path: Path) -> list[Block]:
     return docx_reader.read_blocks(path)
 
 
+def read_with_pages(path: Path) -> tuple[list[Block], pdf_reader.PageScan | None]:
+    """블록과 쪽마다 읽은 결과 (add-unread-pages). docx는 쪽이 없어 None."""
+    if path.suffix.lower() == ".pdf":
+        return pdf_reader.read_pdf(path)
+    return docx_reader.read_blocks(path), None
+
+
 def is_pdf(path: Path) -> bool:
     return path.suffix.lower() == ".pdf"
