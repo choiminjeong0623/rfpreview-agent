@@ -13,12 +13,22 @@ test('실행 기록 보기', async ({ page, request }) => {
   await expect(row).toContainText('담당자 확인')
   await expect(row).toContainText('규칙 기반')                         // 로컬은 AI 키 없이 돈다
   await row.click()
+  await expect(page).toHaveURL(new RegExp(`#/runlog/${run.run_id}$`))     // 상세 화면으로 (update-runlog-detail)
+  await expect(page.getByRole('heading', { name: `실행 기록 · ${run.review_no}` })).toBeVisible()
   const steps = page.locator('.rlopen')
   await expect(steps).toContainText('처음 처리')
   await expect(steps).toContainText('문서 읽기')
   await expect(steps).toContainText('제품 비교 판정')
-  await row.click()
-  await expect(steps).toHaveCount(0)
+})
+
+// 명세 review-workspace "실행 기록 화면" (change update-runlog-detail)
+test('실행 기록 상세에서 돌아가기', async ({ page, request }) => {
+  const run = await deviationRun(request, `실행 기록 상세 ${Date.now()}`)
+  await as(page, ENGINEER)
+  await page.goto(`/#/runlog/${run.run_id}`)
+  await page.getByRole('link', { name: '← 실행 기록' }).click()
+  await expect(page).toHaveURL(/#\/runlog$/)
+  await expect(page.getByRole('heading', { name: '실행 기록', exact: true })).toBeVisible()
 })
 
 // 명세 service-health "AI 방식 표시" (change add-ai-mode): 실행 기록 머리 줄에 지금 AI 방식과 외부 전송 여부
