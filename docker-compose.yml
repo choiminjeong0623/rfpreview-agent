@@ -47,7 +47,7 @@ services:
       # Langfuse 프롬프트 관리 (add-langfuse-prompts): off = 코드 판만. Langfuse는 따로 띄운다(docs/setup-guide.md)
       RFP_LANGFUSE: ${RFP_LANGFUSE:-off}
       RFP_LANGFUSE_LABEL: ${RFP_LANGFUSE_LABEL:-production}
-      # 평가 결과를 Langfuse 실험으로 (add-langfuse-experiments)
+      # 평가 결과 실험·검토 작업 끝 AI 호출 기록을 Langfuse로 (add-langfuse-experiments·trace-push)
       RFP_LANGFUSE_RECORD: ${RFP_LANGFUSE_RECORD:-off}
       LANGFUSE_HOST: ${LANGFUSE_HOST:-}
       LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}

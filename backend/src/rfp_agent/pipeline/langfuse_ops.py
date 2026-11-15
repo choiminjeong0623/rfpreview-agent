@@ -279,3 +279,48 @@ def record_experiment(result, prompt_set: prompt_source.PromptSet, private: bool
 
 def save_url(conn: psycopg.Connection, eval_id: int, url: str | None) -> None:
     conn.execute("UPDATE prompt_eval_run SET langfuse_url = %s WHERE eval_id = %s", (url, eval_id))
+
+
+# ── 검토 실행 작업 끝에 호출 기록 보내기 (add-langfuse-trace-push) ──────────────────
+
+def send_run(conn: psycopg.Connection, run_id: int, token: str | None) -> str | None:
+    """기록을 켰으면 검토의 AI 호출 기록을 보내고 결과를 검토 줄에 남긴다. 돌려주는 값은 상태.
+
+    SENT(보냄) · FAILED(보내지 못함, 이유는 langfuse_error) · None(꺼짐·호출 없음, 남기지 않음).
+    보내지 못해도 예외를 올리지 않는다(검토 단계·결과는 그대로).
+    """
+    if not record_enabled():
+        return None
+    try:
+        sent = push_traces(conn, run_id)
+        if not sent:
+            return None
+        lf = _client()
+        url = None
+        if token:
+            try:
+                project = lf.project_id()
+            except (httpx.TransportError, httpx.HTTPStatusError, ValueError):
+                project = None
+            if project:
+                trace_id = ai_calls._hex(f"run-{run_id}-{token}", 32)
+                url = f"{str(lf.http.base_url).rstrip('/')}/project/{project}/traces/{trace_id}"
+        conn.execute("UPDATE review_run SET langfuse_sent_at = now(), langfuse_url = %s, "
+                     "langfuse_error = NULL WHERE run_id = %s", (url, run_id))
+        conn.commit()
+        return "SENT"
+    except LangfuseError as exc:
+        conn.rollback()
+        conn.execute("UPDATE review_run SET langfuse_error = %s WHERE run_id = %s",
+                     (str(exc)[:300], run_id))
+        conn.commit()
+        return "FAILED"
+
+
+def sent_info(conn: psycopg.Connection, run_id: int) -> dict | None:
+    """실행 기록 화면용: 보낸 적이 있거나 실패한 적이 있을 때만."""
+    row = conn.execute("SELECT langfuse_sent_at, langfuse_url, langfuse_error FROM review_run "
+                       "WHERE run_id = %s", (run_id,)).fetchone()
+    if row is None or (row[0] is None and row[2] is None):
+        return None
+    return {"sent_at": row[0], "url": row[1], "error": row[2]}

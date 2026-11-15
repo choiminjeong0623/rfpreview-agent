@@ -152,7 +152,18 @@ def run(job: Job) -> str:
             result, error = "FAILED", str(exc)[:500]
     with connect() as conn:
         finish(conn, job, result, error)
+        _send_langfuse(conn, job)
     return result
+
+
+def _send_langfuse(conn: psycopg.Connection, job: Job) -> None:
+    """작업이 끝나면 AI 호출 기록을 Langfuse로 (add-langfuse-trace-push). 실패해도 그대로."""
+    from rfp_agent.pipeline import langfuse_ops
+
+    try:
+        langfuse_ops.send_run(conn, job.run_id, job.token)
+    except Exception:                                   # 보내기는 검토 결과와 상관없다
+        log.exception("작업 %s의 AI 호출 기록을 Langfuse로 보내지 못함", job.job_id)
 
 
 def reclaim(conn: psycopg.Connection, now_sql: str = "now()") -> list[int]:

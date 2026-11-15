@@ -42,7 +42,14 @@ def summary(conn: psycopg.Connection, run_id: int) -> dict:
     return {"calls": shown, "count": len(rows),
             "by_result": dict(Counter(r["result"] for r in rows)),
             "step_ms": [{"step": k, "ms": v} for k, v in by_step.items()],
-            "different_answers": different_answers(conn, run_id) if rows else 0}
+            "different_answers": different_answers(conn, run_id) if rows else 0,
+            "langfuse": _langfuse(conn, run_id)}
+
+
+def _langfuse(conn: psycopg.Connection, run_id: int) -> dict | None:
+    from rfp_agent.pipeline import langfuse_ops  # langfuse_ops가 이 모듈을 쓰므로 안에서
+
+    return langfuse_ops.sent_info(conn, run_id)
 
 
 def _hex(text: str, n: int) -> str:

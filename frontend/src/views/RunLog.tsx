@@ -284,6 +284,17 @@ function StepTable({ label, steps, top, aiMs, flow, flowError }: {
   )
 }
 
+/** 작업이 끝날 때 Langfuse로 보낸 결과 (add-langfuse-trace-push). 보내지 못한 것은 사용자 잘못이 아니라 중립색 */
+function LangfuseSent({ v }: { v: NonNullable<AiCalls['langfuse']> }) {
+  return (
+    <p className="en" style={{ margin: '0 0 8px' }}>
+      {v.sent_at && <>Langfuse로 보냄 · {stamp(v.sent_at)}
+        {v.url && <> · <a className="lnk" href={v.url} target="_blank" rel="noreferrer">Langfuse에서 보기 ↗</a></>}</>}
+      {v.error && <span className="dimv">{v.sent_at ? ' · 마지막 ' : ''}Langfuse로 보내지 못함: {v.error}</span>}
+    </p>
+  )
+}
+
 /** AI 호출 목록 (add-ai-call-trace, FR-21): 이름 붙은 거르기(단계·역할)·느린 순·초기화, 결과 없음 안내 (Fiori 거르기 막대·No Data) */
 function AiCallList({ runId, data, error }: { runId: number; data: AiCalls | null; error: string | null }) {
   const [step, setStep] = useState('')
@@ -307,6 +318,7 @@ function AiCallList({ runId, data, error }: { runId: number; data: AiCalls | nul
         {num(data.count)}건 · {fails.length ? <span className="c-ora">{fails.map(([k, n]) => `${RESULT_NAMES[k as AiCall['result']] ?? k} ${n}`).join(' · ')}</span> : '모두 성공'}
         {' · '}같은 입력에 다른 답 {data.different_answers}건{' '}
         <Info text="문서 원문은 저장하지 않고, 같은 입력인지 비교할 수 있는 요약값(해시)만 저장합니다." /></p>
+      {data.langfuse && <LangfuseSent v={data.langfuse} />}
       <div className="rlfilter" role="group" aria-label="AI 호출 거르기">
         <label>단계<select className="fi" aria-label="단계 거르기" value={step} onChange={(e) => setStep(e.target.value)}>
           <option value="">모든 단계</option>
