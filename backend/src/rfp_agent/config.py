@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     rfp_local_embed_model: str | None = None    # 없으면 사내 방식에서 뜻 찾기 건너뜀
     # 프롬프트 평가 한 번의 비용 상한(원, 팀 가정 단가로 어림). 넘으면 --yes 없이는 시작하지 않음
     rfp_eval_max_krw: int = 500
+    # 여러 회사 모델 비교 평가 (add-model-compare, FR-23). 평가 전용, 분석 운영 모델과 무관
+    anthropic_api_key: str | None = None
+    openai_api_key: str | None = None
+    # 단가 표에 없는 모델의 단가(팀 가정, 1M 토큰당 달러): "모델=입력/출력;모델=입력/출력"
+    rfp_eval_prices: str | None = None
     migrations_dir: Path = REPO_ROOT / "db" / "migrations"
     seed_dir: Path = REPO_ROOT / "data" / "seed"
     # RFP 원문처럼 저장소에 올리지 않는 자료 (data/private/README.md)

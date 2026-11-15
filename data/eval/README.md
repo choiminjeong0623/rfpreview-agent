@@ -46,3 +46,23 @@ AI 역할별 입력과 정답을 담은 JSONL 파일입니다. `rfp-db eval-prom
 4. 검증(`verify`): 문장마다 근거 원문만 보고 뒷받침되면 `YES`, 어긋나거나 근거에 없는 사실이면 `NO`,
    근거만으로 판단할 수 없으면 `UNSURE`를 적습니다. 검증자 답과 일치하는 비율을 잽니다.
 5. 평가셋을 고쳤으면 기준선을 다시 만듭니다(`--baseline`, `--write-baseline-file`).
+
+## 여러 회사 모델 비교 (add-model-compare, FR-23)
+
+같은 평가셋·같은 프롬프트 판을 여러 모델에 돌려 정확도·비용·응답 시간을 한 표로 비교합니다.
+분석에 쓰는 모델(`RFP_AI_MODE`)은 바뀌지 않습니다.
+
+```bash
+cd backend
+uv run rfp-db eval-prompts --set public --repeat 3 \
+  --models gemini:gemini-3.8-flash,openai:<GPT 모델>,local:<오픈 모델>
+```
+
+- 공급자: `gemini`(`GEMINI_API_KEY`), `anthropic`(`ANTHROPIC_API_KEY`), `openai`(`OPENAI_API_KEY`),
+  `local`(`RFP_LOCAL_LLM_URL`, 예: Ollama `http://localhost:11434/v1`). 키가 없는 모델은 "건너뜀(키 없음)".
+- 단가 표에 없는 모델은 `RFP_EVAL_PRICES="모델=입력/출력;…"`(1M 토큰당 달러, 팀 가정)로 줍니다.
+  주지 않으면 "단가 모름"이고 "가장 싼 모델" 후보에서 빠집니다. 로컬 모델은 `모델=0/0`.
+- 비용 상한(`RFP_EVAL_MAX_KRW`)은 모델 합계 어림으로 봅니다. 넘으면 `--yes`.
+- `data/private/` 평가셋은 Gemini와 `local`로만 보냅니다(나머지는 "건너뜀(외부 전송 허용 안 됨)").
+- 결과는 비교 묶음 번호로 저장되고 `GET /api/prompt-evals?set=public`에서 `compare_id`·`provider`·
+  `latency_p50_ms`·`latency_p95_ms`로 봅니다. 비교 실행은 기준선을 만들지 않습니다.

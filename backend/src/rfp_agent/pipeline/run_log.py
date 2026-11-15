@@ -13,14 +13,38 @@ from rfp_agent.pipeline.queries import REVIEW_INFO
 USD_KRW = 1500                                   # 팀 가정 (비용 비교 문서와 같은 값)
 PRICES_USD_PER_M = {                             # 모델: (입력, 출력·생각) 1M 토큰당 달러, 팀 가정
     "gemini-3.8-flash": (0.50, 4.00),
+    # 모델 비교 평가 (add-model-compare): Anthropic 공개 단가(2026-11) 그대로, 팀 가정
+    "claude-opus-5-5": (4.00, 20.00),
+    "claude-sonnet-5-5": (2.00, 10.00),
+    "claude-haiku-5-5": (0.10, 0.50),
 }
+
+
+def parse_prices(text: str | None) -> dict[str, tuple[float, float]]:
+    """설정 RFP_EVAL_PRICES "모델=입력/출력;…"(1M 토큰당 달러). 틀린 조각은 건너뛴다."""
+    out: dict[str, tuple[float, float]] = {}
+    for part in (text or "").split(";"):
+        name, sep, price = part.strip().rpartition("=")
+        a, slash, b = price.partition("/")
+        try:
+            if sep and slash and name.strip():
+                out[name.strip()] = (float(a), float(b))
+        except ValueError:
+            continue
+    return out
+
+
+def price_of(model: str) -> tuple[float, float] | None:
+    from rfp_agent.config import get_settings
+
+    return parse_prices(get_settings().rfp_eval_prices).get(model) or PRICES_USD_PER_M.get(model)
 
 
 def estimated_cost_krw(model: str | None, input_tokens: int, output_tokens: int,
                        thinking_tokens: int) -> int | None:
     if model is None:
         return 0                                  # AI 없이 규칙만 쓴 실행
-    price = PRICES_USD_PER_M.get(model)
+    price = price_of(model)
     if price is None:
         return None
     usd = (input_tokens * price[0] + (output_tokens + thinking_tokens) * price[1]) / 1_000_000

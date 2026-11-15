@@ -1209,6 +1209,10 @@ export type PromptEvalRun = {
   note: string | null
   run_by: string | null
   created_at: string
+  provider?: 'gemini' | 'anthropic' | 'openai' | 'local' | null
+  compare_id?: number | null
+  latency_p50_ms?: number | null
+  latency_p95_ms?: number | null
 }
 
 export type Proposal = {

@@ -1,3 +1,4 @@
+import copy
 import json
 import logging
 import threading
@@ -214,10 +215,12 @@ class LocalLLM:
 
     def __init__(self, base_url: str, model: str, api_key: str | None = None,
                  embed_model: str | None = None, workers: int = 4, timeout_s: float = 120,
-                 transport=None):
+                 transport=None, temperature: float | None = 0):
         import httpx
 
         self.model = model
+        # None이면 보내지 않는다: OpenAI 일부 최신 모델은 0을 받지 않는다 (add-model-compare)
+        self.temperature = temperature
         self.embed_model = embed_model
         self.usage = Usage()
         self.workers = workers
@@ -233,13 +236,15 @@ class LocalLLM:
         return response.json()
 
     def generate_json(self, prompt: str, schema: dict) -> dict:
-        data = self._post("chat/completions", {
+        body = {
             "model": self.model,
             "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0,
             "response_format": {"type": "json_schema",
                                 "json_schema": {"name": "answer", "schema": schema}},
-        })
+        }
+        if self.temperature is not None:
+            body["temperature"] = self.temperature
+        data = self._post("chat/completions", body)
         usage = data.get("usage") or {}
         self.usage.add(input_tokens=usage.get("prompt_tokens") or 0,
                        output_tokens=usage.get("completion_tokens") or 0)
@@ -252,6 +257,132 @@ class LocalLLM:
         data = self._post("embeddings", {"model": self.embed_model, "input": texts})
         rows = sorted(data["data"], key=lambda r: r.get("index", 0))
         return [list(r["embedding"]) for r in rows]
+
+
+def strict_schema(schema: dict) -> dict:
+    """구조화 출력용 복사본: 모든 object에 additionalProperties false (Anthropic 요구)."""
+    out = copy.deepcopy(schema)
+
+    def walk(node):
+        if isinstance(node, dict):
+            if node.get("type") == "object":
+                node.setdefault("additionalProperties", False)
+            for v in node.values():
+                walk(v)
+        elif isinstance(node, list):
+            for v in node:
+                walk(v)
+    walk(out)
+    return out
+
+
+class AnthropicLLM:
+    """Claude (공식 SDK, 구조화 출력). 모델 비교 평가에서만 쓴다 (add-model-compare, FR-23).
+
+    SDK 재시도는 끄고 재시도는 call_with_retry가 CR-12대로 한다. temperature는 보내지 않는다
+    (최신 모델은 400). 생각·effort는 모델 기본값 그대로 비교한다.
+    """
+
+    MAX_TOKENS = 16000
+
+    def __init__(self, api_key: str, model: str, workers: int = 4, timeout_s: float = 120,
+                 client=None):
+        self.model = model
+        self.usage = Usage()
+        self.workers = workers
+        self.timeout_s = timeout_s
+        if client is None:
+            import anthropic
+
+            client = anthropic.Anthropic(api_key=api_key, timeout=timeout_s, max_retries=0)
+        self._client = client
+
+    def generate_json(self, prompt: str, schema: dict) -> dict:
+        import anthropic
+
+        try:
+            response = self._client.messages.create(
+                model=self.model, max_tokens=self.MAX_TOKENS,
+                messages=[{"role": "user", "content": prompt}],
+                output_config={"format": {"type": "json_schema", "schema": strict_schema(schema)}},
+            )
+        except anthropic.APIStatusError as exc:
+            # 400·401·403·404는 설정 오류, 429·5xx는 재시도 (기존 _is_config_error 규칙 그대로)
+            raise HTTPStatusFailure(exc.status_code, str(exc)[:200]) from exc
+        usage = getattr(response, "usage", None)
+        if usage is not None:
+            counts = (usage.input_tokens or 0, usage.output_tokens or 0)
+            self.usage.add(input_tokens=counts[0], output_tokens=counts[1])
+            _set_tokens(*counts)
+        text = next((b.text for b in response.content if getattr(b, "type", None) == "text"), "")
+        # 거절(stop_reason refusal)·빈 답은 JSON이 아니므로 형식 오류 — 다시 묻지 않는다
+        return json.loads(text)
+
+
+# ── 모델 비교 평가의 공급자 (add-model-compare, FR-23) ──────────────────────
+
+PROVIDERS = ("gemini", "anthropic", "openai", "local")
+OPENAI_URL = "https://api.openai.com/v1"
+# 고객 원문을 보내도 되는 공급자: 운영진이 허용한 Gemini(NFR-07, Q6)와 사내 local
+PRIVATE_OK = ("gemini", "local")
+NO_KEY = "건너뜀(키 없음)"
+NOT_ALLOWED = "건너뜀(외부 전송 허용 안 됨)"
+
+
+@dataclass(frozen=True)
+class ModelSpec:
+    provider: str
+    model: str
+
+    @property
+    def label(self) -> str:
+        return f"{self.provider}:{self.model}"
+
+
+def parse_models(text: str) -> list[ModelSpec]:
+    """'공급자:모델,…'. 첫 ':'에서만 나눈다(local:qwen2.5:7b). 틀리면 ValueError."""
+    out: list[ModelSpec] = []
+    for part in (p.strip() for p in text.split(",")):
+        if not part:
+            continue
+        provider, sep, model = part.partition(":")
+        provider = provider.strip().lower()
+        if not sep or not model.strip():
+            raise ValueError(f"'공급자:모델' 모양이 아닙니다: {part}")
+        if provider not in PROVIDERS:
+            raise ValueError(f"모르는 공급자: {provider} (가능: {', '.join(PROVIDERS)})")
+        spec = ModelSpec(provider, model.strip())
+        if spec in out:
+            raise ValueError(f"같은 모델이 두 번 있습니다: {spec.label}")
+        out.append(spec)
+    if not out:
+        raise ValueError("비교할 모델이 없습니다")
+    return out
+
+
+def make_compare_llm(spec: ModelSpec, settings,
+                     private_set: bool = False) -> tuple[LLM | None, str | None]:
+    """공급자 → (클라이언트, None) 또는 (None, 건너뛴 이유). 건너뛰면 요청을 보내지 않는다."""
+    if private_set and spec.provider not in PRIVATE_OK:
+        return None, NOT_ALLOWED
+    workers, timeout_s = settings.rfp_llm_workers, settings.rfp_llm_timeout_s
+    if spec.provider == "gemini":
+        if not settings.gemini_api_key:
+            return None, NO_KEY
+        return GeminiLLM(settings.gemini_api_key, spec.model, workers, timeout_s), None
+    if spec.provider == "anthropic":
+        if not settings.anthropic_api_key:
+            return None, NO_KEY
+        return AnthropicLLM(settings.anthropic_api_key, spec.model, workers, timeout_s), None
+    if spec.provider == "openai":
+        if not settings.openai_api_key:
+            return None, NO_KEY
+        return LocalLLM(OPENAI_URL, spec.model, settings.openai_api_key, None, workers, timeout_s,
+                        temperature=None), None
+    if not settings.rfp_local_llm_url:
+        return None, "건너뜀(사내 주소 없음)"
+    return LocalLLM(settings.rfp_local_llm_url, spec.model, settings.rfp_local_llm_key, None,
+                    workers, timeout_s), None
 
 
 AI_MODES = ("gemini", "local", "off")

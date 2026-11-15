@@ -32,6 +32,9 @@ services:
       RFP_LLM_WORKERS: ${RFP_LLM_WORKERS:-4}
       RFP_LLM_TIMEOUT_S: ${RFP_LLM_TIMEOUT_S:-120}
       RFP_EVAL_MAX_KRW: ${RFP_EVAL_MAX_KRW:-500}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      RFP_EVAL_PRICES: ${RFP_EVAL_PRICES:-}
       RFP_DOC_WORKERS: ${RFP_DOC_WORKERS:-2}
       RFP_OCR: ${RFP_OCR:-on}
       # 검토 실행 대기열 (add-run-queue): worker = 아래 worker 서비스가 분석, inline = 웹 서버가 직접
