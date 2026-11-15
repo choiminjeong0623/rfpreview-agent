@@ -6,7 +6,8 @@
 | export-eval-set --key 정답지이름 [--out 경로] [--synthetic]
   (유형 정답지 → 평가셋, add-prompt-eval)
 | eval-prompts --set 이름 [--repeat N] [--baseline] [--yes] [--report 경로]
-  [--write-baseline-file] [--baseline-file 경로] (프롬프트 평가, add-prompt-eval)"""
+  [--write-baseline-file] [--baseline-file 경로] (프롬프트 평가, add-prompt-eval)
+  [--models 공급자:모델,…] (여러 회사 모델 비교, add-model-compare)"""
 
 import argparse
 import re
@@ -203,6 +204,47 @@ def eval_prompts(set_name: str, repeat: int, baseline: bool, yes: bool, report_p
     return 1 if cmp is not None and cmp.regression else 0
 
 
+def compare_prompts(set_name: str, models: str, repeat: int, yes: bool,
+                    report_path: Path | None) -> int:
+    """같은 평가셋을 여러 회사 모델로 평가하고 비교표를 낸다 (add-model-compare, FR-23). 늘 0."""
+    import tempfile
+
+    from rfp_agent.llm import trace
+    from rfp_agent.llm.client import parse_models
+    from rfp_agent.pipeline import prompt_eval as pe
+
+    settings = get_settings()
+    try:
+        specs = parse_models(models)
+        path = pe.find_set(set_name, settings)
+        evalset = pe.load_set(path)
+    except (ValueError, pe.EvalError) as exc:
+        sys.exit(str(exc))
+    fixture = pe.Fixture()
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            names = {i.input["fixture"] for i in evalset.items if i.role == "assistant"}
+            if names:
+                fixture = pe.open_fixtures(names, settings, Path(tmp))
+            with trace.session(None, "eval") as calls:     # AI 호출 기록 (add-ai-call-trace)
+                cmp = pe.compare_models(evalset, specs, settings, repeat,
+                                        settings.rfp_eval_max_krw, yes,
+                                        pe.is_private_set(path, settings), fixture)
+    except pe.EvalError as exc:
+        sys.exit(str(exc))
+    finally:
+        pe.close_fixtures(fixture)
+    with connect() as conn:
+        pe.save_comparison(conn, cmp)
+        trace.flush(conn, calls)
+        conn.commit()
+    text = pe.compare_report(evalset, cmp)
+    print(text)
+    if report_path is not None:
+        report_path.write_text(text, encoding="utf-8")
+    return 0
+
+
 DEMO_FILE = "RFP_Product_Master_Evaluative_EN_With_Product_Switch.docx"
 DEMO_KEYS = [("synthetic_rfp28_req.csv", "합성 RFP 28 요구사항", "REQ"),
              ("synthetic_rfp28_type.csv", "합성 RFP 28 유형", "TYPE")]
@@ -305,6 +347,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--report", help="eval-prompts: 마크다운 보고서를 쓸 경로")
     parser.add_argument("--write-baseline-file", action="store_true",
                         help="eval-prompts: 결과를 기준선 파일(data/eval/baseline.json)로 씀")
+    parser.add_argument("--models",
+                        help="eval-prompts: 비교할 모델 '공급자:모델,…' "
+                             "(gemini·anthropic·openai·local)")
     parser.add_argument("--baseline-file",
                         help="eval-prompts: DB 기준선 대신 이 파일과 비교 (CI)")
     args = parser.parse_args(argv)
@@ -319,6 +364,12 @@ def main(argv: list[str] | None = None) -> None:
             parser.error("eval-prompts --set 이름 이 필요합니다")
         if args.repeat < 1:
             parser.error("--repeat는 1 이상입니다")
+        if args.models:
+            if args.baseline or args.write_baseline_file or args.baseline_file:
+                parser.error("--models(모델 비교)는 기준선 옵션과 함께 쓸 수 없습니다")
+            compare_prompts(args.eval_set, args.models, args.repeat, args.yes,
+                            Path(args.report) if args.report else None)
+            return
         code = eval_prompts(args.eval_set, args.repeat, args.baseline, args.yes,
                             Path(args.report) if args.report else None, args.write_baseline_file,
                             Path(args.baseline_file) if args.baseline_file else None)

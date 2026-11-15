@@ -11,6 +11,7 @@
 import hashlib
 import json
 import logging
+import math
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -224,6 +225,7 @@ class Answer:
     error: str | None = None         # FORMAT / FAILED / CONFIG
     signature: str | None = None     # 주입 짝 비교용 결과 요약
     counts: dict = field(default_factory=dict)   # 지표 재료 {지표: (num, den)}
+    ms: int | None = None            # 묻는 데 걸린 시간(재시도·도구 반복 포함, add-model-compare)
 
 
 def _error_kind(exc: Exception) -> str:
@@ -328,6 +330,22 @@ def ask_item(llm: LLM, item: Item, fixture: Fixture | None = None) -> Answer:
         return RUNNERS[item.role](llm, item)
     except LLMFailure as exc:
         return Answer(None, error=_error_kind(exc), counts=no_answer_counts(item))
+
+
+def timed_ask(llm: LLM, item: Item, fixture: Fixture | None = None) -> Answer:
+    """문항 하나를 묻고 걸린 시간(밀리초)을 적는다. 답 없음도 기다린 시간은 같으므로 적는다."""
+    started = time.monotonic()
+    answer = ask_item(llm, item, fixture)
+    answer.ms = round((time.monotonic() - started) * 1000)
+    return answer
+
+
+def nearest_rank(values: list[int], pct: float) -> int | None:
+    """최근접 순위 백분위수: 정렬한 값의 ceil(p/100 × n)번째. 값이 없으면 None."""
+    if not values:
+        return None
+    ordered = sorted(values)
+    return ordered[max(1, math.ceil(pct / 100 * len(ordered))) - 1]
 
 
 def no_answer_counts(item: Item) -> dict:
@@ -606,6 +624,20 @@ class EvalResult:
     skip_reason: str | None = None
     estimate: dict | None = None
     eval_id: int | None = None
+    provider: str | None = None                      # 모델 비교 (add-model-compare)
+    compare_id: int | None = None
+    latency_p50_ms: int | None = None
+    latency_p95_ms: int | None = None
+
+    @property
+    def label(self) -> str:
+        return f"{self.provider}:{self.model}" if self.provider else (self.model or "—")
+
+    def format_error_rate(self) -> float | None:
+        """모든 반복·문항 중 형식 오류로 버린 답의 비율(%)."""
+        all_answers = [a for rep in self.answers for a in rep]
+        return _pct(sum(a.error == "FORMAT" for a in all_answers), len(all_answers)) \
+            if all_answers else None
 
     def item_ok(self) -> dict[str, bool | None]:
         """문항마다 모든 반복에서 맞았는가 (반복 중 하나라도 틀리면 틀림, 답 없음이면 None)."""
@@ -642,11 +674,13 @@ def evaluate(evalset: EvalSet, llm: LLM | None, ai_mode: str, repeat: int = 1,
     started = time.monotonic()
     per_repeat = []
     for _ in range(repeat):
-        jobs = [lambda item=item: ask_item(llm, item, fixture) for item in evalset.items]
+        jobs = [lambda item=item: timed_ask(llm, item, fixture) for item in evalset.items]
         answers = run_ordered(jobs, workers_of(llm))
         result.answers.append(answers)
         per_repeat.append(_role_metrics(evalset.items, answers))
     result.seconds = round(time.monotonic() - started, 1)
+    times = [a.ms for rep in result.answers for a in rep if a.ms is not None]
+    result.latency_p50_ms, result.latency_p95_ms = nearest_rank(times, 50), nearest_rank(times, 95)
     result.metrics = merge_repeats(per_repeat)
     result.injection_hits = injection_effects(evalset.items, result.answers)
     if usage and before:
@@ -740,14 +774,18 @@ def save(conn: psycopg.Connection, result: EvalResult, baseline: bool = False,
         eval_id = conn.execute(
             """INSERT INTO prompt_eval_run (set_name, set_version, model, ai_mode, prompt_versions,
                    code_version, repeat, status, skip_reason, metrics, injection_effect, calls,
-                   input_tokens, output_tokens, cost_krw, seconds, is_baseline, note, run_by)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                   input_tokens, output_tokens, cost_krw, seconds, is_baseline, note, run_by,
+                   provider, compare_id, latency_p50_ms, latency_p95_ms)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                       %s, %s, %s, %s)
                RETURNING eval_id""",
             (result.set.name, result.set.version, result.model, result.ai_mode,
              Jsonb(tasks.prompt_versions()), code_version(), result.repeat, result.status,
              result.skip_reason, Jsonb(result.metrics), len(result.injection_hits), result.calls,
              result.input_tokens, result.output_tokens + result.thinking_tokens, result.cost_krw,
-             result.seconds, baseline and result.status == "DONE", note, run_by)).fetchone()[0]
+             result.seconds, baseline and result.status == "DONE", note, run_by,
+             result.provider, result.compare_id, result.latency_p50_ms,
+             result.latency_p95_ms)).fetchone()[0]
         with conn.cursor() as cur:
             cur.executemany(
                 """INSERT INTO prompt_eval_item (eval_id, repeat_no, item_id, role, made_by, ok,
@@ -785,7 +823,8 @@ def runs(conn: psycopg.Connection, set_name: str | None = None, limit: int = 100
         return cur.execute(
             """SELECT eval_id, set_name, set_version, model, ai_mode, prompt_versions, code_version,
                       repeat, status, skip_reason, metrics, injection_effect, calls, input_tokens,
-                      output_tokens, cost_krw, seconds, is_baseline, note, run_by, created_at
+                      output_tokens, cost_krw, seconds, is_baseline, note, run_by, created_at,
+                      provider, compare_id, latency_p50_ms, latency_p95_ms
                  FROM prompt_eval_run
                 WHERE (%(set)s::text IS NULL OR set_name = %(set)s)
                   AND (%(id)s::int IS NULL OR eval_id = %(id)s)
@@ -860,6 +899,155 @@ def report(result: EvalResult, cmp: Comparison | None) -> str:
         if cmp.flipped:
             tail.append(f"- 맞음 → 틀림 {len(cmp.flipped)}개: " + ", ".join(cmp.flipped))
     return "\n".join([*head, *rows, *tail, ""])
+
+
+# ── 여러 회사 모델 비교 (add-model-compare, FR-23) ─────────────────────────
+
+@dataclass
+class ModelComparison:
+    results: list[EvalResult]                         # --models 순서대로 (건너뜀 포함)
+    cheapest: EvalResult | None = None
+    cheapest_note: str = ""                           # 고른 이유 또는 고를 수 없는 이유
+    unknown_price: list[str] = field(default_factory=list)
+    compare_id: int | None = None
+
+
+def is_private_set(path: Path, settings) -> bool:
+    """고객 원문이 들 수 있는 평가셋(data/private 아래)."""
+    try:
+        path.resolve().relative_to(settings.private_data_dir.resolve())
+    except ValueError:
+        return False
+    return True
+
+
+def compare_models(evalset: EvalSet, specs: list, settings, repeat: int = 1,
+                   max_krw: int = 500, confirmed: bool = False, private_set: bool = False,
+                   fixture: Fixture | None = None, make=None) -> ModelComparison:
+    """같은 평가셋·같은 프롬프트 판을 모델마다 평가한다. 상한은 보낼 수 있는 모델의 어림 비용 합.
+
+    키가 없거나 외부 전송이 허용되지 않은 모델은 요청 없이 건너뜀으로 남긴다.
+    """
+    from rfp_agent.llm.client import make_compare_llm
+
+    make = make or make_compare_llm
+    if not evalset.items:
+        raise EvalError("채점할 문항이 없습니다")
+    plan: list[tuple] = []
+    for spec in specs:
+        llm, reason = make(spec, settings, private_set)
+        plan.append((spec, llm, reason))
+    out = ModelComparison([])
+    total = 0
+    for spec, llm, _ in plan:
+        if llm is None:
+            continue
+        cost = estimate(evalset.items, repeat, spec.model)["cost_krw"]
+        if cost is None:
+            out.unknown_price.append(spec.label)
+        else:
+            total += cost
+    if total > max_krw and not confirmed:
+        skipped = f", 단가 모름 {len(out.unknown_price)}개 제외" if out.unknown_price else ""
+        raise EvalError(f"모델 합계 어림 비용 {total:,}원이 상한 {max_krw:,}원을 넘습니다 "
+                        f"(팀 가정 단가{skipped}). 그래도 하려면 --yes를 주세요.")
+    for spec, llm, reason in plan:
+        if llm is None:
+            result = EvalResult("SKIPPED", evalset, spec.model, spec.provider.upper(), repeat,
+                                skip_reason=reason)
+        else:
+            result = evaluate(evalset, llm, spec.provider.upper(), repeat, max_krw, True, fixture)
+        result.provider = spec.provider
+        out.results.append(result)
+    out.cheapest, out.cheapest_note = cheapest(out.results, evalset.threshold_pp)
+    return out
+
+
+def primary_metric(role: str) -> str:
+    """역할의 주 지표: METRICS의 첫 지표 (모두 높을수록 좋음)."""
+    return METRICS[role][0][0]
+
+
+def cheapest(results: list[EvalResult], threshold_pp: float) -> tuple[EvalResult | None, str]:
+    """같은 품질에 가장 싼 모델 (CR-01, 코드만).
+
+    역할마다 주 지표 최솟값이 그 역할의 최고 모델보다 문턱 넘게 낮지 않고, 주입 영향 0이며,
+    추정 비용을 아는 모델 중 비용이 가장 적은 모델. 같으면 p95가 작은 쪽, 다음 이름순.
+    """
+    done = [r for r in results if r.status == "DONE"]
+    if not done:
+        return None, "고를 수 없음: 평가를 끝낸 모델이 없습니다"
+    best: dict[str, float] = {}
+    for r in done:
+        for role in r.metrics:
+            v = r.metrics[role].get(primary_metric(role), {}).get("min")
+            if v is not None:
+                best[role] = max(best.get(role, v), v)
+
+    def within(r: EvalResult) -> bool:
+        for role, top in best.items():
+            v = r.metrics.get(role, {}).get(primary_metric(role), {}).get("min")
+            if v is None or v < top - threshold_pp:
+                return False
+        return True
+
+    good = [r for r in done if within(r) and not r.injection_hits]
+    priced = [r for r in good if r.cost_krw is not None]
+    if not priced:
+        why = ("품질 문턱 안에 드는 모델의 단가를 모릅니다" if good
+               else "품질 문턱 안에 들고 주입 영향이 없는 모델이 없습니다")
+        return None, f"고를 수 없음: {why}"
+    pick = min(priced, key=lambda r: (r.cost_krw, r.latency_p95_ms
+                                      if r.latency_p95_ms is not None else math.inf, r.label))
+    return pick, (f"{pick.label} — 역할마다 주 지표가 최고 모델과 {threshold_pp:g} %p 안, "
+                  f"주입 영향 0, 추정 비용 {pick.cost_krw:,}원(팀 가정)")
+
+
+def compare_report(evalset: EvalSet, cmp: ModelComparison) -> str:
+    """모델 비교 마크다운 표 (표준 출력)."""
+    roles = [r for r in ROLES if r in evalset.by_role()]
+    head = [f"## 모델 비교: {evalset.name}", "",
+            f"- 평가셋 판 `{evalset.version}` · 문항 {len(evalset.items)}개 · 반복 "
+            f"{cmp.results[0].repeat if cmp.results else 1}번 · 문턱 {evalset.threshold_pp:g} %p"
+            + (f" · 비교 묶음 {cmp.compare_id}" if cmp.compare_id else ""),
+            "- 프롬프트 판: " + " · ".join(f"{k} {v}" for k, v in tasks.prompt_versions().items()),
+            "- 주 지표는 정답 기준 출처(사람 → 코드 → Claude 초안)의 반복 최솟값(%)",
+            ""]
+    names = [(ROLE_NAMES[r], _metric_name(r, primary_metric(r))) for r in roles]
+    cols = [m if role in m else f"{role} {m}" for role, m in names]   # "유형 유형 정확도" 피함
+    head.append("| 모델 | 상태 | " + " | ".join(cols)
+                + " | 형식 오류율 | 주입 영향 | 호출 | 토큰 입력/출력 | 추정 비용 | p50 | p95 |")
+    head.append("|---|---|" + "---:|" * len(cols) + "---:|---:|---:|---:|---:|---:|---:|")
+    rows = []
+    for r in cmp.results:
+        if r.status != "DONE":
+            rows.append(f"| {r.label} | {r.skip_reason or r.status} |" + " — |" * (len(cols) + 7))
+            continue
+        vals = [_fmt(r.metrics.get(role, {}).get(primary_metric(role), {}).get("min"))
+                for role in roles]
+        cost = f"{r.cost_krw:,}원" if r.cost_krw is not None else "단가 모름"
+        ms = lambda v: "—" if v is None else f"{v:,}ms"            # noqa: E731
+        rows.append(f"| {r.label} | 끝남 | " + " | ".join(vals)
+                    + f" | {_fmt(r.format_error_rate())} % | {len(r.injection_hits)} | {r.calls} | "
+                      f"{r.input_tokens:,}/{r.output_tokens + r.thinking_tokens:,} | {cost} | "
+                      f"{ms(r.latency_p50_ms)} | {ms(r.latency_p95_ms)} |")
+    tail = ["", f"- **같은 품질에 가장 싼 모델**: {cmp.cheapest_note}"]
+    if cmp.unknown_price:
+        tail.append("- 단가 모름(비용 상한 합에서 뺌, `RFP_EVAL_PRICES`로 줄 수 있음): "
+                    + ", ".join(cmp.unknown_price))
+    tail.append("- 비용은 팀 가정 단가로 어림한 값이며 실제 청구 금액이 아님")
+    return "\n".join([*head, *rows, *tail, ""])
+
+
+def save_comparison(conn: psycopg.Connection, cmp: ModelComparison,
+                    run_by: str | None = None) -> int:
+    """비교 묶음 번호를 하나 받아 모델마다 평가 기록을 저장한다(기준선은 만들지 않음)."""
+    compare_id = conn.execute("SELECT nextval('prompt_eval_compare_seq')").fetchone()[0]
+    for r in cmp.results:
+        r.compare_id = compare_id
+        save(conn, r, baseline=False, note="모델 비교", run_by=run_by)
+    cmp.compare_id = compare_id
+    return compare_id
 
 
 # ── 기존 정답지 → 평가셋 ────────────────────────────────────────────────

@@ -1535,6 +1535,12 @@ class PromptEvalRun(Out):
     note: str | None
     run_by: str | None
     created_at: datetime
+    # 모델 비교 (add-model-compare, FR-23): 공급자, 비교 묶음 번호, 문항 응답 시간.
+    # 예전 기록은 비어 있음
+    provider: Literal["gemini", "anthropic", "openai", "local"] | None = None
+    compare_id: int | None = None
+    latency_p50_ms: int | None = None
+    latency_p95_ms: int | None = None
 
 
 class PromptEvalList(Out):
