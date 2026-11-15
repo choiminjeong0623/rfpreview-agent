@@ -155,12 +155,13 @@ class Client:
 _transport: httpx.BaseTransport | None = None     # 테스트가 가짜 Langfuse를 끼우는 자리
 
 
-def client() -> Client | None:
+def client(timeout: float | None = None) -> Client | None:
+    """설정한 Langfuse. 시간 제한을 주지 않으면 가져오기용(RFP_LANGFUSE_TIMEOUT_S)."""
     s = get_settings()
     if not (s.langfuse_host and s.langfuse_public_key and s.langfuse_secret_key):
         return None
     return Client(s.langfuse_host, s.langfuse_public_key, s.langfuse_secret_key,
-                  s.rfp_langfuse_timeout_s, _transport)
+                  s.rfp_langfuse_timeout_s if timeout is None else timeout, _transport)
 
 
 def check(role: str, data: dict) -> str | None:

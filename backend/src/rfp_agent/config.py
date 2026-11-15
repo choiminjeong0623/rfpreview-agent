@@ -44,11 +44,16 @@ class Settings(BaseSettings):
     # on이면 RFP_LANGFUSE_LABEL(기본 production) 판을 가져오고, 문제가 있으면 코드 판으로 돌아간다
     rfp_langfuse: str = "off"
     rfp_langfuse_label: str = "production"
-    rfp_langfuse_timeout_s: float = 5
+    rfp_langfuse_timeout_s: float = 5           # 프롬프트 가져오기·편집 화면 요청 시간 제한(초)
     rfp_langfuse_cache_s: float = 60
     # Langfuse에 기록 남김: 평가 결과 실험(add-langfuse-experiments), 검토 작업이 끝날 때 AI 호출
     # 기록(add-langfuse-trace-push, 해시만). 키가 있어야 감
     rfp_langfuse_record: str = "off"
+    # 보내기(데이터셋·실험·호출 기록·프롬프트 올리기) 요청 시간 제한(초). 사람이 기다리지 않아 길게
+    rfp_langfuse_send_timeout_s: float = 30
+    # 화면 링크용 Langfuse 주소. 비면 LANGFUSE_HOST (docker 안 host.docker.internal은 브라우저에서
+    # 열리지 않으므로 http://localhost:3000처럼 따로 준다) (update-langfuse-trace-link)
+    rfp_langfuse_ui_url: str | None = None
     langfuse_host: str | None = None            # 예: http://localhost:3000 (self-host)
     langfuse_public_key: str | None = None
     langfuse_secret_key: str | None = None

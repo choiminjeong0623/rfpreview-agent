@@ -89,3 +89,42 @@ def test_no_ai_calls_sends_nothing(db, spec, langfuse, monkeypatch):
     monkeypatch.setattr(service, "make_llm", lambda settings: None)
     run_id = _run(db, spec)
     assert langfuse.traces == [] and _calls(run_id)["langfuse"] is None
+
+
+def test_rewind_links_trace_with_calls(db, spec, langfuse):
+    """Scenario: 다시 처리한 작업의 링크는 호출이 있는 trace — AI를 다시 부르지 않은 작업 뒤에도
+    처음 분석의 AI 호출이 든 trace를 가리킨다 (update-langfuse-trace-link)."""
+    from rfp_agent.pipeline import doc_add
+    from tests.test_step_rewind import user
+
+    run_id = _run(db, spec)
+    start = db.execute("SELECT run_token::text FROM ai_call WHERE run_id = %s LIMIT 1",
+                       (run_id,)).fetchone()[0]
+    paths, choices = doc_add.prepare_rewind(db, run_id, "assign", "링크 확인", user(db, "ENGINEER"))
+    run_queue.enqueue(db, run_id, "REWIND", paths, choices, "assign")
+    db.commit()
+    assert run_queue.drain(1) == 1
+    db.commit()
+    rewind_token = db.execute("SELECT run_token::text FROM review_run WHERE run_id = %s",
+                              (run_id,)).fetchone()[0]
+    assert rewind_token != start
+    assert not db.execute("SELECT 1 FROM ai_call WHERE run_token::text = %s",
+                          (rewind_token,)).fetchone()           # 다시 처리한 작업은 AI 없음
+    assert len(langfuse.traces) == 2                            # 작업마다 보냄(같은 id라 늘지 않음)
+    url = _calls(run_id)["langfuse"]["url"]
+    assert url.endswith(ai_calls._hex(f"run-{run_id}-{start}", 32))
+
+
+def test_ui_url_and_send_timeout(db, spec, langfuse, monkeypatch):
+    """Scenario: 화면용 주소로 링크 — 서버가 닿는 주소와 다른 화면 주소로 링크를 만들고,
+    보내기는 RFP_LANGFUSE_SEND_TIMEOUT_S 시간 제한을 쓴다."""
+    from rfp_agent.llm import prompt_source
+    from rfp_agent.pipeline import langfuse_ops
+
+    monkeypatch.setenv("RFP_LANGFUSE_UI_URL", "http://localhost:3000/")
+    monkeypatch.setenv("RFP_LANGFUSE_SEND_TIMEOUT_S", "45")
+    get_settings.cache_clear()
+    assert langfuse_ops._client().http.timeout.read == 45
+    assert prompt_source.client().http.timeout.read == 5         # 가져오기는 그대로
+    run_id = _run(db, spec)
+    assert _calls(run_id)["langfuse"]["url"].startswith("http://localhost:3000/project/proj1/")

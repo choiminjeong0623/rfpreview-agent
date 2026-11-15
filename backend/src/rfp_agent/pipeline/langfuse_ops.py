@@ -23,7 +23,8 @@ class LangfuseError(Exception):
 
 
 def _client() -> prompt_source.Client:
-    lf = prompt_source.client()
+    """보내기용: 시간 제한은 RFP_LANGFUSE_SEND_TIMEOUT_S (update-langfuse-trace-link)."""
+    lf = prompt_source.client(get_settings().rfp_langfuse_send_timeout_s)
     if lf is None:
         raise LangfuseError("LANGFUSE_HOST·LANGFUSE_PUBLIC_KEY·LANGFUSE_SECRET_KEY를 설정하세요.")
     return lf
@@ -155,7 +156,12 @@ def _url(lf: prompt_source.Client, dataset_id: str | None) -> str | None:
         return None
     if not project:
         return None
-    return f"{str(lf.http.base_url).rstrip('/')}/project/{project}/datasets/{dataset_id}"
+    return f"{ui_base(lf)}/project/{project}/datasets/{dataset_id}"
+
+
+def ui_base(lf: prompt_source.Client) -> str:
+    """화면 링크의 앞부분: RFP_LANGFUSE_UI_URL, 비면 서버가 닿는 주소."""
+    return (get_settings().rfp_langfuse_ui_url or str(lf.http.base_url)).rstrip("/")
 
 
 def _ensure_dataset(lf: prompt_source.Client, evalset) -> dict:
@@ -297,14 +303,13 @@ def send_run(conn: psycopg.Connection, run_id: int, token: str | None) -> str | 
             return None
         lf = _client()
         url = None
-        if token:
-            try:
-                project = lf.project_id()
-            except (httpx.TransportError, httpx.HTTPStatusError, ValueError):
-                project = None
-            if project:
-                trace_id = ai_calls._hex(f"run-{run_id}-{token}", 32)
-                url = f"{str(lf.http.base_url).rstrip('/')}/project/{project}/traces/{trace_id}"
+        try:
+            project = lf.project_id()
+        except (httpx.TransportError, httpx.HTTPStatusError, ValueError):
+            project = None
+        if project:
+            trace_id = ai_calls._hex(f"run-{run_id}-{_link_token(conn, run_id, token)}", 32)
+            url = f"{ui_base(lf)}/project/{project}/traces/{trace_id}"
         conn.execute("UPDATE review_run SET langfuse_sent_at = now(), langfuse_url = %s, "
                      "langfuse_error = NULL WHERE run_id = %s", (url, run_id))
         conn.commit()
@@ -315,6 +320,17 @@ def send_run(conn: psycopg.Connection, run_id: int, token: str | None) -> str | 
                      (str(exc)[:300], run_id))
         conn.commit()
         return "FAILED"
+
+
+def _link_token(conn: psycopg.Connection, run_id: int, token: str | None) -> str:
+    """링크할 trace의 실행 토큰: 지금 작업이 AI를 불렀으면 그 토큰, 아니면 가장 최근에 AI를 부른
+    실행의 토큰, 그것도 없으면 빈 토큰(분석 밖 호출만). 단계부터 다시처럼 AI를 다시 부르지 않은
+    작업이 빈 trace로 잇지 않게 한다 (update-langfuse-trace-link)."""
+    row = conn.execute(
+        "SELECT run_token::text FROM ai_call WHERE run_id = %s AND run_token IS NOT NULL "
+        "ORDER BY (run_token::text = %s) DESC, started_at DESC, call_id DESC LIMIT 1",
+        (run_id, token or "")).fetchone()
+    return row[0] if row else ""
 
 
 def sent_info(conn: psycopg.Connection, run_id: int) -> dict | None:
