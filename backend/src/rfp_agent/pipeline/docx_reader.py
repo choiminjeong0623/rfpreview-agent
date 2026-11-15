@@ -85,7 +85,9 @@ def _figure_text(el, doc) -> tuple[list[str], str | None]:
     return out, ocr.OCR_LOW_CONF if any(r.dropped for r in results) else ocr.OCR_EMPTY
 
 
-def read_blocks(path: Path) -> list[Block]:
+def read_blocks(path: Path, use_ocr: bool = True) -> list[Block]:
+    """docx를 단락·표 행 블록으로 읽는다. use_ocr=False면 그림 속 글자를 읽지 않는다
+    (등록 검사를 가볍게, add-run-queue NFR-11)."""
     doc = Document(str(path))
     blocks: list[Block] = []
     line_no = 1
@@ -97,7 +99,7 @@ def read_blocks(path: Path) -> list[Block]:
             figure = el.find(".//" + qn("w:drawing")) is not None \
                 or el.find(".//" + qn("w:pict")) is not None
             # 그림 속 글자는 그림 단락 바로 뒤 단락으로 더한다 (add-ocr)
-            found, reason = _figure_text(el, doc) if figure else ([], None)
+            found, reason = _figure_text(el, doc) if figure and use_ocr else ([], None)
             items += [("O", t, None, [], []) for t in found]
         else:
             figure, reason = False, None
