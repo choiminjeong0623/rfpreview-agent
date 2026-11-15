@@ -484,7 +484,7 @@ def _role_metrics(items: list[Item], answers: list[Answer]) -> dict:
         if not pairs:
             continue
         role_out: dict = {}
-        for metric, _, _ in METRICS[role]:
+        for metric, _, better in METRICS[role]:
             by_source = {}
             for src in SOURCES:
                 got = [a.counts.get(metric, (0, 0)) for i, a in pairs if i.made_by == src]
@@ -495,6 +495,13 @@ def _role_metrics(items: list[Item], answers: list[Answer]) -> dict:
                 value = (round(num / den, 2) if den else None) if metric == "avg_tool_calls" \
                     else _pct(num, den)
                 by_source[src] = {"num": num, "den": den, "value": value}
+                if better:
+                    # 회귀를 문항(질문) 단위로 세는 재료: 이 지표가 모자란 문항 수,
+                    # 지표가 있는 문항 수.
+                    # 근거 번호처럼 한 문항에 분모가 여럿인 지표도 문항 하나로 센다
+                    by_source[src]["short"] = sum(
+                        1 for n, d in got if d and (n < d if better == "up" else n > 0))
+                    by_source[src]["questions"] = sum(1 for _, d in got if d)
             role_out[metric] = {"by_source": by_source}
         n = len(pairs)
         fmt = sum(a.error == "FORMAT" for _, a in pairs)
@@ -522,12 +529,16 @@ def merge_repeats(per_repeat: list[dict]) -> dict:
         merged[role] = {}
         for metric, first in metrics.items():
             basis = basis_of(first["by_source"])
-            values = [r[role][metric]["by_source"].get(basis, {}).get("value") for r in per_repeat]
-            values = [v for v in values if v is not None]
+            cells = [r[role][metric]["by_source"].get(basis, {}) for r in per_repeat]
+            values = [c.get("value") for c in cells if c.get("value") is not None]
+            # 최솟값을 낸 반복의 모자란 문항 수: 회귀를 문항 단위로 셀 때 쓴다
+            low = min((c for c in cells if c.get("value") is not None),
+                      key=lambda c: c["value"], default={})
             merged[role][metric] = {
                 "by_source": first["by_source"], "basis": basis,
                 "weak": basis == "CLAUDE_DRAFT",
                 "min": min(values) if values else None, "max": max(values) if values else None,
+                "min_short": low.get("short"), "questions": low.get("questions"),
                 "mean": round(sum(values) / len(values), 2) if values else None,
                 "repeats": [r[role][metric]["by_source"].get(basis, {}).get("value")
                             for r in per_repeat],
@@ -712,13 +723,15 @@ def summary(result: EvalResult) -> dict:
             "model": result.model, "repeat": result.repeat,
             "prompt_versions": tasks.prompt_versions(),
             "metrics": {role: {m: {"basis": v["basis"], "value": v["min"],
-                                   "den": v["by_source"].get(v["basis"], {}).get("den")}
+                                   "den": v["by_source"].get(v["basis"], {}).get("den"),
+                                   "short": v.get("min_short"), "questions": v.get("questions")}
                                for m, v in ms.items()} for role, ms in result.metrics.items()},
             "items": result.item_ok()}
 
 
 def compare(result: EvalResult, baseline: dict | None) -> Comparison:
-    """회귀: 기준 지표 최솟값이 문턱(%p)보다 많이 떨어짐 / 형식 오류율 오름 / 주입 영향 ≥ 1."""
+    """회귀: 기준 지표 최솟값이 허용 문항 수보다 많이 떨어짐(`_dropped`) / 형식 오류율 오름 /
+    주입 영향 ≥ 1."""
     cmp = Comparison(baseline is not None)
     if result.injection_hits:
         cmp.regression = True
@@ -746,15 +759,46 @@ def compare(result: EvalResult, baseline: dict | None) -> Comparison:
             if better is None:
                 continue
             drop = old["value"] - cur["min"] if better == "up" else cur["min"] - old["value"]
-            if drop > limit:
-                den = cur["by_source"].get(cur["basis"], {}).get("den")
+            if old.get("short") is not None and cur.get("min_short") is not None \
+                    and cur.get("questions"):
+                hit, detail = _lost_items(drop, cur["min_short"] - old["short"],
+                                          cur["questions"], limit)
+            else:                                    # 문항별 재료가 없는 예전 기준선
+                hit, detail = _dropped(drop, cur["by_source"].get(cur["basis"], {}).get("den"),
+                                       limit)
+            if hit:
                 cmp.regression = True
-                cmp.reasons.append(f"{name} {old['value']} → {cur['min']} % "
-                                   f"(문턱 {limit} %p, 문항 {den})")
+                cmp.reasons.append(f"{name} {old['value']} → {cur['min']} % ({detail})")
     now = result.item_ok()
     cmp.flipped = [i for i, ok in baseline.get("items", {}).items() if ok and now.get(i) is not True
                    and i in now]
     return cmp
+
+
+def _lost_items(drop: float, lost: int, questions: int, limit: float) -> tuple[bool, str]:
+    """지표가 떨어졌고, 지표가 모자란 문항이 허용 문항 수(문턱 %p × 문항 수 / 100과 1 가운데
+    큰 값)보다 많이 늘었으면 회귀 (update-eval-threshold-items).
+
+    도우미 8문항처럼 문항이 적은 역할은 한 문항이 문턱 %p보다 커서 3번 중 한 번의 흔들림도 회귀가
+    되던 것, 근거 번호처럼 한 문항의 문장 여럿이 빠지면 여러 문항처럼 세던 것을 막는다.
+    """
+    lost = max(0, lost)
+    allowed = max(1.0, limit * questions / 100)
+    return drop > 0 and lost > allowed, (f"{lost}문항 떨어짐(허용 {allowed:g}문항, "
+                                         f"문턱 {limit:g} %p, 문항 {questions})")
+
+
+def _dropped(drop: float, den: int | None, limit: float) -> tuple[bool, str]:
+    """문항별 재료(short)가 없는 예전 기준선용: 분모로 어림한 떨어진 수가 허용 수
+    (문턱 %p × 분모 / 100과 1 가운데 큰 값)보다 많으면 회귀. 값이 0.1 단위로 반올림돼 있어 수도
+    반올림한다. 분모를 모르면 문턱 %p로 본다.
+    """
+    if not den:
+        return drop > limit, f"문턱 {limit:g} %p"
+    lost = round(drop * den / 100, 1)
+    allowed = max(1.0, limit * den / 100)
+    return lost > allowed, (f"{lost:g}문항 떨어짐(허용 {allowed:g}문항, "
+                            f"문턱 {limit:g} %p, 문항 {den})")
 
 
 def _metric_name(role: str, metric: str) -> str:

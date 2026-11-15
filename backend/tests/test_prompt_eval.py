@@ -107,7 +107,7 @@ def test_human_type_set(db):
     assert row["prompt_versions"] == tasks.prompt_versions()
     acc = row["metrics"]["type"]["accuracy"]
     assert acc["basis"] == "HUMAN" and acc["by_source"]["HUMAN"] | {"value": 0} == \
-        {"num": 18, "den": 22, "value": 0}
+        {"num": 18, "den": 22, "value": 0, "short": 4, "questions": 22}
     assert row["metrics"]["type"]["format_error_rate"]["min"] == 0
     assert row["calls"] == 22 and row["input_tokens"] == 2200
     assert row["cost_krw"] is None                                   # 단가표에 없는 모델
@@ -120,7 +120,8 @@ def test_failed_call_is_no_answer():
     llm = Scripted(answers_for(s), fail_on="Requirement line 4 ")
     result = pe.evaluate(s, llm, "GEMINI")
     m = result.metrics["type"]
-    assert m["accuracy"]["by_source"]["HUMAN"] == {"num": 9, "den": 10, "value": 90.0}
+    assert m["accuracy"]["by_source"]["HUMAN"] == {"num": 9, "den": 10, "value": 90.0,
+                                                  "short": 1, "questions": 10}
     assert m["no_answer"]["by_source"]["ALL"]["num"] == 1
     assert result.item_ok()["t004"] is None
     assert "답 없음" in pe.report(result, None)
@@ -147,7 +148,7 @@ def test_draft_pass_rate():
     s = pe.parse_set("drafts", jsonl(items))
     result = pe.evaluate(s, Drafts(), "GEMINI")
     assert result.metrics["draft"]["pass_rate"]["by_source"]["HUMAN"] == \
-        {"num": 2, "den": 5, "value": 40.0}
+        {"num": 2, "den": 5, "value": 40.0, "short": 3, "questions": 5}
     assert [k for k, ok in result.item_ok().items() if ok] == ["d0", "d4"]
 
 
@@ -224,6 +225,44 @@ def test_three_repeats():
             "items": {}}
     assert pe.compare(result, base).regression                        # 평균·최대가 아닌 최솟값
     assert len(result.answers) == 3 and result.item_ok()["t000"] is False
+
+
+def test_small_metric_one_item_wobble():
+    """Scenario: 문항이 적은 지표의 한 문항 흔들림 — 8문항 87.5 %는 회귀 아님, 75 %는 회귀."""
+    s = pe.parse_set("small", jsonl([{"meta": {"threshold_pp": 5}}]
+                                    + [type_item(n) for n in range(8)]))
+    full = pe.evaluate(s, Scripted(answers_for(s)), "GEMINI", repeat=3)
+    base = pe.summary(full) | {"set_version": s.version}
+    assert base["metrics"]["type"]["accuracy"] | {} == {
+        "basis": "HUMAN", "value": 100.0, "den": 8, "short": 0, "questions": 8}
+    one = pe.evaluate(s, Scripted(answers_for(s, wrong={"t000"})), "GEMINI")
+    assert one.metrics["type"]["accuracy"]["min"] == 87.5
+    assert not pe.compare(one, base).regression
+    two = pe.evaluate(s, Scripted(answers_for(s, wrong={"t000", "t001"})), "GEMINI")
+    cmp = pe.compare(two, base)
+    assert cmp.regression
+    assert any("2문항 떨어짐(허용 1문항" in r for r in cmp.reasons)
+    # 문항이 많은 지표는 예전과 같다: 30문항 5 %p → 허용 1.5문항, 2문항부터 회귀
+    assert pe._lost_items(6.7, 2, 30, 5.0)[0] and not pe._lost_items(3.3, 1, 30, 5.0)[0]
+    # 지표가 떨어지지 않았으면 회귀 아님
+    assert not pe._lost_items(0.0, 3, 8, 5.0)[0]
+    # 문항별 재료가 없는 예전 기준선은 분모로 센다(0.1 단위 반올림: 17문항의 5.9 %p는 1문항)
+    assert not pe._dropped(5.9, 17, 5.0)[0] and pe._dropped(5.1, None, 5.0) == (True, "문턱 5 %p")
+
+
+def test_one_question_many_sentences():
+    """Scenario: 한 문항에서 근거 문장 여럿이 빠짐 — 근거 번호 10개 중 3개가 한 문항에서
+    빠지면 1문항."""
+    def cell(num, den, short):
+        return {"assistant": {"ref_pass_rate": {"by_source": {"CLAUDE_DRAFT": {
+            "num": num, "den": den, "value": pe._pct(num, den), "short": short,
+            "questions": 8}}}}}
+    merged = pe.merge_repeats([cell(11, 11, 0), cell(7, 10, 1), cell(11, 11, 0)])
+    m = merged["assistant"]["ref_pass_rate"]
+    assert (m["min"], m["min_short"], m["questions"]) == (70.0, 1, 8)
+    assert not pe._lost_items(100.0 - m["min"], m["min_short"] - 0, m["questions"], 5.0)[0]
+    # 분모(근거 번호 10개)로 셌다면 3문항 떨어짐으로 회귀였다
+    assert pe._dropped(30.0, 10, 5.0)[0]
 
 
 def _injection_set(kind: str) -> pe.EvalSet:
@@ -311,7 +350,8 @@ def test_assistant_tool_metrics(db_url, settings, tmp_path):
         m = result.metrics["assistant"]
         assert m["tool_accuracy"]["by_source"]["HUMAN"]["value"] == 100.0
         assert m["avg_tool_calls"]["by_source"]["HUMAN"]["value"] == 1.0
-        assert m["evidence_recall"]["by_source"]["HUMAN"] == {"num": 1, "den": 1, "value": 100.0}
+        assert m["evidence_recall"]["by_source"]["HUMAN"] == {"num": 1, "den": 1, "value": 100.0,
+                                                             "short": 0, "questions": 1}
         assert m["no_answer_rate"]["by_source"]["HUMAN"]["value"] == 0.0
         # 개발 DB(public 스키마)는 건드리지 않는다
         assert conn.execute("SELECT current_schema()").fetchone()[0].startswith(pe.FIXTURE_SCHEMA)

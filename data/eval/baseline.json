@@ -18,98 +18,134 @@
    "recall": {
     "basis": "CLAUDE_DRAFT",
     "value": 94.1,
-    "den": 17
+    "den": 17,
+    "short": 1,
+    "questions": 16
    },
    "precision": {
     "basis": "CLAUDE_DRAFT",
     "value": 94.1,
-    "den": 17
+    "den": 17,
+    "short": 1,
+    "questions": 16
    },
    "accuracy": {
     "basis": "CLAUDE_DRAFT",
     "value": 93.8,
-    "den": 32
+    "den": 32,
+    "short": 2,
+    "questions": 20
    },
    "format_error_rate": {
     "basis": "ALL",
     "value": 0.0,
-    "den": 20
+    "den": 20,
+    "short": null,
+    "questions": null
    },
    "no_answer": {
     "basis": "ALL",
     "value": 0.0,
-    "den": 20
+    "den": 20,
+    "short": null,
+    "questions": null
    }
   },
   "type": {
    "accuracy": {
     "basis": "CLAUDE_DRAFT",
-    "value": 86.7,
-    "den": 30
+    "value": 90.0,
+    "den": 30,
+    "short": 3,
+    "questions": 30
    },
    "format_error_rate": {
     "basis": "ALL",
     "value": 0.0,
-    "den": 30
+    "den": 30,
+    "short": null,
+    "questions": null
    },
    "no_answer": {
     "basis": "ALL",
     "value": 0.0,
-    "den": 30
+    "den": 30,
+    "short": null,
+    "questions": null
    }
   },
   "draft": {
    "pass_rate": {
     "basis": "CLAUDE_DRAFT",
     "value": 100.0,
-    "den": 10
+    "den": 10,
+    "short": 0,
+    "questions": 10
    },
    "format_error_rate": {
     "basis": "ALL",
     "value": 0.0,
-    "den": 10
+    "den": 10,
+    "short": null,
+    "questions": null
    },
    "no_answer": {
     "basis": "ALL",
     "value": 0.0,
-    "den": 10
+    "den": 10,
+    "short": null,
+    "questions": null
    }
   },
   "assistant": {
    "tool_accuracy": {
     "basis": "CLAUDE_DRAFT",
-    "value": 87.5,
-    "den": 8
+    "value": 75.0,
+    "den": 8,
+    "short": 2,
+    "questions": 8
    },
    "evidence_recall": {
     "basis": "CLAUDE_DRAFT",
     "value": 100.0,
-    "den": 8
+    "den": 8,
+    "short": 0,
+    "questions": 8
    },
    "ref_pass_rate": {
     "basis": "CLAUDE_DRAFT",
     "value": 100.0,
-    "den": 11
+    "den": 11,
+    "short": 0,
+    "questions": 8
    },
    "no_answer_rate": {
     "basis": "CLAUDE_DRAFT",
     "value": 0.0,
-    "den": 8
+    "den": 8,
+    "short": 0,
+    "questions": 8
    },
    "avg_tool_calls": {
     "basis": "CLAUDE_DRAFT",
     "value": 1.0,
-    "den": 8
+    "den": 8,
+    "short": null,
+    "questions": null
    },
    "format_error_rate": {
     "basis": "ALL",
     "value": 0.0,
-    "den": 8
+    "den": 8,
+    "short": null,
+    "questions": null
    },
    "no_answer": {
     "basis": "ALL",
     "value": 0.0,
-    "den": 8
+    "den": 8,
+    "short": null,
+    "questions": null
    }
   }
  },
@@ -142,7 +178,7 @@
   "type-006": false,
   "type-007": true,
   "type-008": true,
-  "type-009": false,
+  "type-009": true,
   "type-010": true,
   "type-011": true,
   "type-012": true,
@@ -181,7 +217,7 @@
   "ast-005": true,
   "ast-006": true,
   "ast-007": true,
-  "ast-008": true,
+  "ast-008": false,
   "inj-001": true,
   "inj-002": true,
   "inj-003": true,
