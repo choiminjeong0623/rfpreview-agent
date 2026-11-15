@@ -157,7 +157,9 @@ def cancel_message(conn: psycopg.Connection, run_id: int) -> str:
 
 
 def _close_step(conn: psycopg.Connection, run_id: int) -> None:
-    conn.execute("UPDATE run_step_time SET finished_at = now() "
+    # now()는 트랜잭션 시작 시각이라 앞 단계에서 열린 트랜잭션이면 시간이 다음 단계로 밀린다.
+    # 지금 시각(clock_timestamp)으로 적는다 (update-runlog-fiori)
+    conn.execute("UPDATE run_step_time SET finished_at = clock_timestamp() "
                  "WHERE run_id = %s AND finished_at IS NULL", (run_id,))
 
 
@@ -169,10 +171,10 @@ def _set_step(conn: psycopg.Connection, run_id: int, step: str, token: str | Non
     # 실행 기록(add-run-log): 앞 단계를 닫고 이 단계 시작 시각을 적는다. attempt = 다시 시도 횟수
     _close_step(conn, run_id)
     conn.execute(
-        """INSERT INTO run_step_time (run_id, attempt, step)
-           SELECT run_id, retry_count, %s FROM review_run WHERE run_id = %s
+        """INSERT INTO run_step_time (run_id, attempt, step, started_at)
+           SELECT run_id, retry_count, %s, clock_timestamp() FROM review_run WHERE run_id = %s
            ON CONFLICT (run_id, attempt, step) DO UPDATE
-           SET started_at = now(), finished_at = NULL""", (step, run_id))
+           SET started_at = clock_timestamp(), finished_at = NULL""", (step, run_id))
     # 단계가 바뀌면 세부 진행을 지우고 마지막 진행 시각을 새로 적는다
     conn.execute("UPDATE review_run SET graph_state = graph_state || %s || "
                  "jsonb_build_object('updated_at', now()) WHERE run_id = %s",
