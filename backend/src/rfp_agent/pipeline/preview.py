@@ -126,7 +126,8 @@ def judge_target_problem(conn: psycopg.Connection, paths: list[Path],
             return None
         if bundles.get(path.name, seen["rule_bundle"]) not in ("A", "B"):
             continue
-        if seen["readable"] or seen.get("light"):  # 가볍게 본 결과로는 읽지 못했다고 거절하지 않는다
+        # 가볍게 본 결과로는 읽지 못했다고 거절하지 않는다
+        if seen["readable"] or seen.get("light"):
             return None
         unread.append(UNREAD_WHY.get(seen.get("unread_reason") or "", NO_TEXT))
     if unread:

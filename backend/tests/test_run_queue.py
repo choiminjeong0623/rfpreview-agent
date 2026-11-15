@@ -96,7 +96,8 @@ def test_two_workers_three_runs(env, db, spec):
 def judgments(conn, run_id):
     conn.commit()
     return sorted(conn.execute(
-        "SELECT item_key, result, required_value FROM judgment WHERE run_id = %s AND is_current",
+        "SELECT q.text_raw, j.result, j.product_code, j.margin_value FROM judgment j "
+        "JOIN requirement q USING (requirement_id) WHERE j.run_id = %s AND j.is_current",
         (run_id,)).fetchall(), key=repr)
 
 
@@ -151,7 +152,7 @@ def stale(conn, job_id):
 
 
 def test_worker_killed_then_restarted(env, db, spec):
-    """Scenario: 처리기를 강제로 끈 뒤 다시 켬 — 다시 넣어 이어서 처리하고 담당자 확인에서 멈춘다."""
+    """Scenario: 처리기를 강제로 끈 뒤 다시 켬 — 다시 넣어 이어서 처리하고 담당자 확인에서 멈춤."""
     run_id = queued_run(db, spec)
     job = run_queue.claim(db, "dead", 2)
     stale(db, job.job_id)                                        # 살아 있음이 끊김
