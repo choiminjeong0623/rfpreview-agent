@@ -24,7 +24,7 @@ import { Team } from './views/examples/Team'
 import { Projects } from './views/Projects'
 import { Products } from './views/Products'
 import { ProductView } from './views/ProductView'
-import { RunLog } from './views/RunLog'
+import { RunLog, RunLogDetail } from './views/RunLog'
 import { Rules } from './views/Rules'
 import { Tbe } from './views/Tbe'
 import { Todo } from './views/Todo'
@@ -106,6 +106,11 @@ function route(path: string): Route {
   }
   if (path === '/eval') {
     return { menu: 'eval', crumbs: [home, { label: '시스템 관리' }, { label: '정답지·채점' }], body: <Eval /> }
+  }
+  const runlog = path.match(/^\/runlog\/(\d+)$/)
+  if (runlog) {
+    return { menu: 'runlog', crumbs: [home, { label: '시스템 관리' }, { label: '실행 기록', path: '/runlog' }, { label: '상세' }],
+      body: <RunLogDetail key={runlog[1]} runId={Number(runlog[1])} /> }
   }
   if (path === '/runlog') {
     return { menu: 'runlog', crumbs: [home, { label: '시스템 관리' }, { label: '실행 기록' }], body: <RunLog /> }

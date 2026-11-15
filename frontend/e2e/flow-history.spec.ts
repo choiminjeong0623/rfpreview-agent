@@ -8,7 +8,8 @@ test('흐름 기록 펼치기', async ({ page, request }) => {
   const summary = await (await request.get(`/api/runs/${run.run_id}`)).json() as { judgments: number }
   await as(page, ENGINEER)
   await page.goto('/#/runlog')
-  await page.locator('tr', { hasText: run.review_no }).first().click()
+  await page.locator('tr', { hasText: run.review_no }).first().click()       // 상세 화면으로 (update-runlog-detail)
+  await expect(page).toHaveURL(new RegExp(`#/runlog/${run.run_id}$`))
   const flow = page.locator('.rlflow')
   await expect(flow).toContainText('흐름 기록')
   await expect(flow).toContainText(`판정 0 → ${summary.judgments}`)

@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import { api, type AiCall, type AiUsageRow, type RunLogItem } from '../api'
 import { AiModeLine } from '../components/AiMode'
 import './detail.css'
@@ -6,7 +6,7 @@ import { stamp } from '../components/format'
 import { FLOW_ACTION_NAMES, FLOW_COUNT_NAMES, STAGE_NAMES, STAGE_TONES, STEP_NAMES } from '../components/labels'
 import { duration } from '../components/progress'
 import { useLoad } from '../components/useLoad'
-import { href } from '../shell/router'
+import { href, navigate } from '../shell/router'
 import { usePageCss } from '../shell/pageCss'
 
 // SCR-25 실행 기록 (목업에 없음, add-run-log, NFR-09). docs/screens/SCR-25_공유.md
@@ -204,7 +204,6 @@ function AiUsageBox() {
 export function RunLog() {
   usePageCss('Products')
   const log = useLoad(() => api.runLog(), [])
-  const [open, setOpen] = useState<number | null>(null)
   const rows = log.data ?? []
   const done = rows.filter((r) => r.seconds !== null && r.stage !== 'PROCESSING' && !noLog(r))
   const avg = done.length ? done.reduce((n, r) => n + (r.seconds ?? 0), 0) / done.length : null
@@ -233,9 +232,9 @@ export function RunLog() {
             {log.data === null && !log.error && <tr><td colSpan={12} className="dimv">불러오는 중…</td></tr>}
             {log.error && <tr><td colSpan={12} className="c-red">{log.error}</td></tr>}
             {rows.map((r) => (
-              <Fragment key={r.run_id}>
-                <tr className={open === r.run_id ? 'cur' : undefined} style={{ cursor: 'pointer' }} aria-expanded={open === r.run_id}
-                  onClick={() => setOpen(open === r.run_id ? null : r.run_id)}>
+                <tr key={r.run_id} style={{ cursor: 'pointer' }} tabIndex={0} title="실행 기록 상세 보기"
+                  onClick={() => navigate(`/runlog/${r.run_id}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/runlog/${r.run_id}`) }}>
                   <td><a href={href(`/reviews/${r.run_id}`)} onClick={(e) => e.stopPropagation()}>{r.review_no}</a>
                     <div className="en">{r.review_name ?? r.project_name ?? ''}</div></td>
                   <td><span className={`st ${STAGE_TONES[r.stage] ?? ''}`}>{STAGE_NAMES[r.stage] ?? r.stage}</span>
@@ -251,12 +250,43 @@ export function RunLog() {
                   <td style={{ textAlign: 'right' }}>{num(r.judgments)}</td>
                   <td style={{ textAlign: 'right' }}>{r.retries}</td>
                 </tr>
-                {open === r.run_id && <tr className="rlopen"><td colSpan={12}><Steps r={r} /><Prompts r={r} /><Flow runId={r.run_id} /><AiCalls runId={r.run_id} /></td></tr>}
-              </Fragment>
             ))}
           </tbody>
         </table>
       </div>
+    </main>
+  )
+}
+
+/** 실행 기록 상세 (update-runlog-detail): 줄을 누르면 넘어오는 화면. 단계별 시간·프롬프트 판·흐름 기록·AI 호출 */
+export function RunLogDetail({ runId }: { runId: number }) {
+  usePageCss('Products')
+  const log = useLoad(() => api.runLog(), [])
+  const r = (log.data ?? []).find((x) => x.run_id === runId)
+  return (
+    <main className="main">
+      <p style={{ margin: '0 0 8px' }}><a className="lnk" href={href('/runlog')}>← 실행 기록</a></p>
+      {log.data === null && !log.error && <p className="dimv">불러오는 중…</p>}
+      {log.error && <p className="c-red">{log.error}</p>}
+      {log.data && !r && <p className="dimv">이 검토의 실행 기록이 없습니다.</p>}
+      {r && <>
+        <div className="ttl"><h1>실행 기록 · {r.review_no}</h1>
+          <a className="lnk" href={href(`/reviews/${r.run_id}`)}>검토 상세 보기</a></div>
+        <p className="en" style={{ margin: '4px 0 0' }}>{r.review_name ?? r.project_name ?? ''}</p>
+        <div className="kpis">
+          <div className="kpi"><div className="l">상태</div><b><span className={`st ${STAGE_TONES[r.stage] ?? ''}`}>{STAGE_NAMES[r.stage] ?? r.stage}</span></b>
+            <div className="s">시작 {stamp(r.started_at)}{r.cancelled ? ' · 취소함' : ''}</div></div>
+          <div className="kpi"><div className="l">걸린 시간</div><b>{r.stage === 'PROCESSING' ? '처리 중' : secs(r.seconds)}</b>
+            <div className="s">다시 시도 {r.retries}번</div></div>
+          <div className="kpi"><div className="l">AI 요청</div><b>{noLog(r) ? '—' : num(r.llm_calls)}</b>
+            <div className="s">{r.llm_model ?? '규칙 기반'} · 토큰 {noLog(r) ? '—' : num(tokens(r))}</div></div>
+          <div className="kpi"><div className="l">추정 비용</div><b>{noLog(r) ? '—' : won(r.estimated_cost_krw)}</b>
+            <div className="s">{r.cost_assumed ? '추정 · 팀 가정' : `사전 ${r.dict_version}`}</div></div>
+          <div className="kpi"><div className="l">문서 · 요구사항 · 판정</div><b>{r.documents} · {num(r.requirements)} · {num(r.judgments)}</b>
+            <div className="s">다시 쓴 문서 {r.documents_reused}</div></div>
+        </div>
+        <div className="rlopen" style={{ marginTop: 16 }}><Steps r={r} /><Prompts r={r} /><Flow runId={r.run_id} /><AiCalls runId={r.run_id} /></div>
+      </>}
     </main>
   )
 }

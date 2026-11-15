@@ -36,7 +36,9 @@ def summary(conn: psycopg.Connection, run_id: int) -> dict:
     for r in rows:
         key = r["step"] or "—"
         by_step[key] = by_step.get(key, 0) + r["duration_ms"]
-    return {"calls": rows, "count": len(rows),
+    # run_token은 내보내기(otel)에서만 쓴다. 화면 응답 모양(AiCall)에는 없다
+    shown = [{k: v for k, v in r.items() if k != "run_token"} for r in rows]
+    return {"calls": shown, "count": len(rows),
             "by_result": dict(Counter(r["result"] for r in rows)),
             "step_ms": [{"step": k, "ms": v} for k, v in by_step.items()],
             "different_answers": different_answers(conn, run_id) if rows else 0}
