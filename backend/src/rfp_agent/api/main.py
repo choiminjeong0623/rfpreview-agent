@@ -20,7 +20,7 @@ from rfp_agent.api import (
 from rfp_agent.config import get_settings
 from rfp_agent.db.connection import connect
 from rfp_agent.llm.client import ai_mode, ai_model
-from rfp_agent.pipeline import ocr
+from rfp_agent.pipeline import ocr, run_queue
 
 app = FastAPI(title="RFP 기술 검토 지원 API", version="0.2.0")
 app.include_router(runs.router)
@@ -57,6 +57,11 @@ class Health(BaseModel):
     # 스캔 PDF·그림 속 글자 읽기 (add-ocr): 엔진이 있고 켜져 있는지, 엔진 판
     ocr_available: bool = False
     ocr_engine: str | None = None
+    # 검토 실행 대기열 (add-run-queue): 실행 방식(INLINE 웹 서버 안 / WORKER 처리기),
+    # 살아 있는 처리기 수, 대기 작업 수
+    run_mode: Literal["INLINE", "WORKER"] = "INLINE"
+    workers_alive: int = 0
+    jobs_queued: int = 0
 
 
 @app.get("/api/health", response_model=Health)
@@ -68,9 +73,11 @@ def health() -> Health:
             row = conn.execute(
                 "SELECT max(version) FROM schema_migration"
             ).fetchone()
+            queue = run_queue.status(conn)
         database, version = "ok", row[0] if row else None
     except Exception:  # noqa: BLE001 - 상태 점검은 어떤 DB 오류든 "down"으로 알린다
         database, version = "down", None
+        queue = {"workers_alive": 0, "jobs_queued": 0}
     return Health(
         status="ok" if database == "ok" else "degraded",
         database=database,
@@ -81,6 +88,8 @@ def health() -> Health:
         external_send=mode == "GEMINI",
         ocr_available=ocr.available(),
         ocr_engine=ocr.engine_version() if ocr.available() else None,
+        run_mode="WORKER" if settings.rfp_run_mode == "worker" else "INLINE",
+        workers_alive=queue["workers_alive"], jobs_queued=queue["jobs_queued"],
     )
 
 

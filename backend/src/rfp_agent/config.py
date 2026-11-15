@@ -19,6 +19,12 @@ class Settings(BaseSettings):
     rfp_doc_workers: int = 2
     # 스캔 PDF·그림 속 글자 읽기 (add-ocr): on | off. 엔진(Tesseract)이 없으면 off와 같다
     rfp_ocr: str = "on"
+    # 검토 실행 대기열 (add-run-queue, FR-20). inline: 웹 서버가 대기열 규칙대로 직접(개발·시험),
+    # worker: rfp-worker 처리기가 돌림(docker compose). 동시 실행 수, 업로드 상한(MB)
+    rfp_run_mode: str = "inline"
+    rfp_run_workers: int = 2
+    rfp_upload_max_mb: int = 100
+    rfp_request_max_mb: int = 300
     # AI 사용 방식 (add-ai-mode, NFR-07): gemini(외부) | local(사내 OpenAI 호환 주소) | off(규칙만)
     rfp_ai_mode: str = "gemini"
     rfp_local_llm_url: str | None = None        # 예: http://llm.사내/v1

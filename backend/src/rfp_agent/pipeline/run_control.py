@@ -11,17 +11,27 @@ import psycopg
 
 from rfp_agent.pipeline.numbers import josa
 from rfp_agent.pipeline.review import ReviewError
+from rfp_agent.pipeline.run_queue import OWNERSHIP_SECONDS
 
 STALL_MINUTES = 10          # 화면의 "10분 넘게 진행이 없습니다"와 같은 기준
 
 
 def _run(conn: psycopg.Connection, run_id: int) -> tuple:
+    """(단계, 처리 단계, 멈춤, 처음 입력). 멈춤은 작업이 돌고 있으면 살아 있음 기록이 소유권 시간
+    넘게 끊겼는지, 작업 기록이 없으면 지금처럼 진행이 10분 넘게 없는지로 본다 (add-run-queue)."""
     row = conn.execute(
-        """SELECT stage, graph_state->>'step',
-                  now() - COALESCE((graph_state->>'updated_at')::timestamptz, started_at)
-                      > make_interval(mins => %s),
-                  graph_state->'inputs'
-           FROM review_run WHERE run_id = %s FOR UPDATE""", (STALL_MINUTES, run_id)).fetchone()
+        """SELECT r.stage, r.graph_state->>'step',
+                  CASE WHEN j.job_id IS NOT NULL
+                       THEN now() - j.heartbeat_at > make_interval(secs => %s)
+                       ELSE now() - COALESCE((r.graph_state->>'updated_at')::timestamptz,
+                                             r.started_at) > make_interval(mins => %s) END,
+                  r.graph_state->'inputs'
+           FROM review_run r
+           LEFT JOIN LATERAL (SELECT job_id, heartbeat_at FROM run_job
+                              WHERE run_id = r.run_id AND status = 'RUNNING'
+                              ORDER BY job_id DESC LIMIT 1) j ON TRUE
+           WHERE r.run_id = %s FOR UPDATE OF r""",
+        (OWNERSHIP_SECONDS, STALL_MINUTES, run_id)).fetchone()
     if row is None:
         raise ReviewError(404, f"검토 실행 {run_id}이(가) 없습니다.")
     return row
@@ -36,6 +46,19 @@ def request_cancel(conn: psycopg.Connection, run_id: int, actor_id: int | None) 
         conn.execute(
             """UPDATE review_run SET cancel_requested_at = now(), cancel_requested_by = %s
                WHERE run_id = %s""", (actor_id, run_id))
+        # 대기 중이면 실행 없이 바로 취소한다 (add-run-queue): 작업은 꺼내지지 않는다
+        queued = conn.execute(
+            """UPDATE run_job SET status = 'DROPPED', finished_at = now()
+               WHERE run_id = %s AND status = 'QUEUED' RETURNING job_id""", (run_id,)).fetchall()
+        running = conn.execute("SELECT 1 FROM run_job WHERE run_id = %s AND status = 'RUNNING'",
+                               (run_id,)).fetchone()
+        if queued and not running:
+            from rfp_agent.pipeline.run import cancel_message
+            conn.execute(
+                """UPDATE review_run SET stage = 'FAILED', failed_step = 'queued',
+                          error_message = %s, finished_at = now(), run_token = NULL
+                   WHERE run_id = %s""", (cancel_message(conn, run_id), run_id))
+            return
         if stalled:
             # 처리 흐름이 살아 있지 않다고 본다(백엔드가 꺼짐 등).
             # 살아 있으면 다음 기록 때 스스로 멈춘다

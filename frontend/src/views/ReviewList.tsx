@@ -5,7 +5,7 @@ import { STAGE_NAMES, STAGE_TONES, STEP_NAMES } from '../components/labels'
 import { myTurn } from '../components/myWork'
 import { Pager } from '../components/Pager'
 import { useLoad, useRepeat } from '../components/useLoad'
-import { progress, STALL_MS, stepLine } from '../components/progress'
+import { isStalled, progress, stepLine } from '../components/progress'
 import { currentPath, href, navigate, pathQuery, useHashPath } from '../shell/router'
 import { useSession } from '../shell/useSession'
 import './detail.css'
@@ -126,10 +126,10 @@ function Row({ r, seq, me, now, clock }: { r: RunListItem; seq: number; me: numb
   )
 }
 
-/** 처리 중인 줄의 진행 막대와 단계 (목업 v4.96 목록 줄 진행 막대). 10분 넘게 진행이 없으면 주황 */
+/** 처리 중인 줄의 진행 막대와 단계 (목업 v4.96 목록 줄 진행 막대). 멈췄을 수 있으면 주황, 대기 중이면 "대기 중 n번째" */
 function RowProgress({ r, clock }: { r: RunListItem; clock: number }) {
   const p = progress(r)
-  const stalled = clock - Date.parse(r.step_updated_at) > STALL_MS
+  const stalled = isStalled(r, clock)
   return (
     <div className={'lprog' + (stalled ? ' warn' : '')}>
       <div className="anbar" role="progressbar" aria-label={`${r.review_no} 진행`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={p}>

@@ -96,6 +96,7 @@ class RunContext:
     txt_dir: Path | None
     progress: ProgressWriter | None = None     # 없으면 세부 진행을 적지 않는다 (테스트·CLI)
     checkpointer: BaseCheckpointSaver | None = None   # 없으면 같은 DB로 연결을 열어 만든다
+    token: str | None = None    # 실행 토큰 (add-run-queue). 없으면 소유권을 안 본다 (CLI·테스트)
 
     @property
     def processing_key(self) -> str:
@@ -129,10 +130,19 @@ class RunCancelled(Exception):
     """사람이 처리 중인 검토를 취소했다 (add-run-control)."""
 
 
-def check_cancel(conn: psycopg.Connection, run_id: int) -> None:
-    """취소 요청이 있으면 멈춘다. 진행을 기록할 때마다 부른다."""
-    row = conn.execute("SELECT cancel_requested_at FROM review_run WHERE run_id = %s",
-                       (run_id,)).fetchone()
+class RunSuperseded(Exception):
+    """이 실행의 토큰이 더는 검토의 토큰이 아니다: 새 실행이 맡았다 (add-run-queue).
+
+    결과를 쓰지 않고 멈춘다 (NFR-12, 한 검토에 도는 실행은 하나).
+    """
+
+
+def check_cancel(conn: psycopg.Connection, run_id: int, token: str | None = None) -> None:
+    """소유권을 잃었거나 취소 요청이 있으면 멈춘다. 진행을 기록할 때마다 부른다."""
+    row = conn.execute("SELECT cancel_requested_at, run_token::text FROM review_run "
+                       "WHERE run_id = %s", (run_id,)).fetchone()
+    if token is not None and row and row[1] != token:
+        raise RunSuperseded(run_id)
     if row and row[0] is not None:
         raise RunCancelled(run_id)
 
@@ -150,8 +160,8 @@ def _close_step(conn: psycopg.Connection, run_id: int) -> None:
                  "WHERE run_id = %s AND finished_at IS NULL", (run_id,))
 
 
-def _set_step(conn: psycopg.Connection, run_id: int, step: str) -> None:
-    check_cancel(conn, run_id)
+def _set_step(conn: psycopg.Connection, run_id: int, step: str, token: str | None = None) -> None:
+    check_cancel(conn, run_id, token)
     # 실행 기록(add-run-log): 앞 단계를 닫고 이 단계 시작 시각을 적는다. attempt = 다시 시도 횟수
     _close_step(conn, run_id)
     conn.execute(
@@ -170,7 +180,7 @@ def _reporter(ctx: RunContext, run_id: int, file_index: int, file_count: int,
               conn: psycopg.Connection | None = None) -> Report:
     def report(part: str, done: int | None = None, total: int | None = None) -> None:
         # 문서 하나는 한 트랜잭션이라 여기서 멈추면 그 문서의 반쯤 만든 결과는 되돌려진다
-        check_cancel(conn or ctx.conn, run_id)
+        check_cancel(conn or ctx.conn, run_id, ctx.token)
         if ctx.progress:
             ctx.progress(run_id, {"part": part, "done": done, "total": total,
                                   "file_index": file_index, "file_count": file_count})
@@ -180,7 +190,7 @@ def _reporter(ctx: RunContext, run_id: int, file_index: int, file_count: int,
 def _documents_node(ctx: RunContext):
     def node(state: RunState) -> RunState:
         conn, run_id = ctx.conn, state["run_id"]
-        _set_step(conn, run_id, "documents")
+        _set_step(conn, run_id, "documents", ctx.token)
         dicts = dictionaries.load(conn)
         paths = state["paths"]
         results = _process_all(ctx, run_id, paths, state.get("choices") or {}, dicts)
@@ -297,7 +307,7 @@ def _pairs_node(ctx: RunContext):
     """같은 데이터시트 항목을 많이 공유하는 문서 쌍을 후보로 낸다 (FR-01). 확정은 사람이."""
     def node(state: RunState) -> RunState:
         conn, run_id = ctx.conn, state["run_id"]
-        _set_step(conn, run_id, "pairs")
+        _set_step(conn, run_id, "pairs", ctx.token)
         shared = conn.execute(
             """SELECT LEAST(a.document_id, b.document_id), GREATEST(a.document_id, b.document_id),
                       count(*)
@@ -482,7 +492,7 @@ def _save_claims(conn: psycopg.Connection, run_id: int, table: str, target_id: i
 def _risks_node(ctx: RunContext):
     def node(state: RunState) -> RunState:
         conn, run_id = ctx.conn, state["run_id"]
-        _set_step(conn, run_id, "risks")
+        _set_step(conn, run_id, "risks", ctx.token)
         dicts = dictionaries.load(conn)
         readable = readable_documents(conn, state["document_ids"])
         candidates = clause_candidates(conn, readable, dicts)
@@ -522,7 +532,7 @@ def rebuild_outputs(ctx: RunContext, run_id: int, document_ids: list[int]) -> di
 def _judge_node(ctx: RunContext):
     def node(state: RunState) -> RunState:
         conn, run_id = ctx.conn, state["run_id"]
-        _set_step(conn, run_id, "judge")
+        _set_step(conn, run_id, "judge", ctx.token)
         old = doc_add.current_judgments(conn, run_id)
         count = judge_run(conn, run_id, state["readable_ids"])
         # 같은 줄(요구값·비교 제품·비교 규칙)의 확정·수정·반려를 이어받는다 (FR-10 ⑤)
@@ -538,7 +548,7 @@ def _meaning_node(ctx: RunContext):
     """뜻 찾기 벡터와 후보 (add-meaning-search). 실패해도 분석은 계속한다."""
     def node(state: RunState) -> RunState:
         conn, run_id = ctx.conn, state["run_id"]
-        _set_step(conn, run_id, "meaning")
+        _set_step(conn, run_id, "meaning", ctx.token)
         count = meaning.build(conn, run_id, state["readable_ids"], ctx.llm)
         conn.commit()
         return {"meaning_count": count}
@@ -547,7 +557,7 @@ def _meaning_node(ctx: RunContext):
 
 def _step_node(ctx: RunContext, step: str, key: str, build):
     def node(state: RunState) -> RunState:
-        _set_step(ctx.conn, state["run_id"], step)
+        _set_step(ctx.conn, state["run_id"], step, ctx.token)
         count = build(ctx, state)
         ctx.conn.commit()
         return {key: count}
@@ -660,6 +670,10 @@ def execute_run(ctx: RunContext, run_id: int, paths: list[Path],
             state = graph.invoke(start, config)
     except Exception as exc:
         conn.rollback()
+        if isinstance(exc, RunSuperseded):
+            # 새 실행이 맡았다: 아무것도 쓰지 않는다 (add-run-queue, NFR-12)
+            log.info("검토 실행 %s: 소유권을 잃어 멈춤", run_id)
+            return "SUPERSEDED"
         step = conn.execute("SELECT graph_state->>'step' FROM review_run WHERE run_id = %s",
                             (run_id,)).fetchone()[0]
         if isinstance(exc, RunCancelled):
@@ -670,18 +684,27 @@ def execute_run(ctx: RunContext, run_id: int, paths: list[Path],
                        else FAILURE_MESSAGE if isinstance(exc, LLMFailure)
                        else f"{FAILURE_MESSAGE}: {exc}")
             log.exception("검토 실행 %s 실패 (%s)", run_id, step)
-        conn.execute(
+        # 끝 기록은 자기 토큰일 때만 (add-run-queue). 토큰 없이 부른 실행은 지금처럼 쓴다
+        done = conn.execute(
             """UPDATE review_run SET stage = 'FAILED', failed_step = %s, error_message = %s,
-                      finished_at = now() WHERE run_id = %s""", (step, message, run_id))
+                      finished_at = now()
+                WHERE run_id = %s AND (%s::uuid IS NULL OR run_token = %s::uuid)""",
+            (step, message, run_id, ctx.token, ctx.token)).rowcount
+        if not done:
+            conn.rollback()
+            return "SUPERSEDED"
         _finish_log(conn, run_id, usage, before)
         conn.commit()
         return "FAILED"
-    conn.execute(
+    done = conn.execute(
         """UPDATE review_run SET stage = 'ENGINEER_REVIEW', finished_at = now(),
                   graph_state = graph_state || %s || jsonb_build_object('updated_at', now())
-            WHERE run_id = %s""",
+            WHERE run_id = %s AND (%s::uuid IS NULL OR run_token = %s::uuid)""",
         (Jsonb({"step": "done", "detail": None, **{k: state.get(k, 0) for k in COUNTS}}),
-         run_id))
+         run_id, ctx.token, ctx.token)).rowcount
+    if not done:
+        conn.rollback()
+        return "SUPERSEDED"
     _finish_log(conn, run_id, usage, before)
     conn.commit()
     return "ENGINEER_REVIEW"

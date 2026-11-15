@@ -4,6 +4,7 @@
 
 import hashlib
 import re
+import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import date
@@ -81,6 +82,7 @@ from rfp_agent.pipeline import (
     review_info,
     run_control,
     run_log,
+    run_queue,
     sales_handoff,
     source_lines,
     tbe,
@@ -95,7 +97,7 @@ from rfp_agent.pipeline.proposals import build_proposals
 from rfp_agent.pipeline.reader import SUFFIXES
 from rfp_agent.pipeline.run import switch_product
 from rfp_agent.pipeline.screen_summary import home_summary, review_summary
-from rfp_agent.pipeline.service import make_context, run_to_end, start_run
+from rfp_agent.pipeline.service import make_context, start_run
 
 router = APIRouter(prefix="/api", tags=["검토 실행"])
 DOCX_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -141,6 +143,7 @@ class LibraryFiles(BaseModel):
 class LibraryRun(ReviewInfo):
     files: list[str]
     choices: Choices = {}
+    request_key: str | None = Field(None, max_length=80)   # 중복 등록 방지 (add-run-queue)
     business_id: int | None = None          # 진행 중인 사업에 추가 (add-project-status)
     new_business_name: str | None = Field(None, max_length=200)   # 새 사업 만들기
 
@@ -250,31 +253,94 @@ NO_JUDGE_TARGET = ("판정 대상 문서(묶음 A·B)가 없어 검토를 시작
                    "묶음을 바꾸거나 판정할 문서를 더 올려 주세요.")
 
 
+def _queue(background: BackgroundTasks, conn, run_id: int, kind: str, paths: list[Path],
+           choices: dict | None = None, rewind: str | None = None) -> None:
+    """작업을 대기열에 넣는다 (add-run-queue). 웹 서버 안 방식이면 같은 규칙으로 바로 꺼낸다."""
+    run_queue.enqueue(conn, run_id, kind, paths, choices, rewind)
+    if get_settings().rfp_run_mode != "worker":
+        background.add_task(run_queue.drain)
+
+
+REQUEST_KEY_MINUTES = 10        # 같은 요청 키가 이 안에 다시 오면 처음 검토를 돌려준다 [제안]
+
+
+def _same_request(conn, key: str | None) -> int | None:
+    """같은 요청 키로 이미 만든 검토 (중복 등록 방지). 없으면 키를 잡아 두고 None."""
+    if not key:
+        return None
+    conn.execute("DELETE FROM run_request WHERE created_at < now() - make_interval(mins => %s)",
+                 (REQUEST_KEY_MINUTES,))
+    got = conn.execute("INSERT INTO run_request (request_key) VALUES (%s) "
+                       "ON CONFLICT (request_key) DO NOTHING RETURNING request_key",
+                       (key,)).fetchone()
+    conn.commit()
+    if got:
+        return None
+    for _ in range(50):                                 # 앞 요청이 검토를 만드는 중이면 잠깐 기다림
+        row = conn.execute("SELECT run_id FROM run_request WHERE request_key = %s",
+                           (key,)).fetchone()
+        if row and row[0] is not None:
+            return row[0]
+        conn.commit()
+        time.sleep(0.1)
+    raise HTTPException(409, "같은 등록 요청을 처리하고 있습니다. "
+                             "잠시 뒤 검토 목록을 확인해 주세요.")
+
+
+def _release(conn, key: str | None) -> None:
+    """등록을 거절했으면 잡아 둔 요청 키를 푼다 (다시 보낼 수 있게)."""
+    if key:
+        conn.rollback()
+        conn.execute("DELETE FROM run_request WHERE request_key = %s AND run_id IS NULL", (key,))
+        conn.commit()
+
+
 def _start(paths: list[Path], background: BackgroundTasks, info: dict,
            actor_id: int | None, choices: Choices | None = None,
-           business_id: int | None = None, new_business_name: str | None = None) -> dict:
+           business_id: int | None = None, new_business_name: str | None = None,
+           request_key: str | None = None) -> dict:
     bundles = {name: c.bundle for name, c in (choices or {}).items() if c.bundle}
     with connect() as conn:
-        # 판정할 문서가 없으면 10분 분석해도 판정이 0건이라 실행을 만들기 전에 거절한다 (CR-09)
-        problem = preview.judge_target_problem(conn, paths, bundles)
-        if problem and problem[0] == "UNREAD":
-            # 판정 대상으로 고른 문서를 모두 읽지 못함 (add-unread-pages): 묶음 거절과 문구를 나눈다
-            raise HTTPException(400, f"판정할 문서를 읽지 못했습니다({problem[1]}). "
-                                     "다시 스캔한 파일이나 글자가 든 파일을 올려 주세요.")
-        if problem:
-            raise HTTPException(400, NO_JUDGE_TARGET)
-        # 검토 정보·사업 칸이 틀리면 실행을 만들기 전에 막는다
-        _review(lambda: review_info.clean(info))
-        _review(lambda: review_info.require_due(info))
-        _review(lambda: review_info.check_engineer(conn, info.get("engineer_id") or None))
-        _review(lambda: business.check_start(conn, business_id, new_business_name))
-        run_id = start_run(conn, actor_id)
-        _review(lambda: review_info.save_on_start(conn, run_id, info, actor_id))
-        _review(lambda: business.link_on_start(conn, run_id, business_id, new_business_name,
-                                               review_info.clean(info), actor_id))
-    chosen = {name: c.model_dump(exclude_none=True) for name, c in (choices or {}).items()}
-    background.add_task(run_to_end, run_id, paths, chosen)
+        same = _same_request(conn, request_key)
+    if same is not None:
+        return _summary(same)
+    with connect() as conn:
+        try:
+            run_id = _create(conn, paths, info, actor_id, bundles, business_id,
+                             new_business_name)
+        except HTTPException:
+            _release(conn, request_key)
+            raise
+        if request_key:
+            conn.execute("UPDATE run_request SET run_id = %s WHERE request_key = %s",
+                         (run_id, request_key))
+            conn.commit()
+        chosen = {name: c.model_dump(exclude_none=True) for name, c in (choices or {}).items()}
+        _queue(background, conn, run_id, "START", paths, chosen)
     return _summary(run_id)
+
+
+def _create(conn, paths: list[Path], info: dict, actor_id: int | None, bundles: dict,
+            business_id: int | None, new_business_name: str | None) -> int:
+    """등록 검사(가볍게, 문서를 다시 읽지 않음)와 검토 만들기 (NFR-11)."""
+    # 판정할 문서가 없으면 10분 분석해도 판정이 0건이라 실행을 만들기 전에 거절한다 (CR-09)
+    problem = preview.judge_target_problem(conn, paths, bundles)
+    if problem and problem[0] == "UNREAD":
+        # 판정 대상으로 고른 문서를 모두 읽지 못함 (add-unread-pages): 묶음 거절과 문구를 나눈다
+        raise HTTPException(400, f"판정할 문서를 읽지 못했습니다({problem[1]}). "
+                                 "다시 스캔한 파일이나 글자가 든 파일을 올려 주세요.")
+    if problem:
+        raise HTTPException(400, NO_JUDGE_TARGET)
+    # 검토 정보·사업 칸이 틀리면 실행을 만들기 전에 막는다
+    _review(lambda: review_info.clean(info))
+    _review(lambda: review_info.require_due(info))
+    _review(lambda: review_info.check_engineer(conn, info.get("engineer_id") or None))
+    _review(lambda: business.check_start(conn, business_id, new_business_name))
+    run_id = start_run(conn, actor_id)
+    _review(lambda: review_info.save_on_start(conn, run_id, info, actor_id))
+    _review(lambda: business.link_on_start(conn, run_id, business_id, new_business_name,
+                                           review_info.clean(info), actor_id))
+    return run_id
 
 
 def _safe_name(name: str) -> str:
@@ -349,11 +415,19 @@ def _library_paths(files: list[str]) -> list[Path]:
 
 async def _save_uploads(files: list[UploadFile]) -> list[Path]:
     """올린 파일을 내용 해시 폴더에 둔다. 같은 파일이면 한 번만 저장한다."""
-    upload_dir = get_settings().upload_dir
+    settings = get_settings()
+    upload_dir = settings.upload_dir
     paths = []
+    total = 0
+    one, whole = settings.rfp_upload_max_mb, settings.rfp_request_max_mb
     for f in files:
         name = _safe_name(f.filename or "")
         data = await f.read()
+        # 업로드 상한 (add-run-queue): 넘으면 저장하지 않고 거절한다
+        total += len(data)
+        if len(data) > one * 1_048_576 or total > whole * 1_048_576:
+            raise HTTPException(400, f"파일이 너무 큽니다({name}). 파일 하나는 {one} MB, "
+                                     f"한 번에 모두 {whole} MB까지 올릴 수 있습니다.")
         target = upload_dir / hashlib.sha256(data).hexdigest()[:16] / name
         target.parent.mkdir(parents=True, exist_ok=True)
         if not target.exists():
@@ -387,7 +461,7 @@ async def upload_preview(files: list[UploadFile]) -> list[DocumentPreview]:
 @router.post("/runs/library", status_code=202)
 def run_library(body: LibraryRun, background: BackgroundTasks) -> RunSummary:
     return _start(_library_paths(body.files), background, body.info(), body.actor_id, body.choices,
-                  body.business_id, body.new_business_name)
+                  body.business_id, body.new_business_name, body.request_key)
 
 
 @router.post("/runs", status_code=202)
@@ -398,7 +472,8 @@ async def run_upload(files: list[UploadFile], background: BackgroundTasks,
                      actor_id: int | None = Form(None),
                      choices: str | None = Form(None),
                      business_id: int | None = Form(None),
-                     new_business_name: str | None = Form(None)) -> RunSummary:
+                     new_business_name: str | None = Form(None),
+                     request_key: str | None = Form(None, max_length=80)) -> RunSummary:
     """올린 docx로 검토를 시작한다. 검토 정보 칸은 모두 고를 수 있다.
 
     파일은 내용 해시 폴더에 저장해 같은 파일이면 다시 처리하지 않는다.
@@ -414,7 +489,7 @@ async def run_upload(files: list[UploadFile], background: BackgroundTasks,
             "customer_name": customer_name, "country": country, "due_date": due_date,
             "engineer_id": engineer_id}
     return _start(paths, background, {k: v for k, v in sent.items() if v is not None}, actor_id,
-                  chosen, business_id, new_business_name)
+                  chosen, business_id, new_business_name, request_key)
 
 
 @router.get("/runs/{run_id}")
@@ -788,7 +863,7 @@ def retry_run(run_id: int, body: Actor, background: BackgroundTasks) -> RunSumma
     """실패·취소한 검토를 같은 파일·분류로 다시 처리한다. 처리한 문서는 다시 쓴다."""
     with connect() as conn:
         paths, choices = _review(lambda: run_control.prepare_retry(conn, run_id, body.actor_id))
-    background.add_task(run_to_end, run_id, paths, choices)
+        _queue(background, conn, run_id, "RETRY", paths, choices)
     return _summary(run_id)
 
 
@@ -810,7 +885,7 @@ async def add_documents(run_id: int, files: list[UploadFile], background: Backgr
     with connect() as conn:
         paths, merged = _review(lambda: doc_add.prepare_add(conn, run_id, new_paths, added,
                                                             actor_id))
-    background.add_task(run_to_end, run_id, paths, merged)
+        _queue(background, conn, run_id, "ADD_DOCS", paths, merged)
     return _summary(run_id)
 
 
@@ -823,7 +898,7 @@ def rewind(run_id: int, body: Rewind, background: BackgroundTasks) -> RunSummary
     with connect() as conn:
         paths, choices = _review(lambda: doc_add.prepare_rewind(conn, run_id, body.step,
                                                                 body.reason, body.actor_id))
-    background.add_task(run_to_end, run_id, paths, choices, body.step)
+        _queue(background, conn, run_id, "REWIND", paths, choices, body.step)
     return _summary(run_id)
 
 

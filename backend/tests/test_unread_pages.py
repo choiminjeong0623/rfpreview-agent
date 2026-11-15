@@ -186,6 +186,9 @@ def test_preview_with_ocr_off(client, tmp_path, ocr_off):
 def test_reject_when_judged_file_unread(client, db, tmp_path, low_conf):
     """Scenario: 판정할 문서를 모두 읽지 못한 등록 — 검토를 만들지 않고 이유와 함께 거절."""
     path = build_pdf(tmp_path / "all_scan.pdf", ["scan", "scan"])
+    # 등록 화면은 먼저 미리 보기를 부른다. 등록 검사는 그 결과를 다시 쓴다 (add-run-queue, NFR-11)
+    assert client.post("/api/runs/preview",
+                       files=[("files", (path.name, path.read_bytes()))]).status_code == 200
     data = {"choices": json.dumps({path.name: {"bundle": "A"}}), "due_date": "2026-12-01"}
     res = client.post("/api/runs", files=[("files", (path.name, path.read_bytes()))], data=data)
     assert res.status_code == 400

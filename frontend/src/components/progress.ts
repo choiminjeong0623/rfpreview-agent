@@ -2,7 +2,7 @@
 import type { RunListItem } from '../api'
 
 type StepDetail = NonNullable<RunListItem['step_detail']>
-type Progressing = Pick<RunListItem, 'step' | 'step_detail'>
+type Progressing = Pick<RunListItem, 'step' | 'step_detail'> & { queue_position?: number | null }
 
 // 처리 단계 순서 (pipeline/run.py build_graph)와 단계마다 보이는 문장
 export const STEPS: [string, string][] = [
@@ -46,6 +46,7 @@ function documentShare(d: StepDetail | null): number {
 
 /** 지금 단계 문장. 문서 읽기 단계는 세부 일과 줄 수를 붙인다 (예: "AI로 유형 붙이는 중 480 / 3,397줄") */
 export function stepText(run: Progressing): string {
+  if (run.queue_position) return queuedText(run.queue_position)
   const d = run.step_detail
   if (run.step === 'documents' && d) {
     const count = d.total ? ` ${(d.done ?? 0).toLocaleString('ko-KR')} / ${d.total.toLocaleString('ko-KR')}건` : ''
@@ -57,6 +58,7 @@ export function stepText(run: Progressing): string {
 
 /** 검토 목록 줄의 짧은 진행 문장 (목업 v4.96 목록 줄 진행 막대, "3/7 요구사항 문장 찾기 · 7 %"). 줄 수는 빼고 단계 순번을 붙인다 */
 export function stepLine(run: Progressing): string {
+  if (run.queue_position) return queuedText(run.queue_position)
   const steps = STEPS.slice(1)                                 // 'created'는 시작 전이라 세지 않는다
   const at = Math.max(0, steps.findIndex(([k]) => k === run.step))
   const d = run.step_detail
@@ -73,3 +75,20 @@ export function duration(ms: number): string {
 
 // 마지막 진행에서 이만큼 지나면 멈췄을 수 있다고 알린다. AI 한 묶음은 보통 10초 안팎 [제안]
 export const STALL_MS = 10 * 60 * 1000
+// 처리기 살아 있음이 이만큼 끊기면 멈춘 것으로 본다 (add-run-queue, 백엔드 OWNERSHIP_SECONDS와 같음)
+export const HEARTBEAT_STALL_MS = 3 * 60 * 1000
+
+/** 대기열에서 기다리는 검토 (add-run-queue): "대기 중 2번째" */
+export function queuedText(n: number): string {
+  return `대기 중 ${n}번째`
+}
+
+type Stallable = Pick<RunListItem, 'step_updated_at'> & { queue_position?: number | null; heartbeat_at?: string | null }
+
+/** 멈췄을 수 있는가: 처리기가 돌리고 있으면 살아 있음 기록(3분), 대기 중이면 멈춤이 아니고,
+ *  작업 기록이 없는 옛 검토는 진행 기록(10분)으로 본다 (add-run-queue) */
+export function isStalled(run: Stallable, now: number): boolean {
+  if (run.heartbeat_at) return now - Date.parse(run.heartbeat_at) > HEARTBEAT_STALL_MS
+  if (run.queue_position) return false
+  return now - Date.parse(run.step_updated_at) > STALL_MS
+}
