@@ -5,7 +5,7 @@ import { EXAMPLE_NOTICES, EXAMPLE_UNREAD } from '../examples/header'
 import { GROUPS, HOME, SETTINGS, groupOf, type GroupKey, type MenuItem, type MenuKey } from './menu'
 import { AnalysisProgress } from './AnalysisProgress'
 import { CrumbContext } from './crumb'
-import { currentPath, href, useHashPath } from './router'
+import { currentPath, href, navigate, useHashPath } from './router'
 import { useSession } from './useSession'
 import './shell.css'
 
@@ -177,7 +177,7 @@ function useOnline(): boolean {
 
 /** 머리글 오른쪽 사용자. 로그인이 없으므로 누르면 사용자를 바꾼다 (목업은 로그인 화면으로 감, SCR-00_공유.md). */
 function UserChip({ open, onToggle, onClose }: { open: boolean; onToggle: () => void; onClose: () => void }) {
-  const { user, users, setUserId } = useSession()
+  const { user, users, setUserId, signOut } = useSession()
   const online = useOnline()
   const state = online ? '온라인' : '오프라인'
   const role = user ? ROLE_NAMES[user.role] ?? user.role : ''
@@ -191,7 +191,8 @@ function UserChip({ open, onToggle, onClose }: { open: boolean; onToggle: () => 
       </button>
       {open && (
         <div className="ntp" role="dialog" aria-label="사용자 바꾸기">
-          <div className="nth"><b>사용자 바꾸기</b></div>
+          <div className="nth"><b>사용자 바꾸기</b>
+            <button type="button" onClick={() => { signOut(); onClose(); navigate('/login') }}>로그아웃</button></div>
           {users.map((u) => (
             <button key={u.user_id} type="button" className={'nti' + (u.user_id === user?.user_id ? ' un' : '')}
               aria-pressed={u.user_id === user?.user_id} onClick={() => { setUserId(u.user_id); onClose() }}>
