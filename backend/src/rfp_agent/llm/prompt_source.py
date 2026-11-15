@@ -21,6 +21,7 @@ import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
+from urllib.parse import quote
 
 import httpx
 
@@ -111,6 +112,44 @@ class Client:
         r = self.http.post("/api/public/otel/v1/traces", json=otlp,
                            headers={"x-langfuse-ingestion-version": "4"})
         r.raise_for_status()
+
+
+    # ── 데이터셋·실험·점수 (add-langfuse-experiments) ──
+
+    def get_dataset(self, name: str) -> dict | None:
+        r = self.http.get(f"/api/public/v2/datasets/{quote(name, safe='')}")
+        if r.status_code == 404:
+            return None
+        r.raise_for_status()
+        return r.json()
+
+    def create_dataset(self, name: str, description: str, metadata: dict) -> dict:
+        r = self.http.post("/api/public/v2/datasets", json={
+            "name": name, "description": description, "metadata": metadata})
+        r.raise_for_status()
+        return r.json()
+
+    def upsert_dataset_item(self, dataset: str, item_id: str, input_: dict, expected: dict,
+                            metadata: dict) -> dict:
+        # 항목은 id로 덮어쓴다(upsert, Langfuse 데이터 모델 문서)
+        r = self.http.post("/api/public/dataset-items", json={
+            "datasetName": dataset, "id": item_id, "input": input_, "expectedOutput": expected,
+            "metadata": metadata})
+        r.raise_for_status()
+        return r.json()
+
+    def create_scores(self, scores: list[dict]) -> None:
+        if not scores:
+            return
+        r = self.http.post("/api/public/scores", json=scores)
+        r.raise_for_status()
+
+    def project_id(self) -> str | None:
+        """키가 속한 프로젝트 id (화면 주소용). 얻지 못하면 None."""
+        r = self.http.get("/api/public/projects")
+        r.raise_for_status()
+        data = r.json().get("data") or []
+        return data[0].get("id") if data else None
 
 
 _transport: httpx.BaseTransport | None = None     # 테스트가 가짜 Langfuse를 끼우는 자리

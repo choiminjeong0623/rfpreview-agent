@@ -26,9 +26,16 @@ function Score({ v, evaluated }: { v: PromptVersion; evaluated: boolean }) {
       {e.metric} <b>{e.min === null ? '—' : `${e.min.toFixed(1)} %`}</b>
       {e.weak && <> <Badge tone="grey" title="사람이 확인하지 않은 정답(Claude 초안)만으로 잰 점수">근거 약함</Badge></>}
       {e.is_baseline && <> <Badge tone="blue">기준선</Badge></>}
-      <div className="en">{day(e.created_at)}</div>
+      <div className="en">{day(e.created_at)}
+        {e.langfuse_url && <> · <LangfuseLink url={e.langfuse_url} /></>}</div>
     </span>
   )
+}
+
+/** 평가를 Langfuse 실험으로 남겼으면 그 데이터셋 화면 (add-langfuse-experiments). 줄 누르기와 겹치지 않게 */
+function LangfuseLink({ url }: { url: string }) {
+  return <a className="lnk" href={url} target="_blank" rel="noreferrer" onClick={(ev) => ev.stopPropagation()}
+    title="반복마다 실험 하나, 문항별 답과 정답 여부 점수">Langfuse에서 보기 ↗</a>
 }
 
 /** 지금 판을 가져온 곳. 코드로 돌아간 것은 사용자 잘못이 아니라 중립색 */
@@ -286,6 +293,8 @@ function JobBox({ job, current }: { job: PromptEvalJob; current: number | null }
             : job.promote_block ? <div className="dimv">{job.promote_block}</div>
             : job.promoted_version ? <div><Badge tone="green">운영 반영</Badge> v{job.promoted_version}이 운영 판입니다.</div>
             : <div><Badge tone="green">통과</Badge> 운영으로 올릴 수 있습니다.</div>}
+          {job.langfuse_url && <div style={{ marginTop: 4 }}><LangfuseLink url={job.langfuse_url} /></div>}
+          {job.langfuse_error && <div className="dimv" style={{ marginTop: 4 }}>Langfuse에 실험을 남기지 못했습니다: {job.langfuse_error}</div>}
         </>
       )}
     </div>
