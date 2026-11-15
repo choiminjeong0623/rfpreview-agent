@@ -77,6 +77,7 @@ docker compose exec backend rfp-db seed-products   # 제품표 적재 (처음 �
 
 - 화면: <http://localhost:5173> · API 상태: <http://localhost:8000/api/health> · 보낸 메일: <http://localhost:8025> (밖으로 나가지 않음)
 - 고객 RFP 원문은 이 저장소에 없습니다. 시연용 합성 RFP는 저장소 맨 위의 `generate_*.py`로 만듭니다(`data/private/rfp_docx/`에 생성, git 제외). `frontend/e2e/fixtures/`에도 합성 문서가 있습니다.
+- 화면에서 `frontend/e2e/fixtures/synthetic_154kV_GIS_spec.docx`를 올려 시연할 때는 검토 등록 2단계 문서 표에서 **묶음을 B로 바꾼 뒤** [다음]을 누릅니다. 이 파일은 문서 목록에 없고 규격 표기(IEC)가 2번뿐이라 추천 묶음이 C(판정 안 함)로 나오고, 그대로 두면 "판정 대상 문서(묶음 A·B)가 없습니다"로 막힙니다(판정은 묶음 A·B 문서만, CR-09). 묶음을 고르지 않아도 되는 시연은 `rfp-db demo-setup`(합성 RFP 파일 28, 문서 목록 묶음 B)을 씁니다.
 
 로컬에서 직접 실행하려면 PostgreSQL 16, Python 3.12+와 [uv](https://docs.astral.sh/uv/), Node 22가 필요합니다.
 

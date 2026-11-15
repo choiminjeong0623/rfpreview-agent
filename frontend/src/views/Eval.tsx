@@ -91,9 +91,12 @@ export function Eval() {
   return (
     <main className="main">
       <div className="ttl"><div><h1>정답지·채점</h1><p className="tb-sub">사람이 확정한 판정을 정답지로 삼아, 사전·규칙·제품표를 고칠 때마다 점수를 다시 잽니다.</p></div>
-        <button type="button" className="bp" onClick={run} disabled={running || picked.length === 0}
-          title={picked.length === 0 ? '정답지 탭에서 채점할 검토를 고르세요' : undefined}>
-          <span className="ms" aria-hidden="true" style={{ fontSize: 'var(--ic-s)' }}>play_arrow</span>{running ? '채점 중…' : '지금 채점하기'}</button></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>
+          {picked.length === 0 && <span className="sh-mut">정답지 탭에서 채점할 검토를 고르면 켜집니다</span>}
+          {/* 꺼져 있어도 단추가 보이게 한다 (흐리게 하면 흰 바탕에 묻혀 단추가 없는 줄 앎) */}
+          <button type="button" className="bp" onClick={run} disabled={running || picked.length === 0} style={{ opacity: 1 }}
+            title={picked.length === 0 ? '정답지 탭에서 채점할 검토를 고르세요' : undefined}>
+            <span className="ms" aria-hidden="true" style={{ fontSize: 'var(--ic-s)' }}>play_arrow</span>{running ? '채점 중…' : '지금 채점하기'}</button></div></div>
       <div className="sh-note"><span className="ms" aria-hidden="true">info</span><span>점수는 시스템이 자동으로 계산합니다. 판정 정확도(K5·K6)는 엔지니어가 <b>확정·수정한 줄</b>을 정답으로 보고, 유형 분류 정확도(K13)는 고른 유형 정답지로, 추출 재현율·정확도(K1·K2)·값(K3)·위험 조건 재현율(K10)은 고른 요구사항 정답지로 잽니다. 지난 검토의 사람 판정은 새 검토의 판정을 자동으로 바꾸지 않으며, 사람 검토를 건너뛰는 자동 확정은 하지 않습니다.</span></div>
       {error && <div className="sh-note c-red" role="alert"><span className="ms" aria-hidden="true">error</span><span>{error}</span></div>}
       <div className="sh-sum">
