@@ -40,3 +40,27 @@ test('실행 기록에 AI 방식 한 줄', async ({ page, request }) => {
   await expect(line).toBeVisible()
   await expect(line).toContainText(health.external_send ? '외부 AI로 보냅니다' : '보내지 않')
 })
+
+// 명세 review-run "실행 기록 화면의 AI 호출" (change update-runlog-fiori). 호출 기록은 응답을 바꿔 화면만 본다.
+test('거른 결과가 없을 때', async ({ page, request }) => {
+  const run = await deviationRun(request, `AI 호출 거르기 ${Date.now()}`)
+  const at = new Date().toISOString()
+  const call = (id: number, step: string | null, role: string, ms: number) => ({
+    call_id: id, feature: step ? 'analysis' : 'handoff', step, role, model: 'gemini-test', prompt_version: 'v1', attempt: 0,
+    started_at: at, ended_at: at, duration_ms: ms, input_tokens: 10, output_tokens: 5, thinking_tokens: 0,
+    result: 'OK', dropped_reason: null, input_hash: 'a'.repeat(16), output_hash: 'b'.repeat(16), batch_lines: 1 })
+  await page.route(`**/api/runs/${run.run_id}/ai-calls`, (route) => route.fulfill({ json: {
+    calls: [call(1, 'documents', 'label', 1200), call(2, null, 'handoff', 900)], count: 2,
+    by_result: { OK: 2 }, step_ms: [{ step: 'documents', ms: 1200 }, { step: '—', ms: 900 }], different_answers: 0 } }))
+  await as(page, ENGINEER)
+  await page.goto(`/#/runlog/${run.run_id}`)
+  const calls = page.locator('#rl-calls')
+  await expect(calls).toContainText('분석 밖 (협조 요청·도우미 등)')
+  await calls.getByLabel('단계 거르기').selectOption('documents')
+  await calls.getByLabel('역할 거르기').selectOption('handoff')
+  await expect(calls).toContainText('조건에 맞는 AI 호출이 없습니다')
+  await expect(calls).toContainText('0 / 2건')
+  await calls.getByRole('button', { name: '초기화' }).click()
+  await expect(calls.locator('tbody tr')).toHaveCount(2)
+  await expect(calls.getByRole('button', { name: '초기화' })).toHaveCount(0)
+})

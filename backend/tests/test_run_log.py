@@ -70,3 +70,24 @@ def test_estimated_cost():
     cost = run_log.estimated_cost_krw("gemini-3.8-flash", 73_556, 28_775, 77_778)
     assert 650 <= cost <= 720
     assert run_log.estimated_cost_krw("모르는 모델", 1, 1, 1) is None
+
+
+def test_step_time_not_shifted(db):
+    """Scenario: 단계 시간이 다음 단계로 밀리지 않음.
+
+    한 트랜잭션 안에서 오래 걸린 단계도 그 단계 시간에 남는다. now()는 트랜잭션 시작
+    시각이라 앞 단계에서 열린 트랜잭션이면 시간이 다음 단계로 밀렸다 (update-runlog-fiori).
+    """
+    import time
+
+    from rfp_agent.pipeline.run import _set_step
+
+    run_id = create_run(db, VERSION, None)
+    _set_step(db, run_id, "risks")
+    db.execute("SELECT 1")          # 이 단계의 일이 트랜잭션을 연다
+    time.sleep(0.3)
+    _set_step(db, run_id, "judge")
+    secs = db.execute(
+        "SELECT extract(epoch FROM finished_at - started_at) FROM run_step_time "
+        "WHERE run_id = %s AND step = 'risks'", (run_id,)).fetchone()[0]
+    assert float(secs) >= 0.25

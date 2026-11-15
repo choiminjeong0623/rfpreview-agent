@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { api, type AiCall, type AiUsageRow, type RunLogItem } from '../api'
+import { useState, type ReactNode } from 'react'
+import { api, type AiCall, type AiCalls, type AiUsageRow, type RunFlow, type RunLogItem } from '../api'
 import { AiModeLine } from '../components/AiMode'
 import './detail.css'
 import { stamp } from '../components/format'
@@ -20,127 +20,35 @@ const tokens = (r: RunLogItem) => r.llm_input_tokens + r.llm_output_tokens + r.l
 /** 이 기능 전에 처리한 실행: 단계 시간도 AI 기록도 없다 */
 const noLog = (r: RunLogItem) => r.steps.length === 0
 
-function Steps({ r }: { r: RunLogItem }) {
-  if (noLog(r)) return <p className="dimv">기록 없음 (기록 기능 도입 전 검토)</p>
-  const tries = [...new Set(r.steps.map((s) => s.attempt))]
-  return (
-    <div className="rlsteps">
-      {tries.map((t) => (
-        <div key={t}>
-          <b>{t === 0 ? '처음 처리' : `다시 시도 ${t}`}</b>
-          <ol>
-            {r.steps.filter((s) => s.attempt === t).map((s) => (
-              <li key={s.step}><span>{STEP_NAMES[s.step] ?? s.step}</span><span>{s.seconds === null ? '끝나지 않음' : secs(s.seconds)}</span></li>
-            ))}
-          </ol>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 const ROLE_NAMES: Record<string, string> = {
   classify: '문서 분류', label: '문장 구분', type: '유형', risk: '위험 설명',
   verify: '검증', draft: '문장 초안', handoff: '협조 질문', assistant: '검토 도우미',
-}
-
-/** 프롬프트 판 (add-prompt-eval): 역할별 판, 예전 실행은 전체 판 하나 */
-function Prompts({ r }: { r: RunLogItem }) {
-  if (!r.llm_model) return null
-  const roles = r.prompt_versions ? Object.entries(r.prompt_versions) : []
-  if (!roles.length && !r.prompt_version) return null
-  return (
-    <p className="en" style={{ margin: '8px 0 0' }}>
-      <b>프롬프트 판</b>{' '}
-      {roles.length
-        ? roles.map(([role, v]) => `${ROLE_NAMES[role] ?? role} ${v}`).join(' · ')
-        : `전체 ${r.prompt_version} (역할별 판 도입 전)`}
-    </p>
-  )
-}
-
-/** 흐름 기록 (add-flow-history, C2): 저장된 흐름 상태로 단계마다 바뀐 건수·사람 동작·멈춘 자리. 보기만 한다 */
-function Flow({ runId }: { runId: number }) {
-  const flow = useLoad(() => api.runFlow(runId), [runId])
-  if (flow.error) return <p className="c-red">{flow.error}</p>
-  if (!flow.data) return <p className="dimv">흐름 기록 불러오는 중…</p>
-  const f = flow.data
-  if (!f.recorded) return <div className="rlflow"><b>흐름 기록</b><p className="dimv">흐름 기록 없음</p></div>
-  const stopText = f.stop === 'END' ? '흐름 끝' : f.stop ? `${STEP_NAMES[f.stop] ?? f.stop}에서 멈춤`
-    : f.next_node ? `${STEP_NAMES[f.next_node] ?? f.next_node} 앞에서 멈춤 (처리 중이거나 실패)` : ''
-  return (
-    <div className="rlflow">
-      <b>흐름 기록 <span className="en">흐름 저장 시각 기준</span></b>
-      <ol>
-        {f.steps.map((s, i) => (
-          <li key={i}>
-            <span>{STEP_NAMES[s.node] ?? s.node}{s.action && <span className="rlact"> · {FLOW_ACTION_NAMES[s.action] ?? s.action}</span>}</span>
-            <span>{secs(s.seconds)}</span>
-            <span className="en">{s.changes.map((c) => `${FLOW_COUNT_NAMES[c.key] ?? c.key} ${c.before ?? 0} → ${c.after}`).join(' · ')}</span>
-          </li>
-        ))}
-      </ol>
-      {stopText && <p className="rlstop">{stopText}</p>}
-    </div>
-  )
 }
 
 const RESULT_NAMES: Record<AiCall['result'], string> = {
   OK: '성공', FORMAT_ERROR: '형식 오류', CONFIG_ERROR: '설정 오류', TIMEOUT: '시간 초과', CONNECTION_ERROR: '연결 오류',
 }
 
-/** AI 호출 기록 (add-ai-call-trace, FR-21): 호출마다 단계·역할·모델·판·시간·토큰·결과. 원문은 없고 해시만 */
-function AiCalls({ runId }: { runId: number }) {
-  const data = useLoad(() => api.aiCalls(runId), [runId])
-  const [step, setStep] = useState<string | null>(null)
-  const [role, setRole] = useState<string | null>(null)
-  const [slow, setSlow] = useState(false)
-  if (data.error) return <p className="c-red">{data.error}</p>
-  if (!data.data) return <p className="dimv">AI 호출 기록 불러오는 중…</p>
-  const d = data.data
-  if (d.count === 0) return <div className="rlflow"><b>AI 호출</b><p className="dimv">호출 기록 없음</p></div>
-  const steps = [...new Set(d.calls.map((c) => c.step ?? '—'))]
-  const roles = [...new Set(d.calls.map((c) => c.role ?? '—'))]
-  const shown = d.calls.filter((c) => (!step || (c.step ?? '—') === step) && (!role || (c.role ?? '—') === role))
-  const rows = slow ? [...shown].sort((a, b) => b.duration_ms - a.duration_ms) : shown
-  const most = Math.max(1, ...d.step_ms.map((s) => s.ms))
-  const fails = Object.entries(d.by_result).filter(([k]) => k !== 'OK')
+/** 처리 단계에 들지 않는 AI 호출(협조 요청 메일·검토 도우미 등)은 단계 이름이 없다 */
+const OUTSIDE = '분석 밖 (협조 요청·도우미 등)'
+const stepName = (s: string | null) => (s ? STEP_NAMES[s] ?? s : OUTSIDE)
+const roleName = (r: string | null) => (r ? ROLE_NAMES[r] ?? r : '—')
+
+/** 프롬프트 판 (add-prompt-eval): 역할별 판, 예전 실행은 전체 판 하나 */
+function Prompts({ r }: { r: RunLogItem }) {
+  if (!r.llm_model) return <p className="dimv">AI를 쓰지 않은 실행입니다.</p>
+  const roles = r.prompt_versions ? Object.entries(r.prompt_versions) : []
+  if (!roles.length && !r.prompt_version) return <p className="dimv">기록 없음</p>
+  if (!roles.length) return <p className="en">전체 {r.prompt_version} (역할별 판 도입 전)</p>
   return (
-    <div className="rlflow rlcalls">
-      <b>AI 호출 {num(d.count)}건
-        <span className="en">{fails.length ? fails.map(([k, n]) => `${RESULT_NAMES[k as AiCall['result']] ?? k} ${n}`).join(' · ') : '모두 성공'}
-          {' · '}같은 입력에 다른 답 {d.different_answers}건 · 원문 없이 해시만 저장</span></b>
-      <ol className="rlbars" aria-label="단계별 AI 시간">
-        {d.step_ms.map((s) => (
-          <li key={s.step}><span>{STEP_NAMES[s.step] ?? s.step}</span>
-            <span className="rlbar"><i style={{ width: `${(s.ms / most) * 100}%` }} /></span><span>{secs(s.ms / 1000)}</span></li>
-        ))}
-      </ol>
-      <div className="rlchips">
-        <button type="button" className={'chip' + (!step ? ' on' : '')} aria-pressed={!step} onClick={() => setStep(null)}>모든 단계</button>
-        {steps.map((s) => <button key={s} type="button" className={'chip' + (step === s ? ' on' : '')} aria-pressed={step === s}
-          onClick={() => setStep(step === s ? null : s)}>{STEP_NAMES[s] ?? s}</button>)}
-        <span className="rlsep" />
-        <button type="button" className={'chip' + (!role ? ' on' : '')} aria-pressed={!role} onClick={() => setRole(null)}>모든 역할</button>
-        {roles.map((r) => <button key={r} type="button" className={'chip' + (role === r ? ' on' : '')} aria-pressed={role === r}
-          onClick={() => setRole(role === r ? null : r)}>{ROLE_NAMES[r] ?? r}</button>)}
-        <span className="rlsep" />
-        <button type="button" className={'chip' + (slow ? ' on' : '')} aria-pressed={slow} onClick={() => setSlow(!slow)}>느린 순</button>
-        <a className="lnk" href={api.aiCallsOtelUrl(runId)} download>OpenTelemetry로 내보내기</a>
-      </div>
-      <table className="mini"><thead><tr><th>시각</th><th>단계</th><th>역할</th><th>모델 · 판</th><th>걸린 시간</th><th>토큰 입력/출력</th><th>줄</th><th>결과</th></tr></thead>
-        <tbody>{rows.map((c) => (
-          <tr key={c.call_id}>
-            <td>{stamp(c.started_at)}</td><td>{STEP_NAMES[c.step ?? ''] ?? c.step ?? '—'}</td>
-            <td>{ROLE_NAMES[c.role ?? ''] ?? c.role ?? '—'}{c.attempt > 0 && <span className="en"> 재시도 {c.attempt}</span>}</td>
-            <td className="en">{c.model} · {c.prompt_version ?? '—'}</td>
-            <td>{secs(c.duration_ms / 1000)}</td><td>{num(c.input_tokens)} / {num(c.output_tokens)}</td><td>{c.batch_lines || '—'}</td>
-            <td>{c.result === 'OK' ? '성공' : <span className="c-ora">{RESULT_NAMES[c.result]}</span>}
-              {c.dropped_reason && <div className="en">버림: {c.dropped_reason}</div>}</td>
-          </tr>
-        ))}</tbody></table>
-    </div>
+    <table className="mini rlprompt"><thead><tr><th>AI 역할</th><th>판</th></tr></thead>
+      <tbody>{roles.map(([role, v]) => <tr key={role}><td>{ROLE_NAMES[role] ?? role}</td><td className="mono">{v}</td></tr>)}</tbody></table>
   )
+}
+
+/** 설명은 ⓘ에 마우스를 올리면 (Fiori: 필요할 때 자세히) */
+function Info({ text }: { text: string }) {
+  return <span className="rlinfo ms" role="img" aria-label={text} title={text}>info</span>
 }
 
 const DAYS = [7, 30, 90] as const
@@ -258,35 +166,172 @@ export function RunLog() {
   )
 }
 
-/** 실행 기록 상세 (update-runlog-detail): 줄을 누르면 넘어오는 화면. 단계별 시간·프롬프트 판·흐름 기록·AI 호출 */
+/** 실행 기록 상세 (update-runlog-detail, update-runlog-fiori): Fiori 객체 화면처럼 머리글 KPI(병목 단계)·구역 이동,
+ * 단계별 처리 한 표(걸린 시간·AI 시간·바뀐 것·사람 동작), AI 호출(이름 붙은 거르기·결과 없음 안내), 접는 프롬프트 판 */
 export function RunLogDetail({ runId }: { runId: number }) {
   usePageCss('Products')
   const log = useLoad(() => api.runLog(), [])
   const r = (log.data ?? []).find((x) => x.run_id === runId)
+  const calls = useLoad(() => api.aiCalls(runId), [runId])
+  const flow = useLoad(() => api.runFlow(runId), [runId])
+  const [attempt, setAttempt] = useState<number | null>(null)
+  if (log.error) return <main className="main"><p className="c-red">{log.error}</p></main>
+  if (!log.data) return <main className="main"><p className="dimv">불러오는 중…</p></main>
+  if (!r) return <main className="main"><Back /><p className="dimv">이 검토의 실행 기록이 없습니다.</p></main>
+
+  const tries = [...new Set(r.steps.map((s) => s.attempt))]
+  const shownTry = attempt ?? (tries.length ? Math.max(...tries) : 0)
+  const steps = r.steps.filter((s) => s.attempt === shownTry)
+  const total = steps.reduce((n, s) => n + (s.seconds ?? 0), 0)
+  const top = steps.reduce<typeof steps[number] | null>((m, s) => (s.seconds ?? 0) > (m?.seconds ?? 0) ? s : m, null)
+  const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
   return (
     <main className="main">
-      <p style={{ margin: '0 0 8px' }}><a className="lnk" href={href('/runlog')}>← 실행 기록</a></p>
-      {log.data === null && !log.error && <p className="dimv">불러오는 중…</p>}
-      {log.error && <p className="c-red">{log.error}</p>}
-      {log.data && !r && <p className="dimv">이 검토의 실행 기록이 없습니다.</p>}
-      {r && <>
-        <div className="ttl"><h1>실행 기록 · {r.review_no}</h1>
-          <a className="lnk" href={href(`/reviews/${r.run_id}`)}>검토 상세 보기</a></div>
-        <p className="en" style={{ margin: '4px 0 0' }}>{r.review_name ?? r.project_name ?? ''}</p>
-        <div className="kpis">
-          <div className="kpi"><div className="l">상태</div><b><span className={`st ${STAGE_TONES[r.stage] ?? ''}`}>{STAGE_NAMES[r.stage] ?? r.stage}</span></b>
-            <div className="s">시작 {stamp(r.started_at)}{r.cancelled ? ' · 취소함' : ''}</div></div>
-          <div className="kpi"><div className="l">걸린 시간</div><b>{r.stage === 'PROCESSING' ? '처리 중' : secs(r.seconds)}</b>
-            <div className="s">다시 시도 {r.retries}번</div></div>
-          <div className="kpi"><div className="l">AI 요청</div><b>{noLog(r) ? '—' : num(r.llm_calls)}</b>
-            <div className="s">{r.llm_model ?? '규칙 기반'} · 토큰 {noLog(r) ? '—' : num(tokens(r))}</div></div>
-          <div className="kpi"><div className="l">추정 비용</div><b>{noLog(r) ? '—' : won(r.estimated_cost_krw)}</b>
-            <div className="s">{r.cost_assumed ? '추정 · 팀 가정' : `사전 ${r.dict_version}`}</div></div>
-          <div className="kpi"><div className="l">문서 · 요구사항 · 판정</div><b>{r.documents} · {num(r.requirements)} · {num(r.judgments)}</b>
-            <div className="s">다시 쓴 문서 {r.documents_reused}</div></div>
-        </div>
-        <div className="rlopen" style={{ marginTop: 16 }}><Steps r={r} /><Prompts r={r} /><Flow runId={r.run_id} /><AiCalls runId={r.run_id} /></div>
-      </>}
+      <Back />
+      <div className="ttl"><h1>실행 기록 · {r.review_no}</h1>
+        <a className="lnk" href={href(`/reviews/${r.run_id}`)}>검토 상세 보기</a></div>
+      <p className="en" style={{ margin: '4px 0 0' }}>{r.review_name ?? r.project_name ?? ''}</p>
+      <div className="kpis">
+        <div className="kpi"><div className="l">상태</div><b><span className={`st ${STAGE_TONES[r.stage] ?? ''}`}>{STAGE_NAMES[r.stage] ?? r.stage}</span></b>
+          <div className="s">시작 {stamp(r.started_at)}{r.cancelled ? ' · 취소함' : ''}</div></div>
+        <div className="kpi"><div className="l">걸린 시간</div><b>{r.stage === 'PROCESSING' ? '처리 중' : secs(r.seconds)}</b>
+          <div className="s">다시 시도 {r.retries}번</div></div>
+        <div className="kpi rlkpi-top"><div className="l">가장 오래 걸린 단계</div>
+          <b>{top && total > 0 ? stepName(top.step) : '—'}</b>
+          <div className="s">{top && total > 0 ? `${secs(top.seconds)} · 전체의 ${Math.round(((top.seconds ?? 0) / total) * 100)} %` : '단계 기록 없음'}</div></div>
+        <div className="kpi"><div className="l">AI 요청</div><b>{noLog(r) ? '—' : num(r.llm_calls)}</b>
+          <div className="s">{r.llm_model ?? '규칙 기반'} · 토큰 {noLog(r) ? '—' : num(tokens(r))}</div></div>
+        <div className="kpi"><div className="l">추정 비용</div><b>{noLog(r) ? '—' : won(r.estimated_cost_krw)}</b>
+          <div className="s">{r.cost_assumed ? '추정 · 팀 가정' : `사전 ${r.dict_version}`}</div></div>
+        <div className="kpi"><div className="l">문서 · 요구사항 · 판정</div><b>{r.documents} · {num(r.requirements)} · {num(r.judgments)}</b>
+          <div className="s">다시 쓴 문서 {r.documents_reused}</div></div>
+      </div>
+      <nav className="rlnav" aria-label="구역으로 이동">
+        <button type="button" onClick={() => go('rl-steps')}>단계별 처리</button>
+        <button type="button" onClick={() => go('rl-calls')}>AI 호출</button>
+        <button type="button" onClick={() => go('rl-prompts')}>프롬프트 판</button>
+      </nav>
+
+      <section id="rl-steps" className="rlcard rlopen" aria-labelledby="rl-steps-h">
+        <div className="rlcard-h"><h2 id="rl-steps-h">단계별 처리</h2>
+          {tries.length > 1 && <div className="rlseg" role="group" aria-label="처리 회차">
+            {tries.map((t) => <button key={t} type="button" aria-pressed={t === shownTry} className={t === shownTry ? 'on' : ''}
+              onClick={() => setAttempt(t)}>{t === 0 ? '처음 처리' : `다시 시도 ${t}`}</button>)}</div>}</div>
+        {noLog(r) ? <p className="dimv">기록 없음 (기록 기능 도입 전 검토)</p>
+          : <StepTable label={shownTry === 0 ? '처음 처리' : `다시 시도 ${shownTry}`} steps={steps} top={top?.step ?? null}
+              aiMs={calls.data?.step_ms ?? []} flow={flow.data} flowError={flow.error} />}
+      </section>
+
+      <section id="rl-calls" className="rlcard" aria-labelledby="rl-calls-h">
+        <AiCallList runId={runId} data={calls.data} error={calls.error} />
+      </section>
+
+      <section id="rl-prompts" className="rlcard" aria-labelledby="rl-prompts-h">
+        <details><summary><h2 id="rl-prompts-h">프롬프트 판</h2><Info text="AI 역할마다 쓴 지시문의 판 번호입니다. 판이 다르면 같은 문서도 AI 답이 다를 수 있습니다." /><span className="en">눌러서 펼치기</span></summary>
+          <Prompts r={r} /></details>
+      </section>
     </main>
+  )
+}
+
+function Back() {
+  return <p style={{ margin: '0 0 8px' }}><a className="lnk" href={href('/runlog')}>← 실행 기록</a></p>
+}
+
+/** 단계별 처리 한 표 (Fiori: 한 사실은 한 곳에). 걸린 시간은 실행 기록 단계 시각, 바뀐 것·사람 동작·멈춘 자리는 흐름 기록 */
+function StepTable({ label, steps, top, aiMs, flow, flowError }: {
+  label: string; steps: RunLogItem['steps']; top: string | null; aiMs: { step: string; ms: number }[]
+  flow: RunFlow | null; flowError: string | null
+}) {
+  const most = Math.max(1, ...steps.map((s) => s.seconds ?? 0))
+  const ai = new Map(aiMs.map((x) => [x.step, x.ms]))
+  const byNode = new Map((flow?.steps ?? []).map((f) => [f.node, f]))
+  const known = new Set(steps.map((s) => s.step))
+  const people = (flow?.steps ?? []).filter((f) => !known.has(f.node) && f.action)
+  const stopText = !flow?.recorded ? '' : flow.stop === 'END' ? '흐름 끝' : flow.stop ? `${STEP_NAMES[flow.stop] ?? flow.stop}에서 멈춤`
+    : flow.next_node ? `${STEP_NAMES[flow.next_node] ?? flow.next_node} 앞에서 멈춤 (처리 중이거나 실패)` : ''
+  return (
+    <>
+      <p className="en" style={{ margin: '0 0 8px' }}>{label}</p>
+      <table className="mini rlsteptbl">
+        <thead><tr><th>단계</th><th>걸린 시간</th>
+          <th>AI 시간 <Info text="그 단계에서 부른 AI 요청 시간의 합입니다. 여러 요청을 동시에 보내므로 걸린 시간보다 길 수 있습니다." /></th>
+          <th>바뀐 것</th></tr></thead>
+        <tbody>
+          {steps.map((s) => {
+            const f = byNode.get(s.step)
+            return (
+              <tr key={s.step} className={s.step === top ? 'rltop' : undefined}>
+                <td>{stepName(s.step)}{s.step === top && <span className="st c-ora rltag">가장 오래 걸림</span>}</td>
+                <td><span className="rltime"><span className="rlbar"><i style={{ width: `${((s.seconds ?? 0) / most) * 100}%` }} /></span>
+                  <span>{s.seconds === null ? '끝나지 않음' : secs(s.seconds)}</span></span></td>
+                <td>{ai.has(s.step) ? secs((ai.get(s.step) ?? 0) / 1000) : <span className="dimv">—</span>}</td>
+                <td className="en">{f?.changes.length ? f.changes.map((c) => `${FLOW_COUNT_NAMES[c.key] ?? c.key} ${c.before ?? 0} → ${c.after}`).join(' · ') : '—'}</td>
+              </tr>
+            )
+          })}
+          {people.map((f, i) => (
+            <tr key={`p${i}`}><td>{STEP_NAMES[f.node] ?? f.node}</td><td colSpan={2} className="dimv">사람 동작</td>
+              <td><span className="rlact">{FLOW_ACTION_NAMES[f.action ?? ''] ?? f.action}</span></td></tr>
+          ))}
+        </tbody>
+      </table>
+      {flowError && <p className="c-red">{flowError}</p>}
+      {flow && !flow.recorded && <p className="dimv">흐름 기록 없음 (바뀐 것과 멈춘 자리를 알 수 없음)</p>}
+      {stopText && <p className="rlstop">{stopText}</p>}
+    </>
+  )
+}
+
+/** AI 호출 목록 (add-ai-call-trace, FR-21): 이름 붙은 거르기(단계·역할)·느린 순·초기화, 결과 없음 안내 (Fiori 거르기 막대·No Data) */
+function AiCallList({ runId, data, error }: { runId: number; data: AiCalls | null; error: string | null }) {
+  const [step, setStep] = useState('')
+  const [role, setRole] = useState('')
+  const [slow, setSlow] = useState(false)
+  const head = (extra?: ReactNode) => <div className="rlcard-h"><h2 id="rl-calls-h">AI 호출</h2>{extra}</div>
+  if (error) return <>{head()}<p className="c-red">{error}</p></>
+  if (!data) return <>{head()}<p className="dimv">AI 호출 기록 불러오는 중…</p></>
+  if (data.count === 0) return <>{head()}<p className="dimv">호출 기록 없음</p></>
+  const key = (v: string | null) => v ?? ''
+  const steps = [...new Set(data.calls.map((c) => key(c.step)))]
+  const roles = [...new Set(data.calls.map((c) => key(c.role)))]
+  const shown = data.calls.filter((c) => (!step || key(c.step) === step) && (!role || key(c.role) === role))
+  const rows = slow ? [...shown].sort((a, b) => b.duration_ms - a.duration_ms) : shown
+  const fails = Object.entries(data.by_result).filter(([k]) => k !== 'OK')
+  const filtered = Boolean(step || role || slow)
+  return (
+    <>
+      {head(<a className="lnk" href={api.aiCallsOtelUrl(runId)} download>OpenTelemetry로 내보내기</a>)}
+      <p className="en" style={{ margin: '0 0 8px' }}>
+        {num(data.count)}건 · {fails.length ? <span className="c-ora">{fails.map(([k, n]) => `${RESULT_NAMES[k as AiCall['result']] ?? k} ${n}`).join(' · ')}</span> : '모두 성공'}
+        {' · '}같은 입력에 다른 답 {data.different_answers}건{' '}
+        <Info text="문서 원문은 저장하지 않고, 같은 입력인지 비교할 수 있는 요약값(해시)만 저장합니다." /></p>
+      <div className="rlfilter" role="group" aria-label="AI 호출 거르기">
+        <label>단계<select className="fi" aria-label="단계 거르기" value={step} onChange={(e) => setStep(e.target.value)}>
+          <option value="">모든 단계</option>
+          {steps.map((s) => <option key={s} value={s}>{stepName(s || null)}</option>)}</select></label>
+        <label>역할<select className="fi" aria-label="역할 거르기" value={role} onChange={(e) => setRole(e.target.value)}>
+          <option value="">모든 역할</option>
+          {roles.map((x) => <option key={x} value={x}>{roleName(x || null)}</option>)}</select></label>
+        <button type="button" className={'chip' + (slow ? ' on' : '')} aria-pressed={slow} onClick={() => setSlow(!slow)}>느린 순</button>
+        {filtered && <button type="button" className="bo" onClick={() => { setStep(''); setRole(''); setSlow(false) }}>초기화</button>}
+        <span className="en" style={{ marginLeft: 'auto' }}>{num(rows.length)} / {num(data.count)}건</span>
+      </div>
+      <table className="mini rlcalltbl"><thead><tr><th>시각</th><th>단계</th><th>역할</th><th>모델 · 판</th><th>걸린 시간</th><th>토큰 입력/출력</th><th>줄</th><th>결과</th></tr></thead>
+        <tbody>
+          {rows.length === 0 && <tr><td colSpan={8} className="rlempty">조건에 맞는 AI 호출이 없습니다. 단계나 역할을 바꾸거나 [초기화]를 누르세요.</td></tr>}
+          {rows.map((c) => (
+            <tr key={c.call_id}>
+              <td>{stamp(c.started_at)}</td><td>{stepName(c.step)}</td>
+              <td>{roleName(c.role)}{c.attempt > 0 && <span className="en"> 재시도 {c.attempt}</span>}</td>
+              <td className="en">{c.model} · {c.prompt_version ?? '—'}</td>
+              <td>{secs(c.duration_ms / 1000)}</td><td>{num(c.input_tokens)} / {num(c.output_tokens)}</td><td>{c.batch_lines || '—'}</td>
+              <td>{c.result === 'OK' ? '성공' : <span className="c-ora">{RESULT_NAMES[c.result]}</span>}
+                {c.dropped_reason && <div className="en">버림: {c.dropped_reason}</div>}</td>
+            </tr>
+          ))}
+        </tbody></table>
+    </>
   )
 }

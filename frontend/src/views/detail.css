@@ -115,3 +115,27 @@
 .sumbar{display:flex;align-items:center;gap:8px;margin-top:12px;padding:8px 14px;border-radius:var(--r-lg);background:var(--c-blue-bg);font-size:var(--t-sm);color:var(--c-text-2)}
 .sumbar .ms{font-size:18px;color:var(--c-link)}
 .sumbar .lnk{margin-left:auto;border:0;background:none;color:var(--c-link);font:inherit;font-weight:600;cursor:pointer;padding:0}
+/* 실행 기록 상세 (update-runlog-fiori): 구역 이동, 카드, 단계 표, 거르기 */
+.rlnav{display:flex;gap:var(--s-2);margin:var(--s-4) 0 0;border-bottom:1px solid var(--c-line);position:sticky;top:0;background:var(--c-white);z-index:1}
+.rlnav button{border:0;background:none;padding:10px 12px;font-size:var(--fs-sm);font-weight:600;color:var(--c-text-2);cursor:pointer;border-bottom:2px solid transparent}
+.rlnav button:hover{color:var(--c-link);border-bottom-color:var(--c-link)}
+.rlcard{margin-top:var(--s-4);padding:var(--s-4);border:1px solid var(--c-line);border-radius:var(--r-md);background:var(--c-white);scroll-margin-top:56px}
+.rlcard-h{display:flex;align-items:center;justify-content:space-between;gap:var(--s-3);margin-bottom:var(--s-2)}
+.rlcard h2{margin:0;font-size:var(--fs-h3);font-weight:700;display:inline}
+.rlcard details summary{cursor:pointer;display:flex;align-items:center;gap:6px}
+.rlcard details[open] summary{margin-bottom:var(--s-2)}
+.rlinfo{font-size:16px;color:var(--c-muted);vertical-align:middle;cursor:help}
+.rlseg{display:flex;border:1px solid var(--c-line);border-radius:var(--r-sm);overflow:hidden}
+.rlseg button{border:0;background:var(--c-white);padding:4px 10px;font-size:var(--fs-sm);cursor:pointer}
+.rlseg button.on{background:var(--c-navy);color:var(--c-white)}
+.rlsteptbl,.rlcalltbl,.rlprompt{width:100%}
+.rlsteptbl td:nth-child(2){width:38%}
+.rltime{display:grid;grid-template-columns:1fr 64px;gap:var(--s-2);align-items:center}
+.rltime>span:last-child{text-align:right}
+.rltop td{background:var(--c-bg-soft);font-weight:600}
+.rltop .rlbar i{background:var(--c-orange)}
+.rltag{margin-left:6px}
+.rlfilter{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-3);margin:0 0 var(--s-2)}
+.rlfilter label{display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);font-weight:600}
+.rlfilter select.fi{min-width:160px}
+.rlempty{padding:16px;text-align:center;color:var(--c-text-3)}
