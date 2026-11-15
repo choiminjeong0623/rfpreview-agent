@@ -27,13 +27,13 @@ export const GROUPS: { key: GroupKey; icon: string; label: string; items: MenuIt
       { key: 'products', path: '/products', icon: 'inventory_2', label: '제품 관리', scr: 'SCR-16' },
       { key: 'rules', path: '/rules', icon: 'rule', label: '규칙 관리', scr: 'SCR-17' },
       { key: 'phrases', path: '/phrases', icon: 'format_quote', label: '표준 문구', scr: 'SCR-18' },
-      { key: 'runlog', path: '/runlog', icon: 'timer', label: '실행 기록', scr: 'SCR-25' },     // 목업에 없음 (add-run-log)
     ],
   },
   {
     // 시스템이 얼마나 잘 맞히는지 재는 관리 화면. 주소는 그대로 (update-system-menu)
     key: 'sys', icon: 'admin_panel_settings', label: '시스템 관리', items: [
       { key: 'eval', path: '/eval', icon: 'fact_check', label: '정답지·채점', scr: 'SCR-19' },
+      { key: 'runlog', path: '/runlog', icon: 'timer', label: '실행 기록', scr: 'SCR-25' },     // 목업에 없음 (add-run-log)
     ],
   },
   {

@@ -32,6 +32,18 @@ test('정답지·채점은 시스템 관리 아래', async ({ page }) => {
   await expect(page.locator('#sbk-kn').getByRole('link', { name: '정답지·채점' })).toHaveCount(0)
 })
 
+test('실행 기록도 시스템 관리 아래', async ({ page }) => {
+  // change update-runlog-menu. 주소 #/runlog 그대로
+  await page.goto('/#/runlog')
+  const nav = page.getByRole('navigation', { name: '메뉴' })
+  await expect(nav.getByRole('button', { name: '시스템 관리' })).toHaveAttribute('aria-expanded', 'true')
+  await expect(nav.getByRole('link', { name: '실행 기록' })).toHaveAttribute('aria-current', 'page')
+  const crumb = page.getByRole('navigation', { name: '현재 위치' })
+  await expect(crumb).toContainText('시스템 관리')
+  await expect(crumb).not.toContainText('시스템 관리 관리')
+  await expect(page.locator('#sbk-kn').getByRole('link', { name: '실행 기록' })).toHaveCount(0)
+})
+
 test('메뉴 접기', async ({ page }) => {
   await page.goto('/#/')
   await page.getByRole('button', { name: '메뉴 접기' }).click()
