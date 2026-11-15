@@ -108,7 +108,7 @@ function route(path: string): Route {
     return { menu: 'eval', crumbs: [home, { label: '시스템 관리' }, { label: '정답지·채점' }], body: <Eval /> }
   }
   if (path === '/runlog') {
-    return { menu: 'runlog', crumbs: [home, { label: '시스템 관리 관리' }, { label: '실행 기록' }], body: <RunLog /> }
+    return { menu: 'runlog', crumbs: [home, { label: '시스템 관리' }, { label: '실행 기록' }], body: <RunLog /> }
   }
   if (path === '/team') {
     return { menu: 'team', crumbs: [home, { label: '팀 공유' }, { label: '팀 현황' }], body: <Team /> }

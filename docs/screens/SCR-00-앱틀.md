@@ -19,15 +19,15 @@
 | 지식 관리 | 제품 관리 | `inventory_2` | `#/products` | SCR-16 |
 | | 규칙 관리 | `rule` | `#/rules` | SCR-17 |
 | | 표준 문구 | `format_quote` | `#/phrases` | SCR-18 |
-| | 실행 기록 | `timer` | `#/runlog` | SCR-25 |
 | 시스템 관리 | 정답지·채점 | `fact_check` | `#/eval` | SCR-19 |
+| | 실행 기록 | `timer` | `#/runlog` | SCR-25 |
 | 팀 공유 | 팀 현황 | `monitoring` | `#/team` | SCR-20 |
 | | 공지사항 | `campaign` | `#/notice` | SCR-21 |
 | | 시스템 공지 | `dns` | `#/sysnotice` | SCR-22 |
 | | 자료실 | `folder_open` | `#/files` | SCR-23 |
 | 아래 | 설정 | `settings` | `#/settings` | SCR-24 |
 
-- 시스템 관리 묶음은 목업에 없다(update-system-menu). 정답지·채점을 지식 관리에서 옮겼고 주소 `#/eval`은 그대로다.
+- 시스템 관리 묶음은 목업에 없다(update-system-menu). 정답지·채점(update-system-menu)과 실행 기록(update-runlog-menu)을 지식 관리에서 옮겼고 주소 `#/eval`·`#/runlog`는 그대로다.
 - 묶음은 한 번에 하나만 펼친다. 화면을 열면 그 화면이 든 묶음이 펼쳐지고 묶음 이름이 흰색으로 강조된다(`.sb-g.has`).
 - 지금 화면의 메뉴는 `.on`과 `aria-current="page"`로 표시한다.
 
