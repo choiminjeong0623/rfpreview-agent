@@ -1152,6 +1152,8 @@ export type PromptEvalCount = {
   num: number
   den: number
   value: number | null
+  short?: number | null
+  questions?: number | null
 }
 
 export type PromptEvalDetail = {
@@ -1183,6 +1185,8 @@ export type PromptEvalMetric = {
   min: number | null
   max: number | null
   mean: number | null
+  min_short?: number | null
+  questions?: number | null
   repeats: (number | null)[]
 }
 

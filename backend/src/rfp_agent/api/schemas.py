@@ -1499,6 +1499,8 @@ class PromptEvalCount(Out):
     num: int
     den: int
     value: float | None
+    short: int | None = None                 # 이 지표가 모자란 문항 수 (회귀를 문항 단위로 셈)
+    questions: int | None = None             # 이 지표가 있는 문항 수
 
 
 class PromptEvalMetric(Out):
@@ -1509,6 +1511,8 @@ class PromptEvalMetric(Out):
     min: float | None
     max: float | None
     mean: float | None
+    min_short: int | None = None             # 최솟값을 낸 반복에서 모자란 문항 수
+    questions: int | None = None
     repeats: list[float | None]
 
 

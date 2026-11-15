@@ -13649,6 +13649,28 @@
               }
             ],
             "title": "Value"
+          },
+          "short": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short"
+          },
+          "questions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Questions"
           }
         },
         "additionalProperties": false,
@@ -13849,6 +13871,28 @@
               }
             ],
             "title": "Mean"
+          },
+          "min_short": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Short"
+          },
+          "questions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Questions"
           },
           "repeats": {
             "items": {
