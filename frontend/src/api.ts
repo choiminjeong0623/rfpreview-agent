@@ -89,6 +89,8 @@ async function page<T>(path: string): Promise<Page<T>> {
  * 사업 연결(add-project-status): business_id(진행 중인 사업에 추가) 또는 new_business_name(새 사업 만들기) */
 export type StartInfo = Partial<Omit<ReviewInfo, 'engineer_id'>> & {
   engineer_id?: number | null; actor_id?: number | null; business_id?: number | null; new_business_name?: string
+  /** 등록마다 하나 (add-run-queue). 같은 키가 10분 안에 다시 오면 서버가 처음 검토를 돌려준다 */
+  request_key?: string
 }
 
 /** 사업 정보 (add-project-status). 보낸 칸만 바꾸고 빈 문자열은 비우기 */

@@ -50,6 +50,13 @@ def run_summary(conn: psycopg.Connection, run_id: int) -> dict | None:
                (SELECT count(*) FROM output_item WHERE run_id = r.run_id) AS output_items,
                (SELECT count(*) FROM engineering_check WHERE run_id = r.run_id
                   AND result = 'VIOLATION') AS check_violations,
+               -- 대기열 (add-run-queue): 대기 중이면 몇 번째, 돌고 있으면 마지막 살아 있음
+               (SELECT (SELECT count(*) FROM run_job q WHERE q.status = 'QUEUED'
+                          AND q.job_id <= j.job_id)
+                  FROM run_job j WHERE j.run_id = r.run_id AND j.status = 'QUEUED'
+                 ORDER BY j.job_id DESC LIMIT 1) AS queue_position,
+               (SELECT j.heartbeat_at FROM run_job j WHERE j.run_id = r.run_id
+                   AND j.status = 'RUNNING' ORDER BY j.job_id DESC LIMIT 1) AS heartbeat_at,
                r.graph_state->'revision' AS revision
         FROM review_run r WHERE r.run_id = %s""", (run_id,))
     return _with_revision(rows[0]) if rows else None
@@ -496,6 +503,13 @@ def run_list(conn: psycopg.Connection, limit: int = 50) -> list[dict]:
                  WHERE rd.run_id = r.run_id) AS files,
                {COUNTS},
                ap.approver_id, ap.approver, ap.requested_by_id, ap.requested_by,
+               -- 대기열 (add-run-queue): 대기 중이면 몇 번째, 돌고 있으면 마지막 살아 있음
+               (SELECT (SELECT count(*) FROM run_job q WHERE q.status = 'QUEUED'
+                          AND q.job_id <= j.job_id)
+                  FROM run_job j WHERE j.run_id = r.run_id AND j.status = 'QUEUED'
+                 ORDER BY j.job_id DESC LIMIT 1) AS queue_position,
+               (SELECT j.heartbeat_at FROM run_job j WHERE j.run_id = r.run_id
+                   AND j.status = 'RUNNING' ORDER BY j.job_id DESC LIMIT 1) AS heartbeat_at,
                ap.requested_at, ap.decision, ap.decided_at, r.graph_state->'revision' AS revision
         FROM review_run r
         -- 가장 최근 상신 하나. 그것이 취소한 상신이면 결재 칸은 모두 비운다

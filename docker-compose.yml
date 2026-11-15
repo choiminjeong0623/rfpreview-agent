@@ -19,7 +19,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    environment:
+    environment: &backend-env
       DATABASE_URL: postgresql://rfp:rfp@db:5432/rfp
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.8-flash}
@@ -34,6 +34,11 @@ services:
       RFP_EVAL_MAX_KRW: ${RFP_EVAL_MAX_KRW:-500}
       RFP_DOC_WORKERS: ${RFP_DOC_WORKERS:-2}
       RFP_OCR: ${RFP_OCR:-on}
+      # 검토 실행 대기열 (add-run-queue): worker = 아래 worker 서비스가 분석, inline = 웹 서버가 직접
+      RFP_RUN_MODE: ${RFP_RUN_MODE:-worker}
+      RFP_RUN_WORKERS: ${RFP_RUN_WORKERS:-2}
+      RFP_UPLOAD_MAX_MB: ${RFP_UPLOAD_MAX_MB:-100}
+      RFP_REQUEST_MAX_MB: ${RFP_REQUEST_MAX_MB:-300}
       # 협조 요청 메일 (update-role-handoff-mail). 기본은 Mailpit이라 밖으로 나가지 않는다
       RFP_SMTP_HOST: ${RFP_SMTP_HOST:-mailpit}
       RFP_SMTP_PORT: ${RFP_SMTP_PORT:-1025}
@@ -48,6 +53,21 @@ services:
       - ./data/private:/app/data/private
     ports:
       - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  # 분석 처리기 (add-run-queue, FR-20): 웹 서버와 다른 프로세스가 DB 대기열에서 검토를 꺼내 돌린다
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["rfp-worker"]
+    environment: *backend-env
+    volumes:
+      - ./data/private:/app/data/private
     depends_on:
       db:
         condition: service_healthy

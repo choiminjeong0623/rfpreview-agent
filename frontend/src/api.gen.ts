@@ -199,6 +199,7 @@ export type Body_run_upload_api_runs_post = {
   choices?: string | null
   business_id?: number | null
   new_business_name?: string | null
+  request_key?: string | null
 }
 
 export type Body_upload_preview_api_runs_preview_post = {
@@ -752,6 +753,9 @@ export type Health = {
   external_send: boolean
   ocr_available?: boolean
   ocr_engine?: string | null
+  run_mode?: 'INLINE' | 'WORKER'
+  workers_alive?: number
+  jobs_queued?: number
 }
 
 export type HTTPValidationError = {
@@ -825,6 +829,7 @@ export type LibraryRun = {
   actor_id?: number | null
   files: string[]
   choices?: Record<string, DocumentChoice>
+  request_key?: string | null
   business_id?: number | null
   new_business_name?: string | null
 }
@@ -1275,6 +1280,8 @@ export type ReviewCard = {
   decision: 'APPROVED' | 'REJECTED' | null
   decided_at: string | null
   revision?: Revision | null
+  queue_position?: number | null
+  heartbeat_at?: string | null
   summary: RunSummary
   criteria: Criterion[]
   approval?: Approval | null
@@ -1470,6 +1477,8 @@ export type RunListItem = {
   decision: 'APPROVED' | 'REJECTED' | null
   decided_at: string | null
   revision?: Revision | null
+  queue_position?: number | null
+  heartbeat_at?: string | null
 }
 
 /** 실행 기록 한 줄 (add-run-log, NFR-09). 비용은 모델 단가(팀 가정)로 어림한 값. */
@@ -1557,6 +1566,8 @@ export type RunSummary = {
   check_violations: number
   proposals: number
   revision?: Revision | null
+  queue_position?: number | null
+  heartbeat_at?: string | null
 }
 
 export type SalesHandoff = {

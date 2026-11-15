@@ -111,6 +111,9 @@ class RunSummary(ReviewFields):
     check_violations: int
     proposals: int
     revision: Revision | None = None    # 문서 추가로 다시 분석했으면 마지막 개정
+    # 대기열 (add-run-queue): 대기 중 몇 번째(꺼내기 전), 돌고 있는 작업의 마지막 살아 있음
+    queue_position: int | None = None
+    heartbeat_at: datetime | None = None
 
 
 class SummaryPart(Out):
@@ -159,6 +162,9 @@ class RunListItem(ReviewFields):
     decided_at: datetime | None
     # 문서 추가로 다시 분석했으면 마지막 개정 (add-revision-notice)
     revision: Revision | None = None
+    # 대기열 (add-run-queue): 대기 중 몇 번째(꺼내기 전), 돌고 있는 작업의 마지막 살아 있음
+    queue_position: int | None = None
+    heartbeat_at: datetime | None = None
 
 
 class RunDocument(Out):

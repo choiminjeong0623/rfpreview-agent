@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import './detail.css'
 import { api, type RunSummary } from '../api'
-import { duration, progress, STALL_MS, stepText } from '../components/progress'
+import { duration, isStalled, progress, stepText } from '../components/progress'
 import { useSession } from '../shell/useSession'
 
 // SCR-02 처리 상태 (목업 v4.57 Loading). docs/screens/SCR-02-처리상태.md
@@ -24,7 +24,7 @@ export function ProcessingView({ run, onChanged }: { run: RunSummary; onChanged:
   }, [])
   const pct = progress(run)
   const found = [run.documents && `문서 ${run.documents}개`, run.requirements && `요구사항 ${run.requirements}개`].filter(Boolean).join(' · ')
-  const stalled = now - Date.parse(run.step_updated_at) > STALL_MS
+  const stalled = isStalled(run, now)
   const hint = run.llm_model
     ? 'AI를 쓰는 분석은 문서가 크면 15분 넘게 걸릴 수 있어요. 이 창을 닫아도 분석은 계속됩니다.'
     : 'AI 없이 규칙으로만 분석해 보통 1분 안에 끝나요.'
@@ -44,7 +44,9 @@ export function ProcessingView({ run, onChanged }: { run: RunSummary; onChanged:
           <div className="ldtx" style={{ marginTop: 4, fontSize: 12 }}>{hint}</div>
           {stalled && (
             <p role="alert" className="ldtx" style={{ marginTop: 12, color: 'var(--c-red)' }}>
-              10분 넘게 진행이 없습니다. 분석 중에 백엔드가 꺼졌다면 이 검토는 끝나지 않으니 분석을 취소한 뒤 다시 시도해 주세요.
+              {run.heartbeat_at
+                ? '3분 넘게 처리기 응답이 없습니다. 처리기가 다시 켜지면 멈춘 단계부터 이어서 처리합니다. 계속 멈춰 있으면 분석을 취소한 뒤 다시 시도해 주세요.'
+                : '10분 넘게 진행이 없습니다. 분석 중에 백엔드가 꺼졌다면 이 검토는 끝나지 않으니 분석을 취소한 뒤 다시 시도해 주세요.'}
             </p>
           )}
           {/* 분석 취소 (add-run-control): 한 번 더 확인한 뒤 요청한다. 처리는 다음 진행 기록에서 멈춘다 */}

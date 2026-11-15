@@ -6882,6 +6882,18 @@
               }
             ],
             "title": "New Business Name"
+          },
+          "request_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Key"
           }
         },
         "type": "object",
@@ -10534,6 +10546,25 @@
               }
             ],
             "title": "Ocr Engine"
+          },
+          "run_mode": {
+            "type": "string",
+            "enum": [
+              "INLINE",
+              "WORKER"
+            ],
+            "title": "Run Mode",
+            "default": "INLINE"
+          },
+          "workers_alive": {
+            "type": "integer",
+            "title": "Workers Alive",
+            "default": 0
+          },
+          "jobs_queued": {
+            "type": "integer",
+            "title": "Jobs Queued",
+            "default": 0
           }
         },
         "type": "object",
@@ -11127,6 +11158,18 @@
             "type": "object",
             "title": "Choices",
             "default": {}
+          },
+          "request_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Key"
           },
           "business_id": {
             "anyOf": [
@@ -14554,6 +14597,29 @@
               }
             ]
           },
+          "queue_position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Position"
+          },
+          "heartbeat_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heartbeat At"
+          },
           "summary": {
             "$ref": "#/components/schemas/RunSummary"
           },
@@ -15928,6 +15994,29 @@
                 "type": "null"
               }
             ]
+          },
+          "queue_position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Position"
+          },
+          "heartbeat_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heartbeat At"
           }
         },
         "additionalProperties": false,
@@ -16605,6 +16694,29 @@
                 "type": "null"
               }
             ]
+          },
+          "queue_position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Position"
+          },
+          "heartbeat_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heartbeat At"
           }
         },
         "additionalProperties": false,

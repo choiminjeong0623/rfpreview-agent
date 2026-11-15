@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type DragEvent, type ReactNode } from 'react'
+import { useRef, useState, type ChangeEvent, type DragEvent, type ReactNode } from 'react'
 import { api, type BusinessListItem, type DocumentChoice, type DocumentPreview, type RunSummary } from '../api'
 import { DOC_KIND_NAMES } from '../components/labels'
 import { useLoad } from '../components/useLoad'
@@ -116,6 +116,8 @@ export function Register({ businessId = null }: { businessId?: number | null }) 
   const [info, setInfo] = useState<Info>(EMPTY)
   const [engineer, setEngineer] = useState<number | ''>('')
   const [busy, setBusy] = useState(false)
+  // 등록 단추를 두 번 눌러도 검토가 하나만 생기게 화면마다 요청 키 하나 (add-run-queue)
+  const requestKey = useRef(crypto.randomUUID())
   // 등록 진행 (update-register-progress): 올린 바이트 / 전체, null이면 서버가 검토를 만드는 중(끝을 모름)
   const [sent, setSent] = useState<{ done: number; total: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -189,7 +191,8 @@ export function Register({ businessId = null }: { businessId?: number | null }) 
     setError(null)
     const biz = chosenBiz ? { business_id: chosenBiz.business_id }
       : info.project_name.trim() ? { new_business_name: info.project_name.trim() } : {}
-    const start = { ...info, ...biz, engineer_id: typeof owner === 'number' ? owner : null, actor_id: user?.user_id ?? null }
+    const start = { ...info, ...biz, engineer_id: typeof owner === 'number' ? owner : null, actor_id: user?.user_id ?? null,
+      request_key: requestKey.current }
     // 보이는 분류를 모두 보낸다. 규칙 추천과 같은 값은 서버가 규칙 결과로 둔다.
     const choices: Record<string, DocumentChoice> = {}
     ok.forEach((p) => {

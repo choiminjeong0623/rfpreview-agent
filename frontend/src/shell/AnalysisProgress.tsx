@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api, type RunListItem } from '../api'
-import { duration, progress, STALL_MS, stepText } from '../components/progress'
+import { duration, isStalled, progress, stepText } from '../components/progress'
 import { useLoad, useRepeat } from '../components/useLoad'
 import { useToast } from '../ui'
 import { href, useHashPath } from './router'
@@ -46,7 +46,7 @@ export function AnalysisProgress({ open, onToggle, onClose }: { open: boolean; o
   if (active.length === 0) return null
 
   const pct = Math.round(active.reduce((s, r) => s + progress(r), 0) / active.length)
-  const stalled = (r: RunListItem) => now - Date.parse(r.step_updated_at) > STALL_MS
+  const stalled = (r: RunListItem) => isStalled(r, now)
   const warn = active.some(stalled)
   const title = `분석 진행 ${active.length}건 · 평균 ${pct} %${warn ? ' · 진행 없음 있음' : ''}`
   return (
@@ -69,7 +69,7 @@ export function AnalysisProgress({ open, onToggle, onClose }: { open: boolean; o
                   <i style={{ width: `${p}%` }} />
                 </div>
                 <div className="s"><span>지난 시간 {duration(now - Date.parse(r.started_at))}</span></div>
-                {w && <div className="w">{Math.floor((now - Date.parse(r.step_updated_at)) / 60000)}분째 진행이 없습니다. 처리 상태 화면에서 확인해 주세요.</div>}
+                {w && <div className="w">{Math.floor((now - Date.parse(r.heartbeat_at ?? r.step_updated_at)) / 60000)}분째 {r.heartbeat_at ? '처리기 응답이' : '진행이'} 없습니다. 처리 상태 화면에서 확인해 주세요.</div>}
                 <div className="a"><a href={href(`/reviews/${r.run_id}`)} onClick={onClose}>진행 보기</a></div>
               </div>
             )
