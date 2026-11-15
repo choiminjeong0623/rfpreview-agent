@@ -2,7 +2,7 @@
 
 export type MenuKey =
   | 'home' | 'register' | 'projects' | 'reviews' | 'todo' | 'bids'
-  | 'products' | 'rules' | 'phrases' | 'eval' | 'runlog'
+  | 'products' | 'rules' | 'phrases' | 'eval' | 'runlog' | 'prompts'
   | 'team' | 'notice' | 'sysnotice' | 'files' | 'settings'
 
 export type GroupKey = 'rfp' | 'kn' | 'sys' | 'sh'
@@ -34,6 +34,7 @@ export const GROUPS: { key: GroupKey; icon: string; label: string; items: MenuIt
     key: 'sys', icon: 'admin_panel_settings', label: '시스템 관리', items: [
       { key: 'eval', path: '/eval', icon: 'fact_check', label: '정답지·채점', scr: 'SCR-19' },
       { key: 'runlog', path: '/runlog', icon: 'timer', label: '실행 기록', scr: 'SCR-25' },     // 목업에 없음 (add-run-log)
+      { key: 'prompts', path: '/prompts', icon: 'edit_note', label: '프롬프트 관리', scr: 'SCR-26' },   // 목업에 없음 (add-prompt-view)
     ],
   },
   {

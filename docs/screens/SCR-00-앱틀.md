@@ -21,6 +21,7 @@
 | | 표준 문구 | `format_quote` | `#/phrases` | SCR-18 |
 | 시스템 관리 | 정답지·채점 | `fact_check` | `#/eval` | SCR-19 |
 | | 실행 기록 | `timer` | `#/runlog` | SCR-25 |
+| | 프롬프트 관리 | `edit_note` | `#/prompts` | SCR-26 |
 | 팀 공유 | 팀 현황 | `monitoring` | `#/team` | SCR-20 |
 | | 공지사항 | `campaign` | `#/notice` | SCR-21 |
 | | 시스템 공지 | `dns` | `#/sysnotice` | SCR-22 |

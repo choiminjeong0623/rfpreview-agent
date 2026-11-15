@@ -25,6 +25,7 @@ import { Projects } from './views/Projects'
 import { Products } from './views/Products'
 import { ProductView } from './views/ProductView'
 import { RunLog, RunLogDetail } from './views/RunLog'
+import { Prompts } from './views/Prompts'
 import { Rules } from './views/Rules'
 import { Tbe } from './views/Tbe'
 import { Todo } from './views/Todo'
@@ -106,6 +107,9 @@ function route(path: string): Route {
   }
   if (path === '/eval') {
     return { menu: 'eval', crumbs: [home, { label: '시스템 관리' }, { label: '정답지·채점' }], body: <Eval /> }
+  }
+  if (path === '/prompts') {
+    return { menu: 'prompts', crumbs: [home, { label: '시스템 관리' }, { label: '프롬프트 관리' }], body: <Prompts /> }
   }
   const runlog = path.match(/^\/runlog\/(\d+)$/)
   if (runlog) {

@@ -5460,6 +5460,27 @@
         }
       }
     },
+    "/api/prompts": {
+      "get": {
+        "tags": [
+          "프롬프트 관리"
+        ],
+        "summary": "Prompts",
+        "operationId": "prompts_api_prompts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromptOverview"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/health": {
       "get": {
         "summary": "Health",
@@ -14151,6 +14172,207 @@
         ],
         "title": "PromptEvalRun",
         "description": "프롬프트 평가 한 번 (add-prompt-eval, FR-18). 비용은 팀 가정 단가로 어림."
+      },
+      "PromptOverview": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "doc_key": {
+            "type": "string",
+            "title": "Doc Key"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/PromptRole"
+            },
+            "type": "array",
+            "title": "Roles"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source",
+          "doc_key",
+          "roles"
+        ],
+        "title": "PromptOverview",
+        "description": "역할별 프롬프트 판과 판 기록. 프롬프트 글은 코드(source)에서만 고친다."
+      },
+      "PromptRole": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "current": {
+            "type": "string",
+            "title": "Current"
+          },
+          "evaluated": {
+            "type": "boolean",
+            "title": "Evaluated"
+          },
+          "in_doc_key": {
+            "type": "boolean",
+            "title": "In Doc Key"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/PromptVersion"
+            },
+            "type": "array",
+            "title": "Versions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "role",
+          "label",
+          "current",
+          "evaluated",
+          "in_doc_key",
+          "versions"
+        ],
+        "title": "PromptRole"
+      },
+      "PromptVersion": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current"
+          },
+          "runs": {
+            "type": "integer",
+            "title": "Runs"
+          },
+          "first_used": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Used"
+          },
+          "last_used": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used"
+          },
+          "calls": {
+            "type": "integer",
+            "title": "Calls"
+          },
+          "eval": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PromptVersionEval"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version",
+          "current",
+          "runs",
+          "first_used",
+          "last_used",
+          "calls",
+          "eval"
+        ],
+        "title": "PromptVersion"
+      },
+      "PromptVersionEval": {
+        "properties": {
+          "eval_id": {
+            "type": "integer",
+            "title": "Eval Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "set_name": {
+            "type": "string",
+            "title": "Set Name"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "metric": {
+            "type": "string",
+            "title": "Metric"
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min"
+          },
+          "weak": {
+            "type": "boolean",
+            "title": "Weak"
+          },
+          "is_baseline": {
+            "type": "boolean",
+            "title": "Is Baseline"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "eval_id",
+          "created_at",
+          "set_name",
+          "model",
+          "metric",
+          "min",
+          "weak",
+          "is_baseline"
+        ],
+        "title": "PromptVersionEval",
+        "description": "그 판으로 돈 가장 최근 끝난 평가의 주 지표 (반복 최솟값, %)."
       },
       "Proposal": {
         "properties": {

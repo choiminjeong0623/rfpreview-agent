@@ -1219,6 +1219,44 @@ export type PromptEvalRun = {
   latency_p95_ms?: number | null
 }
 
+/** 역할별 프롬프트 판과 판 기록. 프롬프트 글은 코드(source)에서만 고친다. */
+export type PromptOverview = {
+  source: string
+  doc_key: string
+  roles: PromptRole[]
+}
+
+export type PromptRole = {
+  role: string
+  label: string
+  current: string
+  evaluated: boolean
+  in_doc_key: boolean
+  versions: PromptVersion[]
+}
+
+export type PromptVersion = {
+  version: string
+  current: boolean
+  runs: number
+  first_used: string | null
+  last_used: string | null
+  calls: number
+  eval: PromptVersionEval | null
+}
+
+/** 그 판으로 돈 가장 최근 끝난 평가의 주 지표 (반복 최솟값, %). */
+export type PromptVersionEval = {
+  eval_id: number
+  created_at: string
+  set_name: string
+  model: string | null
+  metric: string
+  min: number | null
+  weak: boolean
+  is_baseline: boolean
+}
+
 export type Proposal = {
   point_id: number
   point_kind: 'MARGIN' | 'LOSS' | 'FIELD'

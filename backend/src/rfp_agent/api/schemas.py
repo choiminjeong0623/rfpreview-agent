@@ -1566,3 +1566,43 @@ class PromptEvalItem(Out):
 class PromptEvalDetail(Out):
     run: PromptEvalRun
     items: list[PromptEvalItem]
+
+
+# ── 프롬프트 관리 (add-prompt-view) ──────────────────────────────────
+
+class PromptVersionEval(Out):
+    """그 판으로 돈 가장 최근 끝난 평가의 주 지표 (반복 최솟값, %)."""
+    eval_id: int
+    created_at: datetime
+    set_name: str
+    model: str | None
+    metric: str
+    min: float | None
+    weak: bool                               # Claude 초안 정답만으로 낸 지표 ("근거 약함")
+    is_baseline: bool
+
+
+class PromptVersion(Out):
+    version: str
+    current: bool                            # 코드가 지금 쓰는 판
+    runs: int                                # 이 판으로 처리한 검토 실행 수
+    first_used: datetime | None
+    last_used: datetime | None
+    calls: int                               # AI 호출 기록 수 (FR-21)
+    eval: PromptVersionEval | None
+
+
+class PromptRole(Out):
+    role: str
+    label: str
+    current: str
+    evaluated: bool                          # 평가셋에 이 역할 문항이 있음
+    in_doc_key: bool                         # 같은 파일 재사용 열쇠에 들어가는 역할
+    versions: list[PromptVersion]
+
+
+class PromptOverview(Out):
+    """역할별 프롬프트 판과 판 기록. 프롬프트 글은 코드(source)에서만 고친다."""
+    source: str
+    doc_key: str
+    roles: list[PromptRole]
