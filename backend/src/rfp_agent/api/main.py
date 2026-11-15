@@ -68,6 +68,10 @@ class Health(BaseModel):
     # AI 호출 기록 원문 저장 (add-ai-call-trace). 켜져 있으면 안내 문장
     trace_raw: bool = False
     trace_raw_warning: str | None = None
+    # 프롬프트를 어디서 가져오나 (add-langfuse-prompts): CODE(코드 판) · LANGFUSE(그 표시의 판,
+    # 문제가 있으면 역할마다 코드 판). 상태 점검은 Langfuse에 묻지 않는다(프롬프트 관리 화면이 묻음)
+    prompt_source: Literal["CODE", "LANGFUSE"] = "CODE"
+    prompt_label: str | None = None
 
 
 TRACE_RAW_WARNING = ("AI 호출 원문을 7일 동안 저장하고 있습니다. 고객 문서를 다루는 환경에서는 "
@@ -103,6 +107,8 @@ def health() -> Health:
         workers_alive=queue["workers_alive"], jobs_queued=queue["jobs_queued"],
         trace_raw=settings.rfp_trace_raw == "on",
         trace_raw_warning=TRACE_RAW_WARNING if settings.rfp_trace_raw == "on" else None,
+        prompt_source="LANGFUSE" if settings.rfp_langfuse == "on" else "CODE",
+        prompt_label=settings.rfp_langfuse_label if settings.rfp_langfuse == "on" else None,
     )
 
 

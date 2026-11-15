@@ -44,6 +44,12 @@ services:
       RFP_REQUEST_MAX_MB: ${RFP_REQUEST_MAX_MB:-300}
       # AI 호출 기록 원문 저장 (add-ai-call-trace): off = 해시만
       RFP_TRACE_RAW: ${RFP_TRACE_RAW:-off}
+      # Langfuse 프롬프트 관리 (add-langfuse-prompts): off = 코드 판만. Langfuse는 따로 띄운다(docs/setup-guide.md)
+      RFP_LANGFUSE: ${RFP_LANGFUSE:-off}
+      RFP_LANGFUSE_LABEL: ${RFP_LANGFUSE_LABEL:-production}
+      LANGFUSE_HOST: ${LANGFUSE_HOST:-}
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
       # 협조 요청 메일 (update-role-handoff-mail). 기본은 Mailpit이라 밖으로 나가지 않는다
       RFP_SMTP_HOST: ${RFP_SMTP_HOST:-mailpit}
       RFP_SMTP_PORT: ${RFP_SMTP_PORT:-1025}

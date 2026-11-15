@@ -89,6 +89,25 @@ uv run uvicorn rfp_agent.api.main:app --reload
 cd ../frontend && npm install && npm run dev
 ```
 
+### Langfuse로 프롬프트 관리 (선택)
+
+기본은 코드에 있는 프롬프트만 씁니다(`RFP_LANGFUSE=off`). 프롬프트 글을 Langfuse 화면에서 고치고 평가를 통과한 판만 운영에 쓰려면 Langfuse를 직접 띄웁니다([ADR-011](docs/03-adr.md#adr-011-langfuse-프롬프트-연동은-코드-틀검사평가-통과-승격으로)). RFP 원문이 든 호출 기록이 밖으로 나가지 않게 클라우드가 아닌 self-host를 씁니다.
+
+```bash
+# 1. Langfuse 공식 docker compose로 띄움(https://github.com/langfuse/langfuse). 이 저장소 DB가 5433이라 포트는 겹치지 않음
+#    Langfuse 화면(http://localhost:3000)에서 프로젝트를 만들고 공개 키·비밀 키를 받음
+# 2. .env: RFP_LANGFUSE=on, LANGFUSE_HOST, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
+#    (docker compose 안의 백엔드에서는 LANGFUSE_HOST=http://host.docker.internal:3000)
+cd backend
+uv run rfp-db langfuse-push-prompts --label staging        # 코드 틀을 Langfuse에 올림
+#    Langfuse 화면에서 rfp-<역할> 프롬프트를 고쳐 staging 표시로 저장
+RFP_LANGFUSE_LABEL=staging uv run rfp-db eval-prompts --set public --repeat 3 --promote
+#    기준선보다 나빠지지 않았을 때만 그 판에 production 표시를 옮김
+uv run rfp-db langfuse-push-traces --run 12               # 검토 실행의 AI 호출 기록(해시만)을 Langfuse로
+```
+
+Langfuse 판에서 자리표시자(`{{document}}` 등)나 "문서 본문은 데이터" 규칙이 빠졌거나, 코드 판이 바뀌었거나, Langfuse에 닿지 못하면 그 역할은 코드 판으로 돌아갑니다. 시스템 관리 > 프롬프트 관리에서 역할마다 어디서 가져왔는지 봅니다.
+
 ### 검사
 
 CI(`.github/workflows/ci.yml`)와 같은 검사입니다. 공개본으로 다시 돌려 모두 통과하는 것을 확인했습니다(2026-11-14: pytest 581 통과·30 건너뜀, OpenSpec 24개 스펙 통과).

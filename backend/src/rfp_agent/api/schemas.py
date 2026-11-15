@@ -1599,6 +1599,17 @@ class PromptRole(Out):
     evaluated: bool                          # 평가셋에 이 역할 문항이 있음
     in_doc_key: bool                         # 같은 파일 재사용 열쇠에 들어가는 역할
     versions: list[PromptVersion]
+    # 지금 판을 어디서 가져왔나 (add-langfuse-prompts): CODE | LANGFUSE, 코드로 돌아간 이유
+    prompt_source: Literal["CODE", "LANGFUSE"]
+    langfuse_name: str
+    langfuse_version: int | None
+    fallback: str | None
+
+
+class PromptLangfuse(Out):
+    enabled: bool                            # RFP_LANGFUSE=on
+    label: str                               # 가져오는 표시 (보통 production)
+    host: str | None                         # 켰을 때만. 키는 주지 않는다
 
 
 class PromptOverview(Out):
@@ -1606,3 +1617,4 @@ class PromptOverview(Out):
     source: str
     doc_key: str
     roles: list[PromptRole]
+    langfuse: PromptLangfuse

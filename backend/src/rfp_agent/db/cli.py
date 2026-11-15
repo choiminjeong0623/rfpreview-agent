@@ -7,7 +7,10 @@
   (유형 정답지 → 평가셋, add-prompt-eval)
 | eval-prompts --set 이름 [--repeat N] [--baseline] [--yes] [--report 경로]
   [--write-baseline-file] [--baseline-file 경로] (프롬프트 평가, add-prompt-eval)
-  [--models 공급자:모델,…] (여러 회사 모델 비교, add-model-compare)"""
+  [--models 공급자:모델,…] (여러 회사 모델 비교, add-model-compare)
+  [--promote] (Langfuse 판이 기준선 비교를 통과하면 운영 표시로 옮김, add-langfuse-prompts)
+| langfuse-push-prompts [--label staging] (코드 틀을 Langfuse에 올림)
+| langfuse-push-traces --run N (검토 실행의 AI 호출 기록을 Langfuse로, 원문 없이)"""
 
 import argparse
 import re
@@ -144,13 +147,15 @@ def export_eval_set(key_name: str, out: Path | None, synthetic: bool) -> Path:
 
 
 def eval_prompts(set_name: str, repeat: int, baseline: bool, yes: bool, report_path: Path | None,
-                 write_baseline_file: bool, baseline_file: Path | None) -> int:
+                 write_baseline_file: bool, baseline_file: Path | None,
+                 promote: bool = False) -> int:
     """평가셋을 지금 AI 방식의 모델로 평가한다. 회귀면 1, 아니면 0 (AI 없음·건너뜀도 0)."""
     import json
     import tempfile
 
-    from rfp_agent.llm import trace
+    from rfp_agent.llm import prompt_source, trace
     from rfp_agent.llm.client import ai_mode, make_llm
+    from rfp_agent.pipeline import langfuse_ops
     from rfp_agent.pipeline import prompt_eval as pe
 
     settings = get_settings()
@@ -164,12 +169,15 @@ def eval_prompts(set_name: str, repeat: int, baseline: bool, yes: bool, report_p
     mode = ai_mode(settings)
     llm = make_llm(settings)
     fixture = pe.Fixture()
+    # 평가 동안 같은 판 묶음을 쓴다. Langfuse를 켜면 RFP_LANGFUSE_LABEL 판 (add-langfuse-prompts)
+    prompts = prompt_source.resolve(fresh=True)
+    _print_sources(prompts)
     try:
         with tempfile.TemporaryDirectory() as tmp:
             names = {i.input["fixture"] for i in evalset.items if i.role == "assistant"}
             if llm is not None and names:
                 fixture = pe.open_fixtures(names, settings, Path(tmp))
-            with trace.session(None, "eval") as calls:     # AI 호출 기록 (add-ai-call-trace)
+            with trace.session(None, "eval") as calls, prompt_source.use(prompts):
                 result = pe.evaluate(evalset, llm, mode, repeat, settings.rfp_eval_max_krw, yes,
                                      fixture)
     except pe.EvalError as exc:
@@ -185,15 +193,31 @@ def eval_prompts(set_name: str, repeat: int, baseline: bool, yes: bool, report_p
             if baseline_file is None:
                 base = pe.db_baseline(conn, evalset.name)
             cmp = pe.compare(result, base) if result.status == "DONE" else None
-            pe.save(conn, result, baseline=baseline)
+            with prompt_source.use(prompts):
+                pe.save(conn, result, baseline=baseline)
             trace.flush(conn, calls)
             conn.commit()
     except psycopg.OperationalError:
         if result.status == "DONE":
             raise
         print("[프롬프트 평가] DB에 연결하지 못해 건너뜀 기록은 남기지 않음")
-    text = pe.report(result, cmp)
+    with prompt_source.use(prompts):
+        text = pe.report(result, cmp)
     print(text)
+    if promote:
+        block = langfuse_ops.promote_block(
+            label=settings.rfp_langfuse_label, status=result.status, repeat=result.repeat,
+            min_repeat=pe.BASELINE_MIN_REPEAT, has_baseline=bool(cmp and cmp.has_baseline),
+            note=cmp.note if cmp else None, regression=bool(cmp and cmp.regression),
+            candidates=langfuse_ops.promotable(prompts))
+        if block:
+            print(f"[운영 승격] 하지 않음: {block}")
+        else:
+            try:
+                done = langfuse_ops.promote(langfuse_ops.promotable(prompts))
+            except langfuse_ops.LangfuseError as exc:
+                sys.exit(str(exc))
+            print("[운영 승격] production 표시를 옮김: " + ", ".join(done))
     if report_path is not None:
         report_path.write_text(text, encoding="utf-8")
     if write_baseline_file and result.status == "DONE":
@@ -305,12 +329,41 @@ def demo_setup(create: bool, file: Path | None) -> None:
     print("[시연 준비] 끝. 이 DB로 백엔드를 띄우면 검토 목록에 시연 검토가 하나 보입니다.")
 
 
+def _print_sources(prompts: dict) -> None:
+    """평가·명령 머리에 어느 판을 쓰는지 한 줄 (Langfuse를 켰을 때만)."""
+    from rfp_agent.llm import prompt_source
+
+    if not prompt_source.enabled():
+        return
+    print("[프롬프트] " + " · ".join(
+        f"{r.role} {r.version}" + (f"(코드: {prompt_source.FALLBACKS[r.fallback]})"
+                                   if r.fallback else "")
+        for r in prompts.values()))
+
+
+def langfuse_command(command: str, label: str | None, run_id: int | None) -> None:
+    from rfp_agent.pipeline import langfuse_ops
+
+    try:
+        if command == "langfuse-push-prompts":
+            for p in langfuse_ops.push_prompts(label or "staging"):
+                state = "새 버전" if p.status == "NEW" else "같은 글이 있어 건너뜀"
+                print(f"[Langfuse] {p.name} v{p.version} ({label or 'staging'}) {state}")
+            return
+        with connect() as conn:
+            n = langfuse_ops.push_traces(conn, run_id)
+        print(f"[Langfuse] 검토 실행 {run_id}의 AI 호출 {n}건을 보냄")
+    except langfuse_ops.LangfuseError as exc:
+        sys.exit(str(exc))
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="rfp-db")
     parser.add_argument("command", choices=["migrate", "seed-rules", "seed-products", "setup",
                                             "demo-businesses", "load-answer-key",
                                             "make-answer-key", "fill-due", "demo-setup",
-                                            "export-eval-set", "eval-prompts"])
+                                            "export-eval-set", "eval-prompts",
+                                            "langfuse-push-prompts", "langfuse-push-traces"])
     parser.add_argument("path", nargs="?",
                         help="load-answer-key: 정답지 CSV / make-answer-key: 공급사 답안 docx")
     parser.add_argument("--name", help="load-answer-key: 정답지 이름 (같은 이름이면 줄을 바꿈)")
@@ -352,6 +405,10 @@ def main(argv: list[str] | None = None) -> None:
                              "(gemini·anthropic·openai·local)")
     parser.add_argument("--baseline-file",
                         help="eval-prompts: DB 기준선 대신 이 파일과 비교 (CI)")
+    parser.add_argument("--promote", action="store_true",
+                        help="eval-prompts: Langfuse 판이 기준선 비교를 통과하면 production으로")
+    parser.add_argument("--label", help="langfuse-push-prompts: 붙일 표시 (기본 staging)")
+    parser.add_argument("--run", type=int, help="langfuse-push-traces: 검토 실행 번호")
     args = parser.parse_args(argv)
     settings = get_settings()
     if args.command == "export-eval-set":
@@ -359,20 +416,26 @@ def main(argv: list[str] | None = None) -> None:
             parser.error("export-eval-set --key 정답지이름 이 필요합니다")
         export_eval_set(args.key, Path(args.out) if args.out else None, args.synthetic)
         return
+    if args.command in ("langfuse-push-prompts", "langfuse-push-traces"):
+        if args.command == "langfuse-push-traces" and args.run is None:
+            parser.error("langfuse-push-traces --run 번호 가 필요합니다")
+        langfuse_command(args.command, args.label, args.run)
+        return
     if args.command == "eval-prompts":
         if not args.eval_set:
             parser.error("eval-prompts --set 이름 이 필요합니다")
         if args.repeat < 1:
             parser.error("--repeat는 1 이상입니다")
         if args.models:
-            if args.baseline or args.write_baseline_file or args.baseline_file:
+            if args.baseline or args.write_baseline_file or args.baseline_file or args.promote:
                 parser.error("--models(모델 비교)는 기준선 옵션과 함께 쓸 수 없습니다")
             compare_prompts(args.eval_set, args.models, args.repeat, args.yes,
                             Path(args.report) if args.report else None)
             return
         code = eval_prompts(args.eval_set, args.repeat, args.baseline, args.yes,
                             Path(args.report) if args.report else None, args.write_baseline_file,
-                            Path(args.baseline_file) if args.baseline_file else None)
+                            Path(args.baseline_file) if args.baseline_file else None,
+                            args.promote)
         if code:
             sys.exit(code)
         return

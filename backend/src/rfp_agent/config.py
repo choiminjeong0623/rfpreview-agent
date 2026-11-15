@@ -40,6 +40,15 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     # 단가 표에 없는 모델의 단가(팀 가정, 1M 토큰당 달러): "모델=입력/출력;모델=입력/출력"
     rfp_eval_prices: str | None = None
+    # Langfuse 프롬프트 관리 (add-langfuse-prompts, ADR-010). off면 코드에 있는 판만 쓴다.
+    # on이면 RFP_LANGFUSE_LABEL(기본 production) 판을 가져오고, 문제가 있으면 코드 판으로 돌아간다
+    rfp_langfuse: str = "off"
+    rfp_langfuse_label: str = "production"
+    rfp_langfuse_timeout_s: float = 5
+    rfp_langfuse_cache_s: float = 60
+    langfuse_host: str | None = None            # 예: http://localhost:3000 (self-host)
+    langfuse_public_key: str | None = None
+    langfuse_secret_key: str | None = None
     migrations_dir: Path = REPO_ROOT / "db" / "migrations"
     seed_dir: Path = REPO_ROOT / "data" / "seed"
     # RFP 원문처럼 저장소에 올리지 않는 자료 (data/private/README.md)

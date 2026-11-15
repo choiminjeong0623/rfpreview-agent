@@ -10881,6 +10881,26 @@
               }
             ],
             "title": "Trace Raw Warning"
+          },
+          "prompt_source": {
+            "type": "string",
+            "enum": [
+              "CODE",
+              "LANGFUSE"
+            ],
+            "title": "Prompt Source",
+            "default": "CODE"
+          },
+          "prompt_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Label"
           }
         },
         "type": "object",
@@ -14173,6 +14193,37 @@
         "title": "PromptEvalRun",
         "description": "프롬프트 평가 한 번 (add-prompt-eval, FR-18). 비용은 팀 가정 단가로 어림."
       },
+      "PromptLangfuse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "host": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "enabled",
+          "label",
+          "host"
+        ],
+        "title": "PromptLangfuse"
+      },
       "PromptOverview": {
         "properties": {
           "source": {
@@ -14189,6 +14240,9 @@
             },
             "type": "array",
             "title": "Roles"
+          },
+          "langfuse": {
+            "$ref": "#/components/schemas/PromptLangfuse"
           }
         },
         "additionalProperties": false,
@@ -14196,7 +14250,8 @@
         "required": [
           "source",
           "doc_key",
-          "roles"
+          "roles",
+          "langfuse"
         ],
         "title": "PromptOverview",
         "description": "역할별 프롬프트 판과 판 기록. 프롬프트 글은 코드(source)에서만 고친다."
@@ -14229,6 +14284,40 @@
             },
             "type": "array",
             "title": "Versions"
+          },
+          "prompt_source": {
+            "type": "string",
+            "enum": [
+              "CODE",
+              "LANGFUSE"
+            ],
+            "title": "Prompt Source"
+          },
+          "langfuse_name": {
+            "type": "string",
+            "title": "Langfuse Name"
+          },
+          "langfuse_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Langfuse Version"
+          },
+          "fallback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback"
           }
         },
         "additionalProperties": false,
@@ -14239,7 +14328,11 @@
           "current",
           "evaluated",
           "in_doc_key",
-          "versions"
+          "versions",
+          "prompt_source",
+          "langfuse_name",
+          "langfuse_version",
+          "fallback"
         ],
         "title": "PromptRole"
       },

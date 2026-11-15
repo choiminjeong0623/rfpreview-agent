@@ -789,6 +789,8 @@ export type Health = {
   jobs_queued?: number
   trace_raw?: boolean
   trace_raw_warning?: string | null
+  prompt_source?: 'CODE' | 'LANGFUSE'
+  prompt_label?: string | null
 }
 
 export type HTTPValidationError = {
@@ -1219,11 +1221,18 @@ export type PromptEvalRun = {
   latency_p95_ms?: number | null
 }
 
+export type PromptLangfuse = {
+  enabled: boolean
+  label: string
+  host: string | null
+}
+
 /** 역할별 프롬프트 판과 판 기록. 프롬프트 글은 코드(source)에서만 고친다. */
 export type PromptOverview = {
   source: string
   doc_key: string
   roles: PromptRole[]
+  langfuse: PromptLangfuse
 }
 
 export type PromptRole = {
@@ -1233,6 +1242,10 @@ export type PromptRole = {
   evaluated: boolean
   in_doc_key: boolean
   versions: PromptVersion[]
+  prompt_source: 'CODE' | 'LANGFUSE'
+  langfuse_name: string
+  langfuse_version: number | null
+  fallback: string | null
 }
 
 export type PromptVersion = {

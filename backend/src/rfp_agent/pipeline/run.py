@@ -22,7 +22,7 @@ from langgraph.types import interrupt
 from psycopg.types.json import Jsonb
 
 from rfp_agent.config import get_settings
-from rfp_agent.llm import tasks, trace
+from rfp_agent.llm import prompt_source, tasks, trace
 from rfp_agent.llm.client import FAILURE_MESSAGE, LLM, LLMConfigError, LLMFailure, Usage, usage_of
 from rfp_agent.llm.evidence import EvidenceSpan, evidence_id, parse_evidence_id
 from rfp_agent.llm.parallel import run_ordered, workers_of
@@ -656,13 +656,18 @@ def execute_run(ctx: RunContext, run_id: int, paths: list[Path],
     rewind는 담당자 확인에서 멈춘 흐름을 그 처리 단계부터 다시 돌릴 때 (add-step-rewind).
     """
     conn = ctx.conn
+    # 이 실행이 쓸 프롬프트 판을 시작할 때 한 번 고른다 (add-langfuse-prompts). Langfuse를 쓰면
+    # 그 판, 문제가 있으면 코드 판. 실행 안에서는 바뀌지 않고 실행 기록에 실제로 쓴 판을 남긴다
+    prompts = prompt_source.resolve() if ctx.llm else prompt_source.code_set()
     # 다시 시도(add-run-control)할 때 같은 파일·분류로 돌리려고 입력을 남긴다
     conn.execute("UPDATE review_run SET graph_state = graph_state || %s WHERE run_id = %s",
                  (Jsonb({"inputs": {"paths": [str(p) for p in paths],
-                                    "choices": choices or {}}}), run_id))
+                                    "choices": choices or {}},
+                         "prompt_versions": prompt_source.versions(prompts),
+                         "prompt_sources": prompt_source.sources(prompts)}), run_id))
     conn.commit()
     # AI 호출 기록 (add-ai-call-trace): 이 실행의 호출을 모아 단계마다·끝에 저장한다
-    with trace.session(run_id, "analysis", ctx.token):
+    with trace.session(run_id, "analysis", ctx.token), prompt_source.use(prompts):
         trace.purge(conn)
         return _execute(ctx, run_id, paths, choices, rewind)
 

@@ -105,12 +105,12 @@ def record(role: str | None, model: str | None, attempt: int, started_at: dateti
     _last.call = None
     if s is None:
         return
-    from rfp_agent.llm.tasks import PROMPTS
+    from rfp_agent.llm import prompt_source
 
     answer_text = json.dumps(answer, sort_keys=True, ensure_ascii=False) \
         if answer is not None else None
     keep = raw_enabled()
-    call = Call(role, model, PROMPTS.get(role or ""), s.step, attempt, started_at,
+    call = Call(role, model, prompt_source.version_of(role), s.step, attempt, started_at,
                 datetime.now(UTC), *tokens, result,
                 digest(prompt + "\n" + json.dumps(schema, sort_keys=True, ensure_ascii=False)),
                 digest(answer_text) if answer_text is not None else None,
