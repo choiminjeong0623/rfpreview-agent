@@ -64,6 +64,13 @@ export type AiCalls = {
   by_result: Record<string, number>
   step_ms: StepMs[]
   different_answers: number
+  langfuse?: AiCallsLangfuse | null
+}
+
+export type AiCallsLangfuse = {
+  sent_at: string | null
+  url: string | null
+  error: string | null
 }
 
 export type AiUsage = {

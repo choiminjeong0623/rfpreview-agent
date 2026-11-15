@@ -46,7 +46,8 @@ class Settings(BaseSettings):
     rfp_langfuse_label: str = "production"
     rfp_langfuse_timeout_s: float = 5
     rfp_langfuse_cache_s: float = 60
-    # 평가셋·평가 결과를 Langfuse 데이터셋·실험으로 남김 (add-langfuse-experiments). 키가 있어야 감
+    # Langfuse에 기록 남김: 평가 결과 실험(add-langfuse-experiments), 검토 작업이 끝날 때 AI 호출
+    # 기록(add-langfuse-trace-push, 해시만). 키가 있어야 감
     rfp_langfuse_record: str = "off"
     langfuse_host: str | None = None            # 예: http://localhost:3000 (self-host)
     langfuse_public_key: str | None = None

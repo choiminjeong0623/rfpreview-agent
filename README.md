@@ -106,6 +106,7 @@ RFP_LANGFUSE_LABEL=staging uv run rfp-db eval-prompts --set public --repeat 3 --
 uv run rfp-db langfuse-push-traces --run 12               # 검토 실행의 AI 호출 기록(해시만)을 Langfuse로
 uv run rfp-db langfuse-push-dataset --set public          # 공개 평가셋을 Langfuse 데이터셋 rfp-eval-public으로
 #    RFP_LANGFUSE_RECORD=on이면 eval-prompts·화면 평가가 끝날 때 반복마다 Langfuse 실험(문항별 답·정답 여부 점수)을 남김
+#    같은 설정으로 검토 실행 작업이 끝날 때 AI 호출 기록(해시만)도 Langfuse로 보냄. 비용·지연은 Langfuse 대시보드에서
 ```
 
 Langfuse 판에서 자리표시자(`{{document}}` 등)나 "문서 본문은 데이터" 규칙이 빠졌거나, 코드 판이 바뀌었거나, Langfuse에 닿지 못하면 그 역할은 코드 판으로 돌아갑니다. 시스템 관리 > 프롬프트 관리에서 역할마다 어디서 가져왔는지 봅니다. Langfuse가 연결되어 있으면 같은 화면에서 역할 줄을 눌러 글을 고쳐 staging에 저장하고, [평가 돌리기]로 점수를 본 뒤 승인자가 [운영으로 올리기]로 production 표시를 옮길 수 있습니다(명령 3·4와 같은 규칙).

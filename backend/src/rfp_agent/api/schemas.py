@@ -1218,6 +1218,12 @@ class StepMs(Out):
     ms: int
 
 
+class AiCallsLangfuse(Out):
+    sent_at: datetime | None                 # 마지막으로 보낸 시각
+    url: str | None                          # 마지막 작업 trace 화면
+    error: str | None                        # 마지막으로 보내지 못한 이유 (보내면 비움)
+
+
 class AiCalls(Out):
     """검토의 AI 호출 기록과 요약: 결과별 수, 단계별 AI 시간 합, 같은 입력·다른 답 수."""
     calls: list[AiCall]
@@ -1225,6 +1231,8 @@ class AiCalls(Out):
     by_result: dict[str, int]
     step_ms: list[StepMs]
     different_answers: int
+    # 작업이 끝날 때 Langfuse로 보낸 결과 (add-langfuse-trace-push). 보낸 적·실패한 적이 없으면 null
+    langfuse: AiCallsLangfuse | None = None
 
 
 class RunStepTime(Out):
