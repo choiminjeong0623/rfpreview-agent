@@ -143,6 +143,19 @@ def test_slow_calls_listed(db, spec):
     assert sum(x["ms"] for x in s["step_ms"]) == sum(c["duration_ms"] for c in s["calls"])
 
 
+def test_ai_calls_response_shape(db, spec):
+    """Scenario: AI를 켠 검토의 호출 목록 — 호출 기록이 있어도 응답 모양(AiCalls)과 맞는다.
+
+    run_token은 OpenTelemetry 내보내기에만 쓰고 화면 응답에는 싣지 않는다 (update-runlog-detail).
+    """
+    from rfp_agent.api.schemas import AiCalls
+
+    run_id = analysed(db, spec, FakeLLM())
+    s = ai_calls.summary(db, run_id)
+    assert s["count"] > 0 and all("run_token" not in c for c in s["calls"])
+    AiCalls.model_validate(s)
+
+
 def test_otel_span_per_call(db):
     """Scenario: 호출마다 span — 호출 3건이면 span 3개, 속성에 역할·모델·판·토큰."""
     run_id = create_run(db, VERSION, None)
