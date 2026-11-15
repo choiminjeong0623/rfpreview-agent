@@ -868,7 +868,7 @@ def runs(conn: psycopg.Connection, set_name: str | None = None, limit: int = 100
             """SELECT eval_id, set_name, set_version, model, ai_mode, prompt_versions, code_version,
                       repeat, status, skip_reason, metrics, injection_effect, calls, input_tokens,
                       output_tokens, cost_krw, seconds, is_baseline, note, run_by, created_at,
-                      provider, compare_id, latency_p50_ms, latency_p95_ms
+                      provider, compare_id, latency_p50_ms, latency_p95_ms, langfuse_url
                  FROM prompt_eval_run
                 WHERE (%(set)s::text IS NULL OR set_name = %(set)s)
                   AND (%(id)s::int IS NULL OR eval_id = %(id)s)

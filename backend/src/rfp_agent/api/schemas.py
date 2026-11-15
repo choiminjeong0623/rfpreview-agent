@@ -1545,6 +1545,7 @@ class PromptEvalRun(Out):
     compare_id: int | None = None
     latency_p50_ms: int | None = None
     latency_p95_ms: int | None = None
+    langfuse_url: str | None = None          # Langfuse 실험(데이터셋 화면) 주소
 
 
 class PromptEvalList(Out):
@@ -1580,6 +1581,7 @@ class PromptVersionEval(Out):
     min: float | None
     weak: bool                               # Claude 초안 정답만으로 낸 지표 ("근거 약함")
     is_baseline: bool
+    langfuse_url: str | None = None          # Langfuse 실험(데이터셋 화면) 주소
 
 
 class PromptVersion(Out):
@@ -1652,6 +1654,9 @@ class PromptEvalJob(Out):
     reasons: list[str]
     promote_block: str | None                # 없으면 운영으로 올릴 수 있음
     promoted_version: int | None
+    # Langfuse 실험 (add-langfuse-experiments): 데이터셋 화면 주소, 보내지 못한 이유
+    langfuse_url: str | None = None
+    langfuse_error: str | None = None
 
 
 class PromptDetail(Out):

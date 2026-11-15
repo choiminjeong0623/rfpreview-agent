@@ -47,6 +47,8 @@ services:
       # Langfuse 프롬프트 관리 (add-langfuse-prompts): off = 코드 판만. Langfuse는 따로 띄운다(docs/setup-guide.md)
       RFP_LANGFUSE: ${RFP_LANGFUSE:-off}
       RFP_LANGFUSE_LABEL: ${RFP_LANGFUSE_LABEL:-production}
+      # 평가 결과를 Langfuse 실험으로 (add-langfuse-experiments)
+      RFP_LANGFUSE_RECORD: ${RFP_LANGFUSE_RECORD:-off}
       LANGFUSE_HOST: ${LANGFUSE_HOST:-}
       LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
       LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}

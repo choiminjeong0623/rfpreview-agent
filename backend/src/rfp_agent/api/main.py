@@ -72,6 +72,8 @@ class Health(BaseModel):
     # 문제가 있으면 역할마다 코드 판). 상태 점검은 Langfuse에 묻지 않는다(프롬프트 관리 화면이 묻음)
     prompt_source: Literal["CODE", "LANGFUSE"] = "CODE"
     prompt_label: str | None = None
+    # 평가 결과를 Langfuse 실험으로 남기는가 (add-langfuse-experiments, RFP_LANGFUSE_RECORD)
+    langfuse_record: bool = False
 
 
 TRACE_RAW_WARNING = ("AI 호출 원문을 7일 동안 저장하고 있습니다. 고객 문서를 다루는 환경에서는 "
@@ -109,6 +111,7 @@ def health() -> Health:
         trace_raw_warning=TRACE_RAW_WARNING if settings.rfp_trace_raw == "on" else None,
         prompt_source="LANGFUSE" if settings.rfp_langfuse == "on" else "CODE",
         prompt_label=settings.rfp_langfuse_label if settings.rfp_langfuse == "on" else None,
+        langfuse_record=settings.rfp_langfuse_record == "on",
     )
 
 

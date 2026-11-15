@@ -10,7 +10,9 @@
   [--models 공급자:모델,…] (여러 회사 모델 비교, add-model-compare)
   [--promote] (Langfuse 판이 기준선 비교를 통과하면 운영 표시로 옮김, add-langfuse-prompts)
 | langfuse-push-prompts [--label staging] (코드 틀을 Langfuse에 올림)
-| langfuse-push-traces --run N (검토 실행의 AI 호출 기록을 Langfuse로, 원문 없이)"""
+| langfuse-push-traces --run N (검토 실행의 AI 호출 기록을 Langfuse로, 원문 없이)
+| langfuse-push-dataset --set 이름 (평가셋을 Langfuse 데이터셋으로, add-langfuse-experiments)
+  RFP_LANGFUSE_RECORD=on이면 eval-prompts가 끝난 평가를 Langfuse 실험으로 남김"""
 
 import argparse
 import re
@@ -163,7 +165,8 @@ def eval_prompts(set_name: str, repeat: int, baseline: bool, yes: bool, report_p
         sys.exit(f"기준선은 {pe.BASELINE_MIN_REPEAT}번 이상 반복해 만듭니다 "
                  f"(--repeat {pe.BASELINE_MIN_REPEAT}).")
     try:
-        evalset = pe.load_set(pe.find_set(set_name, settings))
+        set_path = pe.find_set(set_name, settings)
+        evalset = pe.load_set(set_path)
     except pe.EvalError as exc:
         sys.exit(str(exc))
     mode = ai_mode(settings)
@@ -197,6 +200,17 @@ def eval_prompts(set_name: str, repeat: int, baseline: bool, yes: bool, report_p
                 pe.save(conn, result, baseline=baseline)
             trace.flush(conn, calls)
             conn.commit()
+            if langfuse_ops.record_enabled() and result.status == "DONE":
+                # 끝난 평가를 Langfuse 실험으로 (add-langfuse-experiments). 실패해도 평가는 남음
+                try:
+                    url = langfuse_ops.record_experiment(
+                        result, prompts, pe.is_private_set(set_path, settings))
+                    langfuse_ops.save_url(conn, result.eval_id, url)
+                    conn.commit()
+                    print(f"[Langfuse 실험] 반복 {result.repeat}번을 실험으로 남김"
+                          + (f": {url}" if url else ""))
+                except langfuse_ops.LangfuseError as exc:
+                    print(f"[Langfuse 실험] 보내지 못함: {exc}")
     except psycopg.OperationalError:
         if result.status == "DONE":
             raise
@@ -341,7 +355,8 @@ def _print_sources(prompts: dict) -> None:
         for r in prompts.values()))
 
 
-def langfuse_command(command: str, label: str | None, run_id: int | None) -> None:
+def langfuse_command(command: str, label: str | None, run_id: int | None,
+                     set_name: str | None = None) -> None:
     from rfp_agent.pipeline import langfuse_ops
 
     try:
@@ -349,6 +364,19 @@ def langfuse_command(command: str, label: str | None, run_id: int | None) -> Non
             for p in langfuse_ops.push_prompts(label or "staging"):
                 state = "새 버전" if p.status == "NEW" else "같은 글이 있어 건너뜀"
                 print(f"[Langfuse] {p.name} v{p.version} ({label or 'staging'}) {state}")
+            return
+        if command == "langfuse-push-dataset":
+            from rfp_agent.pipeline import prompt_eval as pe
+
+            settings = get_settings()
+            try:
+                path = pe.find_set(set_name, settings)
+                evalset = pe.load_set(path)
+            except pe.EvalError as exc:
+                sys.exit(str(exc))
+            d = langfuse_ops.push_dataset(evalset, pe.is_private_set(path, settings))
+            print(f"[Langfuse] 데이터셋 {d.name}에 문항 {d.items}개를 올림"
+                  + (f": {d.url}" if d.url else ""))
             return
         with connect() as conn:
             n = langfuse_ops.push_traces(conn, run_id)
@@ -363,7 +391,8 @@ def main(argv: list[str] | None = None) -> None:
                                             "demo-businesses", "load-answer-key",
                                             "make-answer-key", "fill-due", "demo-setup",
                                             "export-eval-set", "eval-prompts",
-                                            "langfuse-push-prompts", "langfuse-push-traces"])
+                                            "langfuse-push-prompts", "langfuse-push-traces",
+                                            "langfuse-push-dataset"])
     parser.add_argument("path", nargs="?",
                         help="load-answer-key: 정답지 CSV / make-answer-key: 공급사 답안 docx")
     parser.add_argument("--name", help="load-answer-key: 정답지 이름 (같은 이름이면 줄을 바꿈)")
@@ -416,10 +445,12 @@ def main(argv: list[str] | None = None) -> None:
             parser.error("export-eval-set --key 정답지이름 이 필요합니다")
         export_eval_set(args.key, Path(args.out) if args.out else None, args.synthetic)
         return
-    if args.command in ("langfuse-push-prompts", "langfuse-push-traces"):
+    if args.command in ("langfuse-push-prompts", "langfuse-push-traces", "langfuse-push-dataset"):
         if args.command == "langfuse-push-traces" and args.run is None:
             parser.error("langfuse-push-traces --run 번호 가 필요합니다")
-        langfuse_command(args.command, args.label, args.run)
+        if args.command == "langfuse-push-dataset" and not args.eval_set:
+            parser.error("langfuse-push-dataset --set 이름 이 필요합니다")
+        langfuse_command(args.command, args.label, args.run, args.eval_set)
         return
     if args.command == "eval-prompts":
         if not args.eval_set:

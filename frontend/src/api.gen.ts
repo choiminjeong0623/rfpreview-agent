@@ -801,6 +801,7 @@ export type Health = {
   trace_raw_warning?: string | null
   prompt_source?: 'CODE' | 'LANGFUSE'
   prompt_label?: string | null
+  langfuse_record?: boolean
 }
 
 export type HTTPValidationError = {
@@ -1219,6 +1220,8 @@ export type PromptEvalJob = {
   reasons: string[]
   promote_block: string | null
   promoted_version: number | null
+  langfuse_url?: string | null
+  langfuse_error?: string | null
 }
 
 /** 평가 기록(최신순)과 평가셋·모델마다 가장 최근 끝난 평가 (모델 비교, NFR-07). */
@@ -1254,6 +1257,7 @@ export type PromptEvalRun = {
   compare_id?: number | null
   latency_p50_ms?: number | null
   latency_p95_ms?: number | null
+  langfuse_url?: string | null
 }
 
 export type PromptLangfuse = {
@@ -1318,6 +1322,7 @@ export type PromptVersionEval = {
   min: number | null
   weak: boolean
   is_baseline: boolean
+  langfuse_url?: string | null
 }
 
 export type Proposal = {

@@ -11193,6 +11193,11 @@
               }
             ],
             "title": "Prompt Label"
+          },
+          "langfuse_record": {
+            "type": "boolean",
+            "title": "Langfuse Record",
+            "default": false
           }
         },
         "type": "object",
@@ -14331,6 +14336,28 @@
               }
             ],
             "title": "Promoted Version"
+          },
+          "langfuse_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Langfuse Url"
+          },
+          "langfuse_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Langfuse Error"
           }
         },
         "additionalProperties": false,
@@ -14578,6 +14605,17 @@
               }
             ],
             "title": "Latency P95 Ms"
+          },
+          "langfuse_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Langfuse Url"
           }
         },
         "additionalProperties": false,
@@ -14938,6 +14976,17 @@
           "is_baseline": {
             "type": "boolean",
             "title": "Is Baseline"
+          },
+          "langfuse_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Langfuse Url"
           }
         },
         "additionalProperties": false,

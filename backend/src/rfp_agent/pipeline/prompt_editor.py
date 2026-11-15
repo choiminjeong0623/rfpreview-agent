@@ -163,6 +163,8 @@ class EvalJob:
     reasons: list[str] = field(default_factory=list)
     promote_block: str | None = None   # None이면 운영으로 올릴 수 있음
     promoted_version: int | None = None
+    langfuse_url: str | None = None    # Langfuse 실험 (add-langfuse-experiments)
+    langfuse_error: str | None = None
 
 
 _jobs: dict[int, EvalJob] = {}
@@ -253,6 +255,14 @@ def _run_eval(job: EvalJob) -> None:
                                   f"lf{job.staging_version}", run_by=job.started_by)
             trace.flush(conn, calls)
             conn.commit()
+            if langfuse_ops.record_enabled() and result.status == "DONE":
+                # 평가를 Langfuse 실험으로 (add-langfuse-experiments). 실패해도 평가는 남음
+                try:
+                    job.langfuse_url = langfuse_ops.record_experiment(result, prompts, False)
+                    langfuse_ops.save_url(conn, job.eval_id, job.langfuse_url)
+                    conn.commit()
+                except langfuse_ops.LangfuseError as exc:
+                    job.langfuse_error = str(exc)
         job.metrics = _main_metrics(base, result)
         job.regression = bool(cmp and cmp.regression)
         job.reasons = list(cmp.reasons) if cmp else []

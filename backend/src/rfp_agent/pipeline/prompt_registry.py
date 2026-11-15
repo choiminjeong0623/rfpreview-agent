@@ -62,6 +62,7 @@ def _evals(conn: psycopg.Connection) -> dict[tuple[str, str], dict]:
                 "set_name": run["set_name"], "model": run["model"],
                 "metric": prompt_eval._metric_name(role, key), "min": m.get("min"),
                 "weak": bool(m.get("weak")), "is_baseline": run["is_baseline"],
+                "langfuse_url": run.get("langfuse_url"),
             }
     return out
 
