@@ -4,11 +4,11 @@ import type {
   DecisionResult, DocumentChoice, DocumentPreview, HandoffResult, SalesHandoff,
   LossResult, ProductSwitch, RuleEdit,
   AiCalls, RunFlow, RunLogItem, RunSummary, ScreenSummary, SendResult, StageResult, SubmitResult,
-  AnswerKey, EvalRun, EvalScore, RuleSuggestion, AssistantAnswer, MeaningCandidate, RiskMeaning, AiUsage, PeakCheck,
+  AnswerKey, EvalRun, EvalScore, RuleSuggestion, AssistantAnswer, MeaningCandidate, RiskMeaning, AiUsage, PeakCheck, PromptOverview,
 } from './api.gen'
 
 export type {
-  AiCall, AiCalls, AiUsage, AiUsageRow, PeakCheck,
+  AiCall, AiCalls, AiUsage, AiUsageRow, PeakCheck, PromptOverview, PromptRole, PromptVersion,
   ApprovalScreen, Assignment, BusinessDetail, CommercialImpact, CompareRow, CompareTarget, CompareTargets, PastCompare, CostCondition, CostSummary, BusinessEvent, BusinessList, BusinessListItem, BusinessLog, BusinessPerson,
   BusinessRange, CompareRule, Criterion, Datasheet, DatasheetInfo, DatasheetRow, DocKindRule,
   DocumentChoice, DocumentLines, DocumentPreview, EngineeringCheck,
@@ -234,6 +234,8 @@ export const api = {
     call<PeakCheck>(`/engineering/peak-check?ik_ka=${ik_ka}&frequency_hz=${frequency_hz}&peak_ka=${peak_ka}`),
   /** 날짜·기능별 AI 사용량, 분석 실행 포함 (add-ai-usage-log). 비용은 팀 가정 단가 */
   aiUsage: (days: number) => call<AiUsage>(`/ai-usage?days=${days}`),
+  /** 프롬프트 관리 (add-prompt-view): 역할별 판·판 기록·평가 점수, 보기만 */
+  prompts: () => call<PromptOverview>('/prompts'),
   runFlow: (id: number) => call<RunFlow>(`/runs/${id}/flow`),
   /** AI 호출 기록 (add-ai-call-trace, FR-21). 원문 없이 해시만 */
   aiCalls: (id: number) => call<AiCalls>(`/runs/${id}/ai-calls`),

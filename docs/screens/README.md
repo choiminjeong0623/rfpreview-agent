@@ -63,6 +63,7 @@
 | SCR-23 | `Files` | 자료실 | 팀 공유 | 범위 밖 | 예시 화면 (`add-example-screens`) |
 | SCR-24 | `Settings` | 설정 | 설정 | 범위 밖 | 예시 화면 (`add-example-screens`) |
 | SCR-25 | (목업에 없음) | 실행 기록 | 시스템 관리 | NFR-09, `add-run-log` | 실제 (`SCR-25_공유.md`) |
+| SCR-26 | (목업에 없음) | 프롬프트 관리 | 시스템 관리 | FR-18·FR-21, `add-prompt-view` | 실제, 보기 전용 (`SCR-26_공유.md`) |
 
 ### SCR-08 검토 상세의 탭
 

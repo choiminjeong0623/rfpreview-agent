@@ -13,6 +13,7 @@ from rfp_agent.api import (
     businesses,
     evaluation,
     prompt_evals,
+    prompts,
     reference,
     runs,
     suggestions,
@@ -31,6 +32,7 @@ app.include_router(evaluation.router)
 app.include_router(suggestions.router)
 app.include_router(assistant.router)
 app.include_router(prompt_evals.router)
+app.include_router(prompts.router)
 
 log = logging.getLogger(__name__)
 

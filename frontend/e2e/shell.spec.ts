@@ -90,3 +90,15 @@ test('알림은 예시로 보인다', async ({ page }) => {
   await panel.getByRole('button', { name: '모두 읽음으로' }).click()
   await expect(page.getByRole('button', { name: '알림 0건' })).toBeVisible()
 })
+
+test('역할별 판과 판 기록', async ({ page }) => {
+  // change add-prompt-view. 백엔드 GET /api/prompts가 필요하다
+  await page.goto('/#/prompts')
+  const nav = page.getByRole('navigation', { name: '메뉴' })
+  await expect(nav.getByRole('button', { name: '시스템 관리' })).toHaveAttribute('aria-expanded', 'true')
+  await expect(nav.getByRole('link', { name: '프롬프트 관리' })).toHaveAttribute('aria-current', 'page')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('프롬프트 관리')
+  await page.getByRole('row', { name: /유형/ }).first().click()
+  await expect(page.getByText('판 기록')).toBeVisible()
+  await expect(page.getByText('지금 판').first()).toBeVisible()
+})
