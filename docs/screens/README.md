@@ -56,7 +56,7 @@
 | SCR-16 | `Products` | 제품표 | 지식 관리 | `reference-data`, FR-07 근거, FR-13, FR-15, `add-reference-views` | 실제 (읽기 전용). 엑셀·요구 조건으로 찾기 잠김, 제품 카드 창 없음 |
 | SCR-17 | `Rules` | 판정 규칙 | 지식 관리 | `reference-data`, FR-05·06·07 사전, `add-reference-views` | 실제 (읽기 전용). 사람이 제안한 표현은 예시, 단위 탭 없음 |
 | SCR-18 | `Phrases` | 표준 문구 | 지식 관리 | 없음 (일탈·질의 문장은 FR-09에서 언어 모델이 씀) | 예시 화면 (`add-example-screens`) |
-| SCR-19 | `Eval` | 정답지·채점 | 지식 관리 | K1~K13, `add-evaluation`, `add-requirement-answer-key` | 실제 |
+| SCR-19 | `Eval` | 정답지·채점 | 시스템 관리 | K1~K13, `add-evaluation`, `add-requirement-answer-key` | 실제 |
 | SCR-20 | `Team` | 팀 현황 | 팀 공유 | 범위 밖 | 예시 화면 (`add-example-screens`) |
 | SCR-21 | `Notice` | 공지사항 | 팀 공유 | 범위 밖 | 예시 화면 (`add-example-screens`) |
 | SCR-22 | `SysNotice` | 시스템 공지 | 팀 공유 | 범위 밖 | 예시 화면 (`add-example-screens`) |

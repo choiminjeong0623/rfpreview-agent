@@ -105,7 +105,7 @@ function route(path: string): Route {
     return { menu: 'phrases', crumbs: [home, { label: '지식 관리' }, { label: '표준 문구' }], body: <Phrases /> }
   }
   if (path === '/eval') {
-    return { menu: 'eval', crumbs: [home, { label: '지식 관리' }, { label: '정답지·채점' }], body: <Eval /> }
+    return { menu: 'eval', crumbs: [home, { label: '시스템 관리' }, { label: '정답지·채점' }], body: <Eval /> }
   }
   if (path === '/runlog') {
     return { menu: 'runlog', crumbs: [home, { label: '지식 관리' }, { label: '실행 기록' }], body: <RunLog /> }
