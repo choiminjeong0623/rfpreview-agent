@@ -5,10 +5,12 @@ import type {
   LossResult, ProductSwitch, RuleEdit,
   AiCalls, RunFlow, RunLogItem, RunSummary, ScreenSummary, SendResult, StageResult, SubmitResult,
   AnswerKey, EvalRun, EvalScore, RuleSuggestion, AssistantAnswer, MeaningCandidate, RiskMeaning, AiUsage, PeakCheck, PromptOverview,
+  PromptDetail, PromptEvalJob, PromptSaved,
 } from './api.gen'
 
 export type {
   AiCall, AiCalls, AiUsage, AiUsageRow, PeakCheck, PromptOverview, PromptRole, PromptVersion,
+  PromptDetail, PromptEvalJob, PromptSaved, PromptSide,
   ApprovalScreen, Assignment, BusinessDetail, CommercialImpact, CompareRow, CompareTarget, CompareTargets, PastCompare, CostCondition, CostSummary, BusinessEvent, BusinessList, BusinessListItem, BusinessLog, BusinessPerson,
   BusinessRange, CompareRule, Criterion, Datasheet, DatasheetInfo, DatasheetRow, DocKindRule,
   DocumentChoice, DocumentLines, DocumentPreview, EngineeringCheck,
@@ -236,6 +238,15 @@ export const api = {
   aiUsage: (days: number) => call<AiUsage>(`/ai-usage?days=${days}`),
   /** 프롬프트 관리 (add-prompt-view): 역할별 판·판 기록·평가 점수, 보기만 */
   prompts: () => call<PromptOverview>('/prompts'),
+  // 프롬프트 고치기 (add-prompt-editor): Langfuse staging 저장, 평가, 운영으로 올리기
+  prompt: (role: string) => call<PromptDetail>(`/prompts/${role}`),
+  savePrompt: (role: string, actorId: number, text: string, message: string) =>
+    call<PromptSaved>(`/prompts/${role}/drafts`, json('POST', { actor_id: actorId, text, message: message || null })),
+  evalPrompt: (role: string, actorId: number) =>
+    call<PromptEvalJob>(`/prompts/${role}/evaluations`, json('POST', { actor_id: actorId })),
+  promptEval: (role: string) => call<PromptEvalJob | null>(`/prompts/${role}/evaluations/latest`),
+  promotePrompt: (role: string, actorId: number, jobId: number) =>
+    call<PromptSaved>(`/prompts/${role}/promote`, json('POST', { actor_id: actorId, job_id: jobId })),
   runFlow: (id: number) => call<RunFlow>(`/runs/${id}/flow`),
   /** AI 호출 기록 (add-ai-call-trace, FR-21). 원문 없이 해시만 */
   aiCalls: (id: number) => call<AiCalls>(`/runs/${id}/ai-calls`),
