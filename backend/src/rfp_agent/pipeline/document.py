@@ -22,7 +22,7 @@ from rfp_agent.pipeline.docx_reader import find_figures
 from rfp_agent.pipeline.extract import Candidate, extract
 from rfp_agent.pipeline.line_map import map_lines
 from rfp_agent.pipeline.processors import LABEL, TYPE, Processor, Stats, processor_for
-from rfp_agent.pipeline.reader import is_pdf, read_document
+from rfp_agent.pipeline.reader import is_pdf, read_with_pages
 from rfp_agent.pipeline.structure import (
     MARK_LEGEND,
     LogicalTable,
@@ -70,7 +70,8 @@ def content_hash(path: Path) -> str:
 
 def _insert_document(conn, path: Path, c: cls.Classification, dicts: PipelineDicts,
                      line_basis: str, key: str, digest: str,
-                     blocks: list | None = None) -> tuple[int, int]:
+                     blocks: list | None = None,
+                     scan: pdf_reader.PageScan | None = None) -> tuple[int, int]:
     """이 처리 판(key)으로 처리한 문서 행을 새로 만든다.
 
     번호는 파일 목록 → 같은 파일의 이전 번호 → 101번부터.
@@ -82,11 +83,19 @@ def _insert_document(conn, path: Path, c: cls.Classification, dicts: PipelineDic
         file_no=file_no, file_name=path.name, bundle=c.bundle, doc_kind=c.doc_kind,
         project_id=dicts.projects.get(c.project_key) if c.project_key else None,
         language=c.language, standard_system=c.standard_system, judge_target=c.judge_target,
-        readable=c.readable, classify_by=c.classify_by, needs_review=c.needs_review,
+        readable=c.readable, classify_by=c.classify_by,
+        # 쪽 절반 이상을 읽지 못한 문서는 확인 필요 (add-unread-pages, CR-13)
+        needs_review=c.needs_review or bool(scan and scan.page_count
+                                            and len(scan.unread) * 2 >= scan.page_count),
         source_path=str(path), line_basis=line_basis, processing_key=key,
         content_hash=digest,
         # PDF 쪽마다 첫 줄 (add-pdf-page-location)
         page_starts=pdf_reader.page_starts(blocks) if line_basis == "PDF" and blocks else None,
+        # 쪽마다 읽은 결과 (add-unread-pages). docx는 쪽이 없어 비움
+        page_count=scan.page_count if scan else None,
+        pages_read=scan.pages_read if scan else None,
+        pages_blank=scan.pages_blank if scan else None,
+        unread_pages=Jsonb(scan.unread) if scan else None,
     )
     cols = ", ".join(values)
     marks = ", ".join(f"%({k})s" for k in values)
@@ -194,7 +203,7 @@ def process_document(conn: psycopg.Connection, path: Path, dicts: PipelineDicts,
                      dedup: bool = True) -> DocumentResult:
     """ordered는 저장 차례를 기다리는 문맥(문서 병렬 처리, C1). 차례로 할 때는 바로 들어간다."""
     report("classify")
-    blocks = read_document(path)              # docx 또는 PDF (add-pdf-input)
+    blocks, scan = read_with_pages(path)      # docx 또는 PDF (add-pdf-input), 쪽 결과
     line_basis = "PDF" if is_pdf(path) else "DOCX"
     txt = txt_dir / f"{path.stem}.txt" if txt_dir and not is_pdf(path) else None
     if txt and txt.exists():
@@ -235,7 +244,7 @@ def process_document(conn: psycopg.Connection, path: Path, dicts: PipelineDicts,
     try:
         with ordered():
             return _save(conn, path, dicts, key, report, c, blocks, line_basis, digest, dedup,
-                         prep, proc, check, lines)
+                         prep, proc, check, lines, scan)
     except psycopg.errors.UniqueViolation:
         # 같은 파일을 거의 동시에 두 검토가 올리면 먼저 넣은 쪽이 이긴다.
         # 진 쪽은 자기 작업을 되돌리고 먼저 처리된 결과를 다시 쓴다
@@ -391,10 +400,11 @@ def _redo(conn, dicts: PipelineDicts, llm: LLM, report: Report, digest: str, pre
 def _save(conn, path: Path, dicts: PipelineDicts, key: str, report: Report,
           c: cls.Classification, blocks, line_basis: str, digest: str, dedup: bool,
           prep: _Prepared | None, proc: Processor | None, check: str | None,
-          lines: int) -> DocumentResult:
+          lines: int, scan: pdf_reader.PageScan | None = None) -> DocumentResult:
     """준비한 결과를 한 트랜잭션으로 저장한다. prep이 없으면 판독 불가 문서."""
     with conn.transaction():
-        doc_id, file_no = _insert_document(conn, path, c, dicts, line_basis, key, digest, blocks)
+        doc_id, file_no = _insert_document(conn, path, c, dicts, line_basis, key, digest, blocks,
+                                           scan)
         if prep is None:
             # 판독 불가 문서는 이후 단계를 건너뛴다 (FR-01 예외).
             return DocumentResult(doc_id, file_no, False, False)
@@ -405,12 +415,12 @@ def _save(conn, path: Path, dicts: PipelineDicts, key: str, report: Report,
         section_ids = _save_sections(conn, doc_id, sections)
         row_ids = _save_tables(conn, doc_id, tables, section_ids, index)
         for block, caption in find_figures(blocks):
-            # 그림 위치만 남긴다. 그림 속 글자는 읽지 않는다 (OCR 범위 밖)
+            # 그림 위치와 OCR로 읽지 못한 이유 (add-unread-pages)
             sec = index.at(block.seq)
-            conn.execute("INSERT INTO doc_figure (document_id, section_id, line_no, caption) "
-                         "VALUES (%s, %s, %s, %s)",
+            conn.execute("INSERT INTO doc_figure (document_id, section_id, line_no, caption, "
+                         "ocr_reason) VALUES (%s, %s, %s, %s, %s)",
                          (doc_id, section_ids.get(sec.index) if sec else None, block.line_no,
-                          caption))
+                          caption, block.ocr_reason))
 
         doc_title = " ".join(b.text for b in blocks[:FIRST_TITLE_BLOCKS]) + " " + path.stem
         doc_target = target_of(doc_title, dicts.values)

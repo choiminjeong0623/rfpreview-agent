@@ -12,7 +12,7 @@ from psycopg.rows import dict_row
 from rfp_agent.pipeline.pdf_reader import page_of
 from rfp_agent.pipeline.review import ReviewError, _user_role, default_user, log, require_stage
 
-KINDS = ("표", "그림", "단위", "위치")
+KINDS = ("쪽", "표", "그림", "단위", "위치")
 # 여러 단계 절 번호(6.3, 7.4.2)는 한 문서에서 두 번 나오면 안 된다.
 # "1)"·"a." 같은 목록 번호는 되풀이되므로 보지 않는다
 DOTTED = re.compile(r"^\d+(\.\d+)+\.?$")
@@ -45,7 +45,8 @@ def _row(key: str, kind: str, what: str, doc: dict, loc: str, line: int | None, 
 
 def _documents(cur, run_id: int) -> dict[int, dict]:
     rows = cur.execute(
-        """SELECT d.document_id, d.file_no, d.file_name, d.readable, d.page_starts
+        """SELECT d.document_id, d.file_no, d.file_name, d.readable, d.page_starts,
+                  d.unread_pages
            FROM run_document rd
            JOIN document d USING (document_id) WHERE rd.run_id = %s ORDER BY d.file_no""",
         (run_id,)).fetchall()
@@ -71,20 +72,64 @@ def _tables(cur, docs: dict[int, dict]) -> list[dict]:
             for t in rows]
 
 
+# 읽지 못한 쪽·그림의 이유별 문장 (add-unread-pages, CR-13)
+PAGE_WHAT = {
+    "OCR_LOW_CONF": "스캔 쪽 · OCR 신뢰도가 낮아 읽지 못함",
+    "OCR_EMPTY": "스캔 쪽 · 글자를 찾지 못함",
+    "OCR_OFF": "스캔 쪽 · OCR이 꺼져 있음",
+    "OCR_MISSING": "스캔 쪽 · OCR 엔진 없음",
+}
+FIGURE_WHY = {
+    "OCR_LOW_CONF": "OCR 신뢰도가 낮아 그림 속 글자를 읽지 못했습니다.",
+    "OCR_EMPTY": "OCR이 그림 속 글자를 찾지 못했습니다(사진·도면일 수 있음).",
+    "OCR_OFF": "OCR이 꺼져 있어 그림 속 글자를 읽지 않았습니다.",
+    "OCR_MISSING": "OCR 엔진이 없어 그림 속 글자를 읽지 않았습니다.",
+}
+
+
+def _page_problem(u: dict) -> str:
+    if u["reason"] == "OCR_LOW_CONF":
+        head = (f"글자 {u['dropped']}줄을 찾았지만 신뢰도(평균 {u['dropped_conf']:g})가 기준보다 "
+                "낮아 버렸습니다.")
+    elif u["reason"] == "OCR_EMPTY":
+        head = "그림만 있는 쪽(사진·도면일 수 있음)이라 글자를 찾지 못했습니다."
+    elif u["reason"] == "OCR_OFF":
+        head = "OCR이 꺼져 있어 스캔 쪽을 읽지 않았습니다."
+    else:
+        head = "OCR 엔진이 없어 스캔 쪽을 읽지 않았습니다."
+    return head + " 이 쪽의 요구사항은 결과에 없습니다."
+
+
+def _pages(docs: dict[int, dict]) -> list[dict]:
+    """읽지 못한 쪽마다 한 줄 (빈 쪽은 줄 없음). 쪽 번호는 읽을 때 기록한 것만 쓴다."""
+    out = []
+    for d in docs.values():
+        for u in d.get("unread_pages") or []:
+            row = _row(f"G-{d['document_id']}-{u['page']}", "쪽",
+                       PAGE_WHAT.get(u["reason"], "스캔 쪽 · 읽지 못함"), d, "", None,
+                       _page_problem(u), "원문을 직접 확인")
+            row["loc"] = f"{u['page']}쪽"
+            out.append(row)
+    return out
+
+
 def _figures(cur, docs: dict[int, dict]) -> list[dict]:
+    # 읽지 못한 쪽 줄이 있는 판독 불가 문서는 쪽 줄이 더 구체적이라 문서 줄을 만들지 않는다
     out = [_row(f"D-{d['document_id']}", "그림", "문서를 읽지 않음", d, "문서 전체", None,
                 "글자를 읽을 수 없는 문서(스캔·그림)라 요구사항을 뽑지 않았습니다.",
                 "원문을 직접 열어 요구사항이 있는지 확인")
-           for d in docs.values() if not d["readable"]]
+           for d in docs.values() if not d["readable"] and not d.get("unread_pages")]
     rows = cur.execute(
-        """SELECT f.figure_id, f.document_id, f.line_no, f.caption, s.section_no, s.title
+        """SELECT f.figure_id, f.document_id, f.line_no, f.caption, f.ocr_reason, s.section_no,
+                  s.title
            FROM doc_figure f LEFT JOIN section s USING (section_id)
            WHERE f.document_id = ANY(%s) ORDER BY f.document_id, f.line_no, f.figure_id""",
         (list(docs),)).fetchall()
     out += [_row(f"F-{f['figure_id']}", "그림", "그림 속 글자는 읽지 않음", docs[f["document_id"]],
                  _join(f["caption"] or _section(f["section_no"], f["title"]) or "그림",
                        f"{f['line_no']}행"), f["line_no"],
-                 "그림 안에 정격값이나 치수가 적혀 있을 수 있습니다. 본문 값과 다를 수 있습니다.",
+                 (FIGURE_WHY[f["ocr_reason"]] + " " if f["ocr_reason"] else "")
+                 + "그림 안에 정격값이나 치수가 적혀 있을 수 있습니다. 본문 값과 다를 수 있습니다.",
                  "그림의 값이 본문과 같은지 확인")
             for f in rows]
     return out
@@ -164,13 +209,13 @@ def _places(cur, docs: dict[int, dict]) -> list[dict]:
 
 
 def read_checks(conn: psycopg.Connection, run_id: int) -> list[dict]:
-    """점검 줄 목록. 표 → 그림 → 단위 → 위치 순서, 종류 안에서는 파일·줄 순서."""
+    """점검 줄 목록. 쪽 → 표 → 그림 → 단위 → 위치 순서, 종류 안에서는 파일·줄 순서."""
     with conn.cursor(row_factory=dict_row) as cur:
         if cur.execute("SELECT 1 FROM review_run WHERE run_id = %s", (run_id,)).fetchone() is None:
             raise ReviewError(404, f"검토 실행 {run_id}이(가) 없습니다.")
         docs = _documents(cur, run_id)
-        rows = _tables(cur, docs) + _figures(cur, docs) + _units(cur, docs) + _places(cur, docs) \
-            if docs else []
+        rows = _pages(docs) + _tables(cur, docs) + _figures(cur, docs) + _units(cur, docs) \
+            + _places(cur, docs) if docs else []
         checked = {r["check_key"]: r for r in cur.execute(
             """SELECT c.check_key, u.user_name, c.checked_at FROM read_check c
                JOIN app_user u ON u.user_id = c.checked_by
@@ -182,8 +227,9 @@ def read_checks(conn: psycopg.Connection, run_id: int) -> list[dict]:
     return rows
 
 
-def unchecked(conn: psycopg.Connection, run_id: int) -> int:
-    return sum(1 for r in read_checks(conn, run_id) if r["checked_at"] is None)
+def unchecked(conn: psycopg.Connection, run_id: int, kind: str | None = None) -> int:
+    return sum(1 for r in read_checks(conn, run_id)
+               if r["checked_at"] is None and (kind is None or r["kind"] == kind))
 
 
 def set_checked(conn: psycopg.Connection, run_id: int, key: str, checked: bool,

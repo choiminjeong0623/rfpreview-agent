@@ -56,9 +56,18 @@ function ClassifyCells({ p, chosen, onChange }: {
         {changed && <> <span className="st c-blue">사람이 바꿈</span></>}
         <div className="en" style={{ margin: '4px 0 0' }}>{changed ? `추천: ${DOC_KIND_NAMES[p.doc_kind]} · 묶음 ${p.bundle}`
           : p.doc_kind === 'UNKNOWN' ? `${p.reason} · 문서 종류는 직접 골라야 함` : p.reason}</div>
+        {(p.unread_pages ?? 0) > 0 && <div className="en c-ora" style={{ margin: '4px 0 0' }}>{unreadNote(p)}</div>}
       </td>
     </>
   )
+}
+
+/** 분석 전에 읽지 못한 쪽 안내 (add-unread-pages, CR-13). OCR이 꺼졌거나 없으면 그 까닭을 먼저 */
+function unreadNote(p: DocumentPreview): string {
+  const n = p.unread_pages ?? 0
+  if (p.unread_reason === 'OCR_OFF') return `OCR이 꺼져 있어 ${n}쪽을 읽지 못합니다`
+  if (p.unread_reason === 'OCR_MISSING') return `OCR 엔진이 없어 ${n}쪽을 읽지 못합니다`
+  return `${p.page_count}쪽 가운데 ${n}쪽을 읽지 못합니다 (스캔 쪽 글자를 찾지 못함)`
 }
 
 function Field({ label, req, hint, children }: { label: string; req?: boolean; hint?: string; children: ReactNode }) {

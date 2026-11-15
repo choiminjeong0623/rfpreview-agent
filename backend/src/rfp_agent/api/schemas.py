@@ -180,6 +180,10 @@ class RunDocument(Out):
     reprocessed: bool = False               # 점검 뒤 떨어진 부분을 일반 처리기로 다시 물음
     reprocessed_lines: int = 0              # 다시 물은 줄 수 (update-partial-reprocess)
     ocr_lines: int = 0                      # OCR로 읽은 줄 수 (add-ocr). 있으면 글자 확인 필요
+    # 쪽마다 읽은 결과 (add-unread-pages). PDF만, docx는 비움
+    page_count: int | None = None
+    pages_read: int | None = None
+    pages_blank: int | None = None
 
 
 class SourceLine(Out):
@@ -214,6 +218,10 @@ class DocumentPreview(Out):
     judge_target: bool
     needs_review: bool
     reason: str
+    # 읽지 못한 쪽 (add-unread-pages). PDF만: 전체 쪽 수, 읽지 못한 쪽 수, 가장 많은 이유
+    page_count: int | None = None
+    unread_pages: int = 0
+    unread_reason: Literal["OCR_OFF", "OCR_MISSING", "OCR_LOW_CONF", "OCR_EMPTY"] | None = None
 
 
 class DocumentPair(Out):

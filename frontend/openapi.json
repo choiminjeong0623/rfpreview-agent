@@ -9358,6 +9358,39 @@
           "reason": {
             "type": "string",
             "title": "Reason"
+          },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Count"
+          },
+          "unread_pages": {
+            "type": "integer",
+            "title": "Unread Pages",
+            "default": 0
+          },
+          "unread_reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "OCR_OFF",
+                  "OCR_MISSING",
+                  "OCR_LOW_CONF",
+                  "OCR_EMPTY"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unread Reason"
           }
         },
         "additionalProperties": false,
@@ -15483,6 +15516,39 @@
             "type": "integer",
             "title": "Ocr Lines",
             "default": 0
+          },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Count"
+          },
+          "pages_read": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages Read"
+          },
+          "pages_blank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages Blank"
           }
         },
         "additionalProperties": false,

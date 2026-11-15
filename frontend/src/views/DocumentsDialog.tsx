@@ -127,7 +127,7 @@ export function DocumentsDialog({ run, docs, onClose, onAdded }: {
           <p className="docsum">판정 대상 <b>{judged}개</b> · 판정 안 함 <b className={judged < docs.length ? 'c-red' : ''}>{docs.length - judged}개</b>
             {review > 0 && <> · 확인 필요 <b className="c-ora">{review}개</b></>}</p>
           <div className="tw"><table className="tbl doct">
-            <thead><tr><th>파일</th><th>파일 이름</th><th>문서 종류</th><th>분류 방법</th><th>묶음</th><th>판정</th><th>요구사항</th></tr></thead>
+            <thead><tr><th>파일</th><th>파일 이름</th><th>문서 종류</th><th>분류 방법</th><th>묶음</th><th>판정</th><th>요구사항</th><th>읽은 쪽</th></tr></thead>
             <tbody>
               {docs.map((d) => (
                 <tr key={d.document_id} className={d.judge_target ? '' : 'skip'}>
@@ -141,6 +141,10 @@ export function DocumentsDialog({ run, docs, onClose, onAdded }: {
                     ? <span className="st c-green">판정 대상</span>
                     : <><span className="st c-red">판정 안 함</span><div className="docwhy">{skipReason(d)}</div></>}</td>
                   <td>{d.requirements.toLocaleString()}</td>
+                  {/* 읽은 쪽 (add-unread-pages): PDF만. 못 읽은 쪽이 있으면 주황으로 */}
+                  <td>{d.page_count == null ? '—'
+                    : <span className={d.pages_read != null && d.pages_read + (d.pages_blank ?? 0) < d.page_count ? 'c-ora' : undefined}
+                        title={d.pages_blank ? `빈 쪽 ${d.pages_blank}개` : undefined}>{d.pages_read} / {d.page_count}</span>}</td>
                 </tr>
               ))}
             </tbody>

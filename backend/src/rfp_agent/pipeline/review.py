@@ -387,6 +387,10 @@ def criteria(conn: psycopg.Connection, run_id: int) -> list[Criterion]:
         (run_id, list(DELIVERED_POINTS))).fetchone()[0]
     if adopted:
         out.append(Criterion("AR-08", f"전달할 제안 포인트 {adopted}건 (채택한 것만)"))
+    # 사람이 확인하지 않은 읽지 못한 쪽 (add-unread-pages, CR-13). 상신은 막지 않는다
+    from rfp_agent.pipeline.read_checks import unchecked
+    if pages := unchecked(conn, run_id, "쪽"):
+        out.append(Criterion("AR-09", f"읽지 못한 쪽 {pages}개 미확인"))
     return out
 
 

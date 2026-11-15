@@ -6,10 +6,10 @@ import { usePage } from '../../components/usePage'
 import { useSession } from '../../shell/useSession'
 
 // SCR-08-2 문서 읽기 점검 탭 (목업 v4.57 Detail #read). docs/screens/SCR-08-2-문서읽기점검.md
-// 점검 줄은 백엔드가 처리 결과(표 칸 역할, 그림 위치, 단위 없는 값, 절 번호)에서 만든다. 화면은 확인 기록만 남긴다.
+// 점검 줄은 백엔드가 처리 결과(읽지 못한 쪽, 표 칸 역할, 그림 위치, 단위 없는 값, 절 번호)에서 만든다. 화면은 확인 기록만 남긴다.
 
-const KINDS = ['표', '그림', '단위', '위치'] as const
-const ICONS: Record<string, string> = { 표: 'table_chart', 그림: 'image', 단위: 'straighten', 위치: 'location_searching' }
+const KINDS = ['쪽', '표', '그림', '단위', '위치'] as const
+const ICONS: Record<string, string> = { 쪽: 'find_in_page', 표: 'table_chart', 그림: 'image', 단위: 'straighten', 위치: 'location_searching' }
 
 export function ReadTab({ run, tick, onChanged }: { run: RunSummary; tick: number; onChanged: () => void }) {
   const { user } = useSession()
@@ -22,7 +22,9 @@ export function ReadTab({ run, tick, onChanged }: { run: RunSummary; tick: numbe
 
   const rows = checks.data ?? []
   const left = rows.filter((r) => !r.checked_at).length
-  const note = KINDS.map((k) => `${k} ${rows.filter((r) => r.kind === k).length}`).join(' · ')
+  // 쪽 줄은 PDF에만 있어 0이면 적지 않는다 (add-unread-pages)
+  const note = KINDS.filter((k) => k !== '쪽' || rows.some((r) => r.kind === k))
+    .map((k) => `${k} ${rows.filter((r) => r.kind === k).length}`).join(' · ')
   const { shown, pager } = usePage(rows)
 
   const toggle = (r: ReadCheck, on: boolean) => {
@@ -47,7 +49,7 @@ export function ReadTab({ run, tick, onChanged }: { run: RunSummary; tick: numbe
         <div className="rdempty">
           <span className="ms" aria-hidden="true">task_alt</span>
           <div><b>모든 문서를 끝까지 읽었습니다.</b>
-            <div>표 칸 역할, 그림, 단위 없는 값, 끊기거나 겹친 절 번호를 살폈고 읽지 못한 곳이 없습니다. 직접 확인할 곳이 없습니다.</div></div>
+            <div>스캔 쪽, 표 칸 역할, 그림, 단위 없는 값, 끊기거나 겹친 절 번호를 살폈고 읽지 못한 곳이 없습니다. 직접 확인할 곳이 없습니다.</div></div>
         </div>
       )}
       {rows.length > 0 && (
