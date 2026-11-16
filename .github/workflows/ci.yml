@@ -103,8 +103,8 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
-          npx playwright install --with-deps chromium
-          nohup npx vite --port 5173 --strictPort > "$RUNNER_TEMP/frontend.log" 2>&1 &
+          npm run e2e:install
+          nohup npm run dev -- --port 5173 --strictPort > "$RUNNER_TEMP/frontend.log" 2>&1 &
           for i in $(seq 1 60); do
             curl -sf localhost:8000/api/health > /dev/null && curl -sf localhost:5173 > /dev/null && exit 0
             sleep 2
@@ -112,7 +112,7 @@ jobs:
           cat "$RUNNER_TEMP/backend.log"; exit 1
       - name: E2E
         working-directory: frontend
-        run: npx playwright test --trace off --workers=1 --reporter=list
+        run: npm run e2e -- --trace off --workers=1 --reporter=list
       - name: 실패하면 화면·서버 기록 남기기
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
