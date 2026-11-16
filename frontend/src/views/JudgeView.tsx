@@ -59,6 +59,12 @@ export function JudgeView({ runId, judgmentId }: { runId: number; judgmentId: nu
   const pos = win + idx + 1
   const total = list.data?.total ?? 0
 
+  // 판정을 바꿔 지금 거르기에서 빠지면(예: 확인 필요 → 질의 후보) 거르기 없이 같은 판정을 다시 연다.
+  // 그대로 두면 "이 검토에 없는 판정"으로 보였다 (2026-11-16 E2E를 CI에 넣으며 발견)
+  useEffect(() => {
+    if (list.data && idx < 0 && key) navigate(`/reviews/${runId}/judgments/${judgmentId}`, { replace: true })
+  }, [list.data, idx, key, runId, judgmentId])
+
   const go = (target: Judgment, n: number, f: JudgeFilter = filter) =>
     navigate(`/reviews/${runId}/judgments/${target.judgment_id}${filterQuery({ ...f, page: pageOf(n, f.size) })}`, { replace: true })
   const back = () => navigate(`/reviews/${runId}${filterQuery({ ...filter, page: j ? pageOf(pos, filter.size) : filter.page },
