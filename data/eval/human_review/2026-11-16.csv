@@ -1,0 +1,81 @@
+﻿문항,역할,줄,절·문맥·질문,문장·근거,Claude 초안 정답,내 판단(맞음/틀림),고친 정답·메모
+lab-001,문장 구분,1번 문장,3. Scope of Supply,The contractor shall supply three 170 kV GIS bays complete with local control cubicles.,REQUIREMENT,맞음,납품 의무와 수량·정격을 명시하므로 요구사항.
+lab-001,문장 구분,2번 문장,3. Scope of Supply,This section describes the equipment to be supplied under this contract.,DESCRIPTION,맞음,절의 설명 문장으로 이행 의무 없음.
+lab-002,문장 구분,1번 문장,4. Technical Requirements,All equipment shall be designed for an ambient temperature of up to 45 °C.,REQUIREMENT,맞음,설계 온도 한계를 지정한 기술 요구사항.
+lab-002,문장 구분,2번 문장,4. Technical Requirements,The substation is located near the coast.,DESCRIPTION,맞음,설치 위치 배경 설명이며 직접적인 의무 없음.
+lab-003,문장 구분,1번 문장,5. Instructions for Completing the Schedule,Bidders shall enter the guaranteed value in column 5 of each schedule row.,WRITING_RULE,맞음,보증값을 기입할 열을 지시하는 작성 규칙.
+lab-003,문장 구분,2번 문장,5. Instructions for Completing the Schedule,"Where a row is not applicable, write ""N/A"" in the offered column.",WRITING_RULE,맞음,해당하지 않는 행의 기입 방식을 지정한 작성 규칙.
+lab-004,문장 구분,1번 문장,6. Deviations,The bidder shall list every deviation from this specification in Schedule D.,REQUIREMENT,맞음,일탈사항을 누락 없이 제출해야 하는 입찰자 의무.
+lab-004,문장 구분,2번 문장,6. Deviations,Schedule D is provided in Appendix C.,DESCRIPTION,맞음,부속서의 위치를 알리는 설명.
+lab-005,문장 구분,1번 문장,7. Tests,Routine tests shall be performed on every circuit breaker before dispatch.,REQUIREMENT,맞음,출하 전 전수 일상시험 수행 의무.
+lab-005,문장 구분,2번 문장,7. Tests,Type test reports must be issued by an accredited laboratory.,REQUIREMENT,맞음,공인 시험기관의 성적서 발급 요건. 시험·증빙 요구.
+lab-006,문장 구분,1번 문장,8. Documentation,Drawings shall be submitted in PDF and native CAD format.,REQUIREMENT,맞음,도면 제출 파일 형식에 대한 납품 요구사항. 작성 형식 규칙과도 경계가 있으나 제출물 요건이 핵심.
+lab-006,문장 구분,2번 문장,8. Documentation,Use the document numbering system shown in Annex 2 when naming each file.,WRITING_RULE,맞음,파일명에 적용할 문서번호 규칙.
+lab-007,문장 구분,1번 문장,9. Packing and Delivery,Each package shall be marked with the purchase order number and gross weight.,REQUIREMENT,맞음,포장별 필수 표시 정보를 지정한 요구사항.
+lab-007,문장 구분,2번 문장,9. Packing and Delivery,The site can be reached by road from the port.,DESCRIPTION,맞음,운송 접근 경로에 관한 배경 설명.
+lab-008,문장 구분,1번 문장,10. Training,The contractor shall provide five days of operator training at site.,REQUIREMENT,맞음,현장 운영자 교육 5일 제공 의무.
+lab-009,문장 구분,1번 문장,11. Warranty,The warranty period shall be 24 months from commissioning.,REQUIREMENT,맞음,시운전 시점 기준 보증기간을 지정한 계약 요구사항.
+lab-009,문장 구분,2번 문장,11. Warranty,Warranty claims are handled by the employer's maintenance department.,DESCRIPTION,맞음,보증 청구 처리 부서를 알리는 설명.
+lab-010,문장 구분,1번 문장,12. Form of Bid,Complete the price schedule in the currency stated in the bid data sheet.,WRITING_RULE,맞음,가격표에 사용할 통화를 지정하는 입찰서 작성 지침.
+lab-010,문장 구분,2번 문장,12. Form of Bid,Sign and stamp every page of the bid form.,WRITING_RULE,맞음,입찰서 모든 페이지의 서명·날인 지침.
+lab-011,문장 구분,1번 문장,13. Spare Parts,The bidder shall quote recommended spare parts for five years of operation.,REQUIREMENT,맞음,5년치 권장 예비품의 견적 제출 의무.
+lab-012,문장 구분,1번 문장,14. General,The employer intends to expand the substation in a later phase.,DESCRIPTION,맞음,향후 확장 계획에 대한 배경 설명.
+lab-012,문장 구분,2번 문장,14. General,The equipment shall be suitable for future extension on both sides.,REQUIREMENT,맞음,양측 확장 가능성을 요구하는 설계 조건.
+lab-013,문장 구분,1번 문장,15. Earthing,All metallic enclosures shall be connected to the main earthing grid.,REQUIREMENT,맞음,금속 외함의 주 접지망 연결 의무.
+lab-014,문장 구분,1번 문장,16. Control and Protection,Protection relays shall comply with IEC 60255.,REQUIREMENT,맞음,보호계전기의 IEC 표준 준수 의무.
+lab-014,문장 구분,2번 문장,16. Control and Protection,The existing control room houses the SCADA servers.,DESCRIPTION,맞음,기존 제어실의 설비 현황 설명.
+lab-015,문장 구분,1번 문장,17. Quality Assurance,The manufacturer shall maintain an ISO 9001 certified quality system.,REQUIREMENT,맞음,ISO 9001 인증 품질시스템 유지 의무.
+lab-016,문장 구분,1번 문장,18. Submission Format,Each technical data sheet must be returned in the original Excel format.,WRITING_RULE,맞음,데이터시트 원본 Excel 형식으로 제출하라는 작성·제출 규칙.
+lab-017,문장 구분,1번 문장,19. Site Conditions,The equipment shall withstand seismic acceleration of 0.3 g.,REQUIREMENT,맞음,내진 가속도 0.3g 충족 의무.
+lab-017,문장 구분,2번 문장,19. Site Conditions,Average annual rainfall at the site is moderate.,DESCRIPTION,맞음,평균 강우량의 배경 설명으로 구체적인 요구 없음.
+lab-018,문장 구분,1번 문장,20. Painting,Outdoor enclosures shall be painted RAL 7035.,REQUIREMENT,맞음,옥외 외함의 도장 색상 지정.
+lab-019,문장 구분,1번 문장,21. Name Plates,Name plates shall be of stainless steel with engraved lettering.,REQUIREMENT,맞음,명판 소재와 각인 방식에 대한 기술 요구사항.
+lab-020,문장 구분,1번 문장,22. Clarifications,Questions about this document should be sent in writing before the clarification deadline.,WRITING_RULE,맞음,질의서 제출 방식과 시점에 대한 절차 규칙.
+type-001,유형,,2. Mandatory Proposal Submission,"Applicable IEC/ANSI/UL standards, declarations, certificates, and test reports.",STANDARD_CERT,맞음,IEC/ANSI/UL 표준·인증서·시험성적서 등 준거·증빙 항목.
+type-002,유형,,2. Mandatory Proposal Submission,"Clause-by-clause compliance statement; “Comply”, “Exception”, or “Not applicable” is required.",NONE,맞음,준수·예외·해당 없음 표기는 응답 형식이며 제시된 유형 분류에는 해당 없음.
+type-003,유형,,2. Mandatory Proposal Submission,"Commercial proposal showing unit price, quantity, delivery term, warranty, and validity period.",COST,맞음,단가·수량·납기·보증·유효기간을 포함한 상업 제안. COST가 주된 유형.
+type-004,유형,,2. Mandatory Proposal Submission,"Manufacturer authorization, production facility information, after-sales organization, and technical support plan.",MAKER_QUAL,맞음,제조사 승인·생산시설·사후지원 능력에 관한 제조사 자격 자료.
+type-005,유형,,2. Mandatory Proposal Submission,"Factory acceptance, type/routine test plan, packing, inspection, delivery, and commissioning approach.",TEST,맞음,FAT·형식/일상시험 계획 중심. 포장·납품·시운전도 섞인 복합 항목이므로 세부 분할 권장.
+type-006,유형,,4. Technical Requirements and Evidence,"Product code, name, family, description, and product datasheet",NONE,맞음,제품 식별정보·자료집 자체는 지정된 세부 유형에 해당 없음.
+type-007,유형,,4. Technical Requirements and Evidence,Current applicable standards and independently verifiable certificates,STANDARD_CERT,맞음,적용 표준과 검증 가능한 인증서의 증빙.
+type-008,유형,,4. Technical Requirements and Evidence,"List/offer price basis, currency, validity, payment and delivery terms",COST,맞음,가격 기준·통화·유효기간·지급 및 납품조건의 상업 조건.
+type-009,유형,,4. Technical Requirements and Evidence,"Operating temperature, IP rating and installation limits supported by evidence",SITE_ENV,맞음,사용 온도·보호등급·설치 한계의 현장 환경 적합성.
+type-010,유형,,8.1,"The evaluated price shall include transportation, insurance, installation supervision and commissioning for each offered GIS bay.",COST,맞음,운송·보험·설치감독·시운전 비용의 평가가격 포함 요구.
+type-011,유형,,8.1,The bidder shall submit a separately priced list of recommended spare parts for five (5) years of operation.,COST,맞음,5년치 예비품을 별도 가격으로 제출하는 비용 요구.
+type-012,유형,,8.1,"The evaluated price shall state the currency, price validity period and payment milestones for the complete scope of supply.",COST,맞음,통화·가격 유효기간·지급 일정의 상업 조건.
+type-013,유형,,8.2,Type Test reports issued by an independent accredited laboratory shall be submitted for the offered GIS.,TEST,맞음,공인기관 발행 GIS 형식시험 성적서 제출. 인증기관 요건도 포함.
+type-014,유형,,8.2,The bidder shall submit the factory test report and the inspection and test plan at least four (4) weeks before shipment.,TEST,맞음,공장시험 성적서·검사시험계획서의 출하 전 제출.
+type-015,유형,,8.3,The manufacturer shall hold a valid ISO 9001 certificate for the production facility of the offered equipment.,MAKER_QUAL,맞음,제조시설의 유효한 ISO 9001 자격 보유.
+type-016,유형,,8.3,The bidder shall have at least ten (10) years of experience in manufacturing and supplying gas-insulated switchgear.,MAKER_QUAL,맞음,GIS 제작·납품 실적 최소 10년의 업체 자격 요건.
+type-017,유형,,8.3,An authorization letter from the manufacturer shall be submitted with the proposal.,MAKER_QUAL,맞음,제조사 권한 위임장 제출을 통한 공급 자격 증빙.
+type-018,유형,,9.1,Any deviation that is not listed in the bidder's deviation schedule shall be deemed to be accepted by the bidder.,RISK,맞음,일탈 목록에 없는 예외도 수락한 것으로 간주하는 계약 리스크.
+type-019,유형,,9.1,No deviations from the technical requirements will be accepted after contract award.,RISK,맞음,계약 체결 후 기술 요구 일탈 불허라는 제약·리스크.
+type-020,유형,,9.2,"The scope of supply shall cover all accessories required for safe operation, including but not limited to special tools, earthing devices and gas handling equipment.",RISK,맞음,including but not limited to에 따른 포괄 공급범위·누락 리스크.
+type-021,유형,,4. Technical Requirements and Evidence,"Rated voltage, rated current, and short-circuit capability with applicable unit",TECH_PERF,맞음,정격 전압·전류·단락능력이라는 기술 성능값.
+type-022,유형,,4. Technical Requirements and Evidence,"Lightning impulse, power-frequency withstand, and switching impulse as applicable",TECH_PERF,맞음,뇌임펄스·상용주파·개폐임펄스 내전압 성능.
+type-023,유형,,4. Technical Requirements and Evidence,"Insulation medium, cooling, gas leakage (if GIS), and partial discharge",TECH_PERF,맞음,절연매질·냉각·가스 누설률·부분방전의 기술 성능.
+type-024,유형,,4.2 TS-170-GIS,1 / Rated voltage / kV / ≥170 kV,TECH_PERF,맞음,정격전압 170 kV 이상 성능 한계.
+type-025,유형,,4.2 TS-170-GIS,2 / Rated continuous current / A / ≥3150 A,TECH_PERF,맞음,정격 연속전류 3150 A 이상 성능 한계.
+type-026,유형,,4.2 TS-170-GIS,8 / Annual leakage rate for each gas compartment / % / ≤0.5 %,TECH_PERF,맞음,가스 구획별 연간 누설률 0.5% 이하의 성능 한계.
+type-027,유형,,4.2 TS-170-GIS,9 / Partial discharge / pC / ≤5 pC,TECH_PERF,맞음,부분방전 5 pC 이하의 성능 한계.
+type-028,유형,,4.3 TS-24-CB,3 / Rated short-circuit breaking current / kA / ≥40 kA,TECH_PERF,맞음,정격 단락 차단전류 40 kA 이상 성능 한계.
+type-029,유형,,4.3 TS-24-CB,7 / Total Breaking Time / ms / ≤60 ms,TECH_PERF,맞음,총 차단 시간 60 ms 이하의 성능 한계.
+type-030,유형,,9.3,The annual gas leakage rate of each gas compartment of the GIS shall not exceed 0.5 %.,TECH_PERF,맞음,가스 구획별 연간 누설률 0.5% 이하라는 기술 성능 조항.
+draft-001,문장 초안,,일탈·질의 목록,"항목: 정격 전류, 요구값 {v1} A, 제품값 {v2} A, 일탈 후보",받아들임(usable),맞음,일탈 후보로 유용. 실제 요구값·제품값과 허용 오차를 비교한 뒤 확정할 것.
+draft-002,문장 초안,,일탈·질의 목록,"항목: 정격 전압, 요구값 {v1} kV, 제품값 {v2} kV, 준수하지 못함",받아들임(usable),맞음,미준수 표현은 제품값이 실제로 정격 요구 조건을 벗어날 때만 사용.
+draft-003,문장 초안,,일탈·질의 목록,"항목: 정격 단시간 전류, 요구값 {v1} kA, 제품 {p}의 값 {v2} kA, 일탈 후보",받아들임(usable),맞음,일탈 후보로 적절. 요구값의 부등호·단위와 해당 제품의 값을 확인할 것.
+draft-004,문장 초안,,일탈·질의 목록,"항목: 가스 누설률, 본문 {v1} %, 부록 데이터시트 {v2} %, 어느 값이 맞는지 질의",받아들임(usable),맞음,본문과 데이터시트의 상충값을 특정해 질의하는 형식이 적절.
+draft-005,문장 초안,,일탈·질의 목록,"항목: 차단 시간, 요구값 {v1} ms, 제품 {p}의 값 없음, 값 확인 질의",받아들임(usable),맞음,제품의 차단 시간 값이 실제 미확인일 때 유용한 확인 질의.
+draft-006,문장 초안,,일탈·질의 목록,"항목: 부분 방전, 요구값 {v1} pC, 제품값 {v2} pC, 일탈 후보",받아들임(usable),맞음,부분방전은 통상 상한값이므로 실제 비교 방향을 확인한 뒤 일탈 판정.
+draft-007,문장 초안,,일탈·질의 목록,"항목: 뇌 임펄스 내전압, 요구값 {v1} kV, 제품값 {v2} kV, 일탈 후보",받아들임(usable),맞음,뇌임펄스 내전압은 통상 하한값이므로 비교 방향 확인 필요.
+draft-008,문장 초안,,일탈·질의 목록,"항목: 최대 순간 전류, 요구값 {v2} kA, 같은 부위 단시간 전류 {v1} kA, 주파수 {f} Hz, 계산한 값 {e} kA (× {k}), 어느 값이 맞는지 질의",받아들임(usable),맞음,상충 여부를 묻는 초안으로 사용 가능. 계수 k의 규격·주파수·전류 정의와 계산 근거를 검증해야 함.
+draft-009,문장 초안,,기술 제안 포인트,제안 포인트: 제품 {p}의 정격 전류 {v1} A가 요구값 {v2} A보다 여유 있음,받아들임(usable),맞음,제품 정격전류가 요구 하한보다 큰 경우에만 제안 포인트로 유효.
+draft-010,문장 초안,,기술 제안 포인트,제안 포인트: 제품 {p}의 누설률 {v1} %가 요구값 {v2} %보다 낮음,받아들임(usable),맞음,동일한 측정 기준·기간의 누설률이며 제품값이 요구 상한보다 낮을 때 유효.
+ast-001,검토 도우미,,시험 성적서를 요구하는 조항,Type Test reports issued by an independent accredited laboratory,"첫 도구 search_requirements, 유형 TEST",맞음,RFP 조항 검색이 목적이므로 search_requirements가 적절. TEST 필터도 부합.
+ast-002,검토 도우미,,ISO 9001 인증 요구,The manufacturer shall hold a valid ISO 9001 certificate,첫 도구 search_requirements,맞음,ISO 인증 관련 원문 조항 검색이 우선. 후속으로 인증서 자료 확인 가능.
+ast-003,검토 도우미,,예비품 가격 목록을 내라는 조항,separately priced list of recommended spare parts,첫 도구 search_requirements,맞음,예비품 별도 견적 제출 요구 조항을 먼저 검색하는 흐름이 적절.
+ast-004,검토 도우미,,가스 누설률 요구값,The annual gas leakage rate of each gas compartment of the GIS shall not exceed 0.5 %.,첫 도구 search_requirements,맞음,GIS 가스 누설률 기준을 원문 요구사항에서 조회하는 흐름이 적절.
+ast-005,검토 도우미,,제조사 승인서(authorization letter) 제출,An authorization letter from the manufacturer shall be submitted with the proposal.,첫 도구 search_requirements,맞음,제조사 승인서 제출 의무를 요구사항에서 먼저 조회하는 흐름이 적절.
+ast-006,검토 도우미,,일탈을 받아들이지 않는다는 조항,No deviations from the technical requirements will be accepted after contract award.,첫 도구 search_requirements,맞음,계약 후 일탈 불허 조항의 원문 근거 검색이 우선.
+ast-007,검토 도우미,,제조 경험 연수 요구,at least ten (10) years of experience,첫 도구 search_requirements,맞음,최소 제조 경력 연수를 요구사항에서 찾는 흐름이 적절.
+ast-008,검토 도우미,,평가 가격에 포함해야 하는 비용,The evaluated price shall include transportation,"첫 도구 search_requirements, 유형 COST",맞음,평가가격 포함 비용을 찾는 목적과 COST 필터가 부합.

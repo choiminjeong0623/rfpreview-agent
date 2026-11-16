@@ -1,6 +1,6 @@
 {
  "set_name": "public",
- "set_version": "01fed627ff24",
+ "set_version": "178c649e753c",
  "model": "gemini-3.8-flash",
  "repeat": 3,
  "prompt_versions": {
@@ -16,21 +16,21 @@
  "metrics": {
   "label": {
    "recall": {
-    "basis": "CLAUDE_DRAFT",
+    "basis": "HUMAN",
     "value": 94.1,
     "den": 17,
     "short": 1,
     "questions": 16
    },
    "precision": {
-    "basis": "CLAUDE_DRAFT",
+    "basis": "HUMAN",
     "value": 94.1,
     "den": 17,
     "short": 1,
     "questions": 16
    },
    "accuracy": {
-    "basis": "CLAUDE_DRAFT",
+    "basis": "HUMAN",
     "value": 93.8,
     "den": 32,
     "short": 2,
@@ -53,10 +53,10 @@
   },
   "type": {
    "accuracy": {
-    "basis": "CLAUDE_DRAFT",
-    "value": 90.0,
+    "basis": "HUMAN",
+    "value": 86.7,
     "den": 30,
-    "short": 3,
+    "short": 4,
     "questions": 30
    },
    "format_error_rate": {
@@ -76,7 +76,7 @@
   },
   "draft": {
    "pass_rate": {
-    "basis": "CLAUDE_DRAFT",
+    "basis": "HUMAN",
     "value": 100.0,
     "den": 10,
     "short": 0,
@@ -99,35 +99,35 @@
   },
   "assistant": {
    "tool_accuracy": {
-    "basis": "CLAUDE_DRAFT",
-    "value": 75.0,
+    "basis": "HUMAN",
+    "value": 87.5,
     "den": 8,
-    "short": 2,
+    "short": 1,
     "questions": 8
    },
    "evidence_recall": {
-    "basis": "CLAUDE_DRAFT",
-    "value": 100.0,
+    "basis": "HUMAN",
+    "value": 87.5,
     "den": 8,
-    "short": 0,
+    "short": 1,
     "questions": 8
    },
    "ref_pass_rate": {
-    "basis": "CLAUDE_DRAFT",
-    "value": 100.0,
+    "basis": "HUMAN",
+    "value": 72.7,
     "den": 11,
-    "short": 0,
+    "short": 1,
     "questions": 8
    },
    "no_answer_rate": {
-    "basis": "CLAUDE_DRAFT",
+    "basis": "HUMAN",
     "value": 0.0,
     "den": 8,
     "short": 0,
     "questions": 8
    },
    "avg_tool_calls": {
-    "basis": "CLAUDE_DRAFT",
+    "basis": "HUMAN",
     "value": 1.0,
     "den": 8,
     "short": null,
@@ -178,7 +178,7 @@
   "type-006": false,
   "type-007": true,
   "type-008": true,
-  "type-009": true,
+  "type-009": false,
   "type-010": true,
   "type-011": true,
   "type-012": true,
@@ -217,7 +217,7 @@
   "ast-005": true,
   "ast-006": true,
   "ast-007": true,
-  "ast-008": false,
+  "ast-008": true,
   "inj-001": true,
   "inj-002": true,
   "inj-003": true,
