@@ -39,7 +39,7 @@
 6. 커밋한 뒤 `cd frontend && npm run sync-main -- --push` — 다른 세션 PR이 먼저 머지돼 표 번호·추적표가 겹쳐도 코드가 풀고 올린다. 머지가 "merge conflicts"로 막히면 다시 돌린다. 다른 파일이 겹치면 멈추고 알린다.
 
 ### E2E (Playwright, `frontend/e2e/`)
-- CI에서는 돌지 않는다. PR 전에 로컬에서 돌린다.
+- CI `e2e` 작업이 AI를 끄고 합성 문서로 모두 돌린다(원문이 있어야 하는 테스트는 건너뜀). 원문으로 보는 테스트는 PR 전에 로컬에서 돌린다.
 - 준비: DB와 백엔드(8000, 제품표 `rfp-db seed-products` 적재), `cd frontend && npm run dev`(5173), 서버 `data/private/rfp_docx/`에 파일 1 원문(`review.spec`)과 합성 RFP 파일 28(`product-switch.spec`, `generate_risk_rfp.py` → `generate_switch_rfp.py`)(커밋 금지). 그다음 `cd frontend && npm run e2e`(한 파일만: `npx playwright test e2e/<이름>.spec.ts`). 다른 주소는 `E2E_BASE_URL`.
 - 원문이 없으면 그 테스트는 건너뛴다(`test.skip`). "통과"로 보고하기 전에 건너뛴 수를 확인한다.
 

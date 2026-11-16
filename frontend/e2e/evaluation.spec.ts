@@ -12,7 +12,7 @@ test('지금 채점하기', async ({ page, request }) => {
   await expect(page.getByText('예시 화면 · 실제 데이터와 연결되지 않음')).toHaveCount(0)
   await page.getByRole('tab', { name: '정답지' }).click()
   await expect(page.locator('label.gt-tr', { hasText: run.review_no })).toBeVisible()
-  await page.getByLabel('유형 정답지 없이').check()
+  await page.getByRole('radio', { name: '유형 정답지 없이' }).check()
   const memo = `e2e 채점 ${Date.now()}`
   await page.getByLabel('무엇을 고쳤나').fill(memo)
   await page.getByRole('button', { name: '지금 채점하기' }).click()

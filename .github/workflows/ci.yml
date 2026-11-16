@@ -46,11 +46,80 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run lint
+      # 화면 계산 로직 단위 테스트 (Vitest, src/**/*.test.ts)
+      - run: npm test
       # 화면 타입(src/api.gen.ts)이 응답 스키마(openapi.json)와 같은지. openapi.json은 backend pytest가 대조한다
       - run: npm run check:api
       # 추적표(docs/추적표.md)가 지금 스펙·테스트와 같은지, 추적 도구 테스트 (add-spec-trace)
       - run: npm run check:trace
       - run: npm run build
+
+  # 화면 E2E (Playwright). 고객 원문 없이 합성 문서(frontend/e2e/fixtures)만 쓰고, AI는 끈다(RFP_AI_MODE=off).
+  # 원문이나 공개본에서 뺀 파일이 있어야 하는 테스트는 스스로 건너뛴다(test.skip).
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: rfp
+          POSTGRES_PASSWORD: rfp
+          POSTGRES_DB: rfp
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U rfp" --health-interval 5s --health-retries 10
+      # 협조 요청 메일을 받는 확인용 메일 서버 (밖으로 나가지 않음)
+      mailpit:
+        image: axllent/mailpit:v1.27
+        ports: ["1025:1025"]
+    env:
+      DATABASE_URL: postgresql://rfp:rfp@localhost:5432/rfp
+      RFP_AI_MODE: "off"
+      RFP_SMTP_HOST: localhost
+      RFP_MAIL_COST: cost@example.com
+      RFP_MAIL_QUALITY: quality@example.com
+      RFP_MAIL_SALES: sales@example.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6.8.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: DB 준비 (마이그레이션·규칙 사전·제품표, e2e 합성 문서를 문서 목록 묶음 A로)
+        working-directory: backend
+        run: |
+          uv sync --frozen
+          uv run --frozen rfp-db setup
+          psql "$DATABASE_URL" -c "INSERT INTO document_catalog (file_no, file_key, bundle, language) VALUES (91, 'synthetic_judgment', 'A', 'en'), (94, 'synthetic_loss', 'A', 'en')"
+      - name: 백엔드 띄우기
+        working-directory: backend
+        run: nohup uv run --frozen uvicorn rfp_agent.api.main:app --port 8000 > "$RUNNER_TEMP/backend.log" 2>&1 &
+      - name: 프런트 띄우기
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          nohup npx vite --port 5173 --strictPort > "$RUNNER_TEMP/frontend.log" 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf localhost:8000/api/health > /dev/null && curl -sf localhost:5173 > /dev/null && exit 0
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/backend.log"; exit 1
+      - name: E2E
+        working-directory: frontend
+        run: npx playwright test --trace off --workers=1 --reporter=list
+      - name: 실패하면 화면·서버 기록 남기기
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            frontend/test-results
+            ${{ runner.temp }}/backend.log
+          retention-days: 7
 
   openspec:
     runs-on: ubuntu-latest

@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test'
 
-// 화면 E2E. 백엔드(8000)와 `npm run dev`(5173)를 먼저 띄우고, 서버에 RFP 원문
-// (data/private/rfp_docx)이 있어야 한다. 원문이 없는 CI에서는 돌리지 않는다.
+// 화면 E2E. 백엔드(8000)와 `npm run dev`(5173)를 먼저 띄운다. CI(.github/workflows/ci.yml e2e)는
+// 합성 문서만으로 돌리고, RFP 원문(data/private/rfp_docx)이 있어야 하는 테스트는 스스로 건너뛴다.
 export default defineConfig({
   testDir: 'e2e',
   timeout: 300_000,

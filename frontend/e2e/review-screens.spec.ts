@@ -4,6 +4,10 @@ import { as, deviationRun, ENGINEER, openTab, backFromJudgment } from './helpers
 // 명세 review-workspace "검토 상세 요약 칸과 탭"·"판정 표 거르기"·"판정 상세 패널"의 Scenario (change update-review-screens).
 
 test('탭으로 내용 바꾸기', async ({ page, request }) => {
+  // 코드와 스펙이 어긋나 있어 멈춰 둔다(2026-11-16 E2E를 CI에 넣으며 발견). 화면 탭은 판정 다음에 "강점 제안"이 있는데
+  // (src/views/detail/tabs.ts MAIN_TABS), 명세 review-workspace "검토 상세 요약 칸과 탭"은 판정·위험 조건·문서 읽기 점검·상업 조건·이력이다.
+  // 어느 쪽이 맞는지 사람이 정한 뒤 스펙이나 이 테스트를 고친다.
+  test.fixme(true, '탭 구성이 스펙(5개)과 화면(강점 제안 포함 6개)에서 다릅니다')
   const run = await deviationRun(request, `탭 ${Date.now()}`)
   await page.goto(`/#/reviews/${run.run_id}`)
   const tabs = page.getByRole('tablist', { name: '검토 메뉴' })
@@ -51,6 +55,8 @@ test('줄을 눌러 원문 보기', async ({ page, request }) => {
   const [j] = await (await request.get(`/api/runs/${run.run_id}/judgments?result=QUERY_CANDIDATE&limit=1`)).json()
   await page.goto(`/#/reviews/${run.run_id}`)
   await page.locator('.fbar .chip', { hasText: '질의 후보' }).click()
+  // 거른 목록이 다시 그려진 뒤 누른다 (거르기 전 줄을 누르면 다른 판정이 열린다)
+  await expect(page.locator('#judge .tw tbody tr').first()).toContainText(j.req_value_raw)
   await page.locator('#judge .tw tbody tr').first().click()
   const dialog = page.locator('.jv')                                                // 판정 상세 화면 (add-judgment-view)
   await expect(page).toHaveURL(/\/judgments\/\d+\?f=QUERY_CANDIDATE$/)

@@ -38,6 +38,8 @@ test('제품표 엑셀 내보내기', async ({ page }) => {
 
 test('제품 상세에 계열 사진', async ({ page }) => {
   // 명세 review-workspace "제품표 상세의 제품 사진" (change add-product-photos)
+  // 공개본에는 LS ELECTRIC 사진 파일이 없다(사용 허락이 팀 프로젝트용, src/components/productPhotos.ts). 사진이 없는 경우는 아래 "사진이 없는 카탈로그"가 본다.
+  test.skip(true, '공개본에는 제품 사진 파일이 없습니다')
   const list = (await (await page.request.get('/api/products?family=GIS&limit=100')).json()) as Product[]
   await page.goto(`/#/products/${list[0].product_code}`)
   const photo = page.getByRole('figure', { name: '제품 사진' })
