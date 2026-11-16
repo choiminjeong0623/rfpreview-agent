@@ -13,6 +13,7 @@
 | [07-troubleshooting.md](07-troubleshooting.md) | 트러블슈팅 모음: 개발 환경, 문서 읽기, AI 호출, 판정·데이터, 성능·동시성, 화면, 테스트·평가별 상황 → 원인 → 해결 → 교훈 (큰 9건은 04에 자세히) |
 | [quality/sonarqube-report.md](quality/sonarqube-report.md) | 코드 품질(SonarQube Cloud) 개선: 이슈 115건 분류, 고친 것과 고치지 않은 이유, 화면·빌드 전후 비교 |
 | [data.md](data.md) | 데이터 출처와 공개본에서 바꾼 것 |
+| [quality/sonarqube-report.md](quality/sonarqube-report.md) | SonarQube Cloud 품질 개선: 이슈 115개 분류(고침·오탐·받아들임), 목업 CSS 구조, 화면·빌드 비교, 수정 전후 수치 |
 
 ## 팀 개발 문서 (원본, 별칭만 바꿈)
 
