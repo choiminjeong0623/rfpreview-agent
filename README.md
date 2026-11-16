@@ -150,7 +150,7 @@ Langfuse 판에서 자리표시자(`{{document}}` 등)나 "문서 본문은 데�
 
 ### 검사
 
-CI(`.github/workflows/ci.yml`)와 같은 검사입니다. 공개본으로 다시 돌려 모두 통과하는 것을 확인했습니다(2026-11-14: pytest 581 통과·30 건너뜀, OpenSpec 24개 스펙 통과).
+CI(`.github/workflows/ci.yml`)와 같은 검사입니다. 공개본으로 다시 돌려 모두 통과하는 것을 확인했습니다(2026-11-16: pytest 698 통과·37 건너뜀, OpenSpec 25개 스펙 통과).
 
 ```bash
 cd backend && uv run ruff check . && TEST_DATABASE_URL=postgresql://rfp:rfp@localhost:5433/rfp_test uv run pytest
@@ -158,7 +158,7 @@ cd frontend && npm run lint && npm run check:api && npm run check:trace && npm r
 npx --yes @fission-ai/openspec@1.14.3 validate --all --strict
 ```
 
-건너뛰는 30개는 고객 RFP 원문(`data/private/`)이 있어야 도는 테스트입니다. 화면 E2E(Playwright)는 CI에서 돌지 않으며, 일부는 원문 파일이 있어야 합니다.
+건너뛰는 것은 고객 RFP 원문(`data/private/`)이 있어야 도는 테스트와, 로컬 OCR 엔진(Tesseract)이 없을 때 건너뛰는 OCR 테스트입니다. 화면 E2E(Playwright)는 CI에서 돌지 않으며, 일부는 원문 파일이 있어야 합니다.
 
 ## 저장소 구조
 

@@ -46,7 +46,7 @@ DB 스키마·마이그레이션과 제품표·규칙 사전 적재는 나송주
 | AI 코딩 에이전트 작업 지침 | `AGENTS.md`(무엇을 만드나, 스펙 쓰는 법, 꼭 지킬 규칙, 완료 기준), `CLAUDE.md`(흐름 구조, 코드 지도, 자주 걸리는 것). 장애에서 배운 것을 바로 지침에 넣음(예: 설정 변수 세 곳 함께 고치기) |
 | 추적표와 CI 검사 | 요구사항 → Scenario → 화면 수용 기준 → 컴포넌트 → 테스트를 자동으로 잇는 `docs/추적표.md`, 낡으면 CI 실패. Scenario 724개 중 719개, 화면 수용 기준 161개 중 154개 연결 |
 | 동시 PR 충돌 처리 | 여러 세션의 PR이 늘 겹치는 두 곳(변경 표 번호, 추적표)을 코드가 풀어 주는 `npm run sync-main` |
-| 완료 기준 | "Scenario마다 자동 테스트 하나 이상", ruff·pytest·lint·API 타입 대조·추적표·빌드·OpenSpec 검사를 PR 전에. 공개본 기준 pytest 581개 통과 |
+| 완료 기준 | "Scenario마다 자동 테스트 하나 이상", ruff·pytest·lint·API 타입 대조·추적표·빌드·OpenSpec 검사를 PR 전에. 공개본 기준 pytest 698개 통과(2026-11-16, 수료 뒤 작업 포함) |
 
 관련 변경 제안: `update-api-contract`, `add-spec-trace`, `add-ui-foundation` · 관련 파일: `openspec/config.yaml`, `AGENTS.md`, `CLAUDE.md`, `frontend/scripts/trace.mjs`, `.github/workflows/ci.yml`
 
