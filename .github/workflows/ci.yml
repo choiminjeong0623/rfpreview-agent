@@ -57,7 +57,8 @@ jobs:
   # 화면 E2E (Playwright). 고객 원문 없이 합성 문서(frontend/e2e/fixtures)만 쓰고, AI는 끈다(RFP_AI_MODE=off).
   # 원문이나 공개본에서 뺀 파일이 있어야 하는 테스트는 스스로 건너뛴다(test.skip).
   e2e:
-    runs-on: ubuntu-latest
+    # Playwright 1.56.1이 지원하는 마지막 Ubuntu (ubuntu-latest 26.04는 브라우저 설치를 거절함)
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     services:
       postgres:
