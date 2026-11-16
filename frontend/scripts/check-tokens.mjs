@@ -18,7 +18,7 @@ function walk(dir) {
     if (!/\.(css|tsx?)$/.test(name)) continue
     readFileSync(p, 'utf8').split('\n').forEach((line, i) => {
       // CSS·코드 주석 줄과 JSON 자료(예: productDocs.json)는 보지 않는다
-      const code = line.replace(/\/\*.*?\*\/|\/\/.*$/g, '')
+      const code = line.replace(/\/\*.*?\*\/|(?:\/\/.*$)/g, '')
       // TS 안의 색은 문자열('…')만 본다 (예: id #123 같은 글자는 빼기 위해)
       const hits = /\.css$/.test(name) ? code.match(color) : code.match(/['"`](?:#[0-9A-Fa-f]{3,6}|rgba?\()/g)
       if (hits) bad.push(`${relative(root, p)}:${i + 1}  ${hits.join(' ')}`)
