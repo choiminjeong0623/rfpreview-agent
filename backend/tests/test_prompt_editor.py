@@ -4,6 +4,8 @@
 "화면에서 운영으로 올리기"의 Scenario. Langfuse는 가짜 서버(test_langfuse_prompts.FakeLangfuse).
 """
 
+import json
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -92,7 +94,9 @@ def test_eval_then_promote(db, client, langfuse, monkeypatch):
     assert job["status"] == "DONE", job
     assert job["staging_version"] == staged and job["promote_block"] is None
     assert job["metrics"][0]["name"] == "유형 정확도" and job["metrics"][0]["now"] == 100.0
-    assert job["metrics"][0]["baseline"] == 90.0
+    # 기준선 값은 저장소 기준선 파일에서 읽는다(평가셋·기준선을 다시 만들어도 테스트를 고치지 않게)
+    saved_base = json.loads((get_settings().seed_dir.parent / "eval" / "baseline.json").read_text())
+    assert job["metrics"][0]["baseline"] == saved_base["metrics"]["type"]["accuracy"]["value"]
     assert all("유형 하나만 고른다." in p for p in llm.prompts)       # staging 판으로 물음
     saved = db.execute("SELECT prompt_versions->>'type', repeat FROM prompt_eval_run "
                        "WHERE eval_id = %s", (job["eval_id"],)).fetchone()
