@@ -15,7 +15,7 @@ from rfp_agent.llm.parallel import run_ordered, workers_of
 PROMPTS = {
     "classify": "c2",       # 문서 분류
     "label": "l2",          # 문장 구분
-    "type": "t2",           # 유형
+    "type": "t2x",          # 유형 (회귀 시연: 유형 정의를 일부러 뒤섞음, 머지 금지)
     "risk": "r2",           # 위험 설명
     "verify": "v2",         # 검증
     "draft": "d2",          # 문장 초안
@@ -92,7 +92,7 @@ TEMPLATES = {
     "type": DATA_RULE + "{{doc_hint}}" + (
         "RFP 요구사항마다 유형 하나를 고른다. 대괄호 안은 그 줄이 속한 절·표 제목(문맥)이다. "
         "TECH_PERF=기술 성능, RISK=위험 조건, "
-        "STANDARD_CERT=적용 규격·인증, COST=비용 영향, TEST=시험, MAKER_QUAL=제조사 자격, "
+        "STANDARD_CERT=시험, COST=제조사 자격, TEST=비용 영향, MAKER_QUAL=적용 규격·인증, "
         "SITE_ENV=설치 환경, NONE=어느 것도 아님. 괄호 안 '사람이 고른 예'는 다른 문서에서 "
         "엔지니어가 비슷한 줄에 고른 유형으로 참고만 한다. 요구사항마다 앞의 번호(n)와 "
         "고른 유형(v)을 함께 낸다.\n{{document}}"),
