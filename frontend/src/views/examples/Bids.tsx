@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Pager } from '../../components/Pager'
+import { byCodeUnit } from '../../components/sort'
 import { EXAMPLE_BIDS, RESULTS, type Bid, type BidResult } from '../../examples/SCR-14'
 import { usePageCss } from '../../shell/pageCss'
 import { href } from '../../shell/router'
@@ -12,7 +13,7 @@ import { useFakeLoad } from './useFakeLoad'
 type Period = '1m' | '3m' | 'all'
 const PERIODS: [Period, string][] = [['1m', '1개월'], ['3m', '3개월'], ['all', '전체']]
 const FROM: Record<Period, string> = { '1m': '2026-09-24', '3m': '2026-07-24', all: '0000' }
-const PRODUCTS = Array.from(new Set(EXAMPLE_BIDS.map((b) => b.prod))).sort()
+const PRODUCTS = Array.from(new Set(EXAMPLE_BIDS.map((b) => b.prod))).sort(byCodeUnit)
 const subText = (sub: string) => (sub.startsWith('2026') ? sub.slice(5) : sub.slice(2))
 
 function count(list: Bid[], key: (b: Bid) => string) {
