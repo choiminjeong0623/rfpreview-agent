@@ -65,17 +65,18 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_USER: rfp
-          POSTGRES_PASSWORD: rfp
           POSTGRES_DB: rfp
+          # 이 작업 안에서만 쓰는 시험용 DB라 비밀번호 없이 연결한다(설정 파일에 비밀번호 글자를 두지 않음)
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U rfp" --health-interval 5s --health-retries 10
       # 협조 요청 메일을 받는 확인용 메일 서버 (밖으로 나가지 않음)
       mailpit:
-        image: axllent/mailpit:v1.27
+        image: axllent/mailpit:v1.27@sha256:e22dce5b36f93c77082e204a3942fb6b283b7896e057458400a4c88344c3df68
         ports: ["1025:1025"]
     env:
-      DATABASE_URL: postgresql://rfp:rfp@localhost:5432/rfp
+      DATABASE_URL: postgresql://rfp@localhost:5432/rfp
       RFP_AI_MODE: "off"
       RFP_SMTP_HOST: localhost
       RFP_MAIL_COST: cost@example.com
@@ -114,7 +115,7 @@ jobs:
         run: npx playwright test --trace off --workers=1 --reporter=list
       - name: 실패하면 화면·서버 기록 남기기
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
           name: e2e-results
           path: |
