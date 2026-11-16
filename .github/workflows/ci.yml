@@ -83,7 +83,10 @@ jobs:
       RFP_MAIL_QUALITY: quality@example.com
       RFP_MAIL_SALES: sales@example.com
     steps:
+      # 실패 기록을 올리는 작업이라 GitHub 토큰을 작업 폴더(.git/config)에 남기지 않는다
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6.8.0
       - uses: actions/setup-node@v4
         with:
