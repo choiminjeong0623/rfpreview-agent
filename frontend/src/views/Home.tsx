@@ -193,7 +193,7 @@ export function Home() {
       <div className="hm-sh"><h2>나의 업무</h2></div>
       <div className="qsum" role="group" aria-label="나의 업무 요약 · 누르면 아래 검토가 걸러집니다">
         {METRICS.map(([k, label, title]) => {
-          const n = (k === 'mine' ? todo : shown.filter(FILTERS[k])).length
+          const n = (k === 'mine' ? todo : shown.filter((r) => FILTERS[k](r))).length
           const on = filter === k
           return (
             <button key={k} type="button" className={on ? 'on' : ''} aria-pressed={on} disabled={!!runs.data && !n && !on}
@@ -231,7 +231,7 @@ export function Home() {
           </div>
         </div>
         {runs.error && <p role="alert">{runs.error} <button type="button" className="lnk" onClick={runs.reload}>다시 불러오기</button></p>}
-        {view === 'tl' && <Week runs={(filter ? shown.filter(FILTERS[filter]) : shown)} turn={turn} now={now} />}
+        {view === 'tl' && <Week runs={(filter ? shown.filter((r) => FILTERS[filter](r)) : shown)} turn={turn} now={now} />}
         {view === 'stage' && (
           <div className="bd">
             {COLS.map(([key, label, dot]) => {

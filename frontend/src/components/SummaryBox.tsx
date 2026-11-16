@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ScreenSummary } from '../api'
 import { href } from '../shell/router'
-import '../mockup/SummaryV496.css'
+import '../styles/pages/SummaryV496.css'
 
 // 요약 상자 (SCR-00 5장, 목업 v4.96 .ais, change add-screen-summary). 검토 상세·홈만 (결정 Q1).
 // 문장은 백엔드가 틀에 채운다(AI 없음). 이름은 "요약", 꼬리표 "코드가 씀".

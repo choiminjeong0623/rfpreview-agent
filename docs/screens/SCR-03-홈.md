@@ -2,7 +2,7 @@
 
 - 연결 요구사항: FR-10(확인·승인 흐름), FR-11(협조 요청), `review-workspace` 홈 화면
 - 기준 목업: `Spec2Win_목업_v4.57.html#Home`. **v4.96부터 `Spec2Win_목업_v4.96.html`이 기준**(맨 아래 "v4.96 바뀐 점")
-- 구현 방식: 실제 + 예시 영역 (`update-review-screens` 묶음 14). 화면 CSS는 목업 Home CSS 그대로(`frontend/src/mockup/Home.css`)
+- 구현 방식: 실제 + 예시 영역 (`update-review-screens` 묶음 14). 화면 CSS는 목업 Home CSS 그대로(`frontend/src/styles/pages/Home.css`)
 - 사용 API: `GET /runs`, `GET /assignments?role=COST|QUALITY|SALES`, `GET /users`
 - 예정 API: 판정 기준 변경 추적(영향받는 검토 다시 판정), 다시 시도, 게시판(공지·시스템 공지·자료실), 행사 신청, 접속 상태
 - v4.96 구현됨 (change `update-home-projects`, 2026-11-01): 나의 업무 세 칸, 오늘 할 일(보이는 3건만 `judgment-counts`), 일정 7일 달력, 어제 이후 바뀐 것(분석 끝남·실패), 실패 알림 [재시도](`POST /runs/{id}/retry`). 요약 상자는 `add-screen-summary`(아래), 문서 추가 줄은 `add-revision-notice`. 목업과 다른 곳은 `SCR-03_공유.md` 12~17

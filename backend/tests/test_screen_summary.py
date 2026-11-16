@@ -56,7 +56,8 @@ def test_same_data_same_sentences(db, spec, monkeypatch):
     a, b = review_summary(db, run_id), review_summary(db, run_id)
     assert a["sentences"] and a["sentences"] == b["sentences"]
     assert a["written_by"] == "CODE" and a["meta"].startswith("문서 1개에서 요구사항")
-    assert home_summary(db, None)["sentences"] == home_summary(db, None)["sentences"]
+    home_a, home_b = home_summary(db, None), home_summary(db, None)
+    assert home_a["sentences"] == home_b["sentences"]
 
 
 def test_must_see_and_submit_by(db, spec):

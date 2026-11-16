@@ -102,7 +102,7 @@ export function FailView({ run, approver, onChanged }: { run: RunSummary; approv
             {pick !== 'retry' && <ExampleBand />}
             <div className="fopts">
               {OPTIONS.map(([k, label, desc]) => (
-                <label key={k} className={pick === k ? 'on' : undefined}><input type="radio" name="fopt" checked={pick === k} onChange={() => setPick(k)} />
+                <label key={k} className={pick === k ? 'on' : undefined} aria-label={label}><input type="radio" name="fopt" checked={pick === k} onChange={() => setPick(k)} />
                   <span><b>{label}</b><span>{desc}</span></span></label>
               ))}
             </div>

@@ -3,6 +3,7 @@ import { api, type ItemKey, type ProductDetail, type RunListItem } from '../api'
 import { saveFile } from '../components/download'
 import { Pager } from '../components/Pager'
 import { FAMILY_NAMES, STAGE_NAMES, STAGE_TONES } from '../components/labels'
+import { byCodeUnit } from '../components/sort'
 import { useLoad } from '../components/useLoad'
 import {
   COLS, NO_REQ, SHORT, alternatives, blocked, cell, dday, fit, reqOn, runUses, strength, resultCounts, valueKind, type Req,
@@ -253,8 +254,8 @@ function ReviewFinder({ onClose, onApply }: { onClose: () => void; onApply: (r: 
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
   const all = (runs.data ?? []).filter((r) => r.stage !== 'PROCESSING' && r.stage !== 'FAILED')
-  const pjs = [...new Set(all.map((r) => r.project_name).filter((x): x is string => !!x))].sort()
-  const custs = [...new Set(all.map((r) => r.customer_name).filter((x): x is string => !!x))].sort()
+  const pjs = [...new Set(all.map((r) => r.project_name).filter((x): x is string => !!x))].sort(byCodeUnit)
+  const custs = [...new Set(all.map((r) => r.customer_name).filter((x): x is string => !!x))].sort(byCodeUnit)
   const q = applied.q.trim().toLowerCase()
   const rows = all.filter((r) => (!applied.pj || r.project_name === applied.pj) && (!applied.cust || r.customer_name === applied.cust)
     && (applied.st === 'all' || (applied.st === 'done' ? DONE.has(r.stage) : !DONE.has(r.stage)))
@@ -264,7 +265,7 @@ function ReviewFinder({ onClose, onApply }: { onClose: () => void; onApply: (r: 
   useEffect(() => {
     if (!want.length) return
     let alive = true
-    Promise.all(want.map((id) => reqOf(id).then((v) => [id, v] as const, () => [id, { kv: '', a: '', ka: '' }] as const)))
+    void Promise.all(want.map((id) => reqOf(id).then((v) => [id, v] as const, () => [id, { kv: '', a: '', ka: '' }] as const)))
       .then((got) => { if (alive) setVals((m) => ({ ...m, ...Object.fromEntries(got) })) })
     return () => { alive = false }
   }, [want.join(',')])  // eslint-disable-line react-hooks/exhaustive-deps

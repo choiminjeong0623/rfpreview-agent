@@ -2,7 +2,7 @@
 
 - 연결 요구사항: FR-08(보증값 후보), FR-07(판정 제품값), FR-10(확정), `bid-outputs` 데이터시트 채우기, `review-workspace` 데이터시트 채우기 화면
 - 기준 목업: `Spec2Win_목업_v4.57.html#Datasheet`
-- 구현 방식: 실제 (`add-datasheet-export`). 화면 CSS는 목업 Datasheet CSS 그대로(`frontend/src/mockup/Datasheet.css`)
+- 구현 방식: 실제 (`add-datasheet-export`). 화면 CSS는 목업 Datasheet CSS 그대로(`frontend/src/styles/pages/Datasheet.css`)
 - 주소: `#/reviews/:id/datasheet`. 검토 상세 머리 "데이터시트 채우기" 단추에서 연다
 - 사용 API: `GET /runs/{id}`, `GET /runs/{id}/datasheets`, `GET /runs/{id}/datasheet?table_id=`, `GET /runs/{id}/datasheet/export?table_id=`(.xlsx), 칸 확정은 `POST /runs/{id}/actions`
 

@@ -38,7 +38,7 @@ export function parsePyTests(text, file) {
     const line = lineOf(text, m.index + m[0].indexOf('def '))
     // "Scenario: A / B — 설명", "Scenario: A · Scenario: B — 설명", 끝의 "(CR-11)" 같은 덧붙임은 뺀 이름도 잇는다
     for (const s of doc.matchAll(/Scenario:\s*((?:(?!Scenario:)[^\n])+)/g)) {
-      const head = s[1].split(/\s+—(?:\s+|$)|\s+--\s+|\s+·\s*$/)[0]
+      const head = s[1].split(/\s+—(?:\s+|$)|\s+--\s+|(?:\s+·\s*$)/)[0]
       for (const name of head.split(' / ')) {
         const n = name.trim().replace(/[.。]$/, '')
         if (!n) continue
@@ -107,6 +107,9 @@ const SCR_ORDER = (a, b) => {
   return x[0] - y[0] || (x[1] ?? -1) - (y[1] ?? -1)
 }
 
+// 기본 sort()와 같은 순서(UTF-16 코드 단위). localeCompare는 순서가 달라 추적표가 바뀌므로 쓰지 않는다.
+const byCodeUnit = (a, b) => (a < b ? -1 : a > b ? 1 : 0)
+
 /** 입력에서 추적표 글과 오류 목록을 만든다 */
 export function build({ config, frs, specs, tests, screens, exists }) {
   const errors = []
@@ -115,7 +118,7 @@ export function build({ config, frs, specs, tests, screens, exists }) {
   const linkOf = (name) => (name ? byName.get(name) ?? [] : [])
   const loc = (t) => `\`${t.file.replace(/^(backend|frontend)\//, '')}:${t.line}\``
   const pct = (a, b) => (b ? `${Math.round((a / b) * 100)} %` : '—')
-  const uniqFiles = (ts) => [...new Set(ts.map((t) => t.file.replace(/^(backend|frontend)\//, '')))].sort()
+  const uniqFiles = (ts) => [...new Set(ts.map((t) => t.file.replace(/^(backend|frontend)\//, '')))].sort(byCodeUnit)
 
   // 설정 검사
   const caps = Object.keys(specs)
@@ -179,7 +182,7 @@ export function build({ config, frs, specs, tests, screens, exists }) {
     const flows = Object.entries(config.flows ?? {}).filter(([, fs]) => fs.includes(f.id)).map(([n]) => n)
     const ts = [...cs.flatMap((c) => capStat[c]?.rows.flatMap((r) => r.tests) ?? []),
       ...ss.flatMap((s) => scrStat[s].rows.flatMap((r) => r.tests)), ...flows.flatMap(linkOf)]
-    const comps = [...new Set(ss.flatMap((s) => config.screens[s].components))].sort()
+    const comps = [...new Set(ss.flatMap((s) => config.screens[s].components))].sort(byCodeUnit)
     L.push(`| ${f.id} | ${f.name} | ${f.priority} | ${cs.map((c) => `\`${c}\` ${capStat[c]?.done ?? 0} / ${capStat[c]?.rows.length ?? 0}`).join('<br>') || (config.fr[f.id]?.planned ? `계획됨: ${config.fr[f.id].planned}` : '—')} | ${ss.map((s) => `${s} ${scrStat[s].done} / ${scrStat[s].rows.length}`).join('<br>') || '—'} | ${comps.map((c) => `\`${c}\``).join('<br>') || '—'} | ${uniqFiles(ts).map((x) => `\`${x}\``).join('<br>') || '—'}${flows.length ? `<br>핵심 흐름: ${flows.join(', ')}` : ''} |`)
   }
   L.push('')

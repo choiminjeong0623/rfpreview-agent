@@ -208,7 +208,8 @@ def process_document(conn: psycopg.Connection, path: Path, dicts: PipelineDicts,
     txt = txt_dir / f"{path.stem}.txt" if txt_dir and not is_pdf(path) else None
     if txt and txt.exists():
         blocks, ratio = map_lines(blocks, txt)
-        line_basis = "TXT" if ratio == 1.0 else "DOCX"
+        # 모든 줄을 맞췄을 때만 TXT. ratio는 정수/정수라 1을 넘지 않는다 (== 1.0과 같은 결과)
+        line_basis = "TXT" if ratio >= 1.0 else "DOCX"
 
     c = cls.classify(path.name, blocks, dicts.catalog, dicts.kind_rules)
     if choice:

@@ -1,4 +1,4 @@
-/* 목업 CSS(mockup/Main.css)에 없는 것만 더한다. 목업은 사용자 칩이 <a>, 앱은 사용자 바꾸기 <button>이다 (SCR-00_공유.md). */
+/* 목업 CSS(styles/pages/Main.css)에 없는 것만 더한다. 목업은 사용자 칩이 <a>, 앱은 사용자 바꾸기 <button>이다 (SCR-00_공유.md). */
 .hd button.user{border:0;background:none;font:inherit;cursor:pointer;text-align:left}
 .ntp button.nti{display:flex;width:100%;border:0;background:none;font:inherit;text-align:left;cursor:pointer}
 .ntp button.nti.un{background:var(--c-bg-unread)}
