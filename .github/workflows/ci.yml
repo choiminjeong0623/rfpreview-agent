@@ -88,6 +88,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6.8.0
+        with:
+          # 띄워 둔 백엔드(uv run)가 캐시를 잡고 있어 작업 끝 캐시 정리가 5분 기다리다 실패하던 것
+          prune-cache: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -116,6 +119,9 @@ jobs:
       - name: E2E
         working-directory: frontend
         run: npm run e2e -- --trace off --workers=1 --reporter=list
+      - name: 띄운 서버 끄기
+        if: always()
+        run: pkill -f "uvicorn rfp_agent" || true; pkill -f vite || true
       - name: 실패하면 화면·서버 기록 남기기
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
