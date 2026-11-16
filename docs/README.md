@@ -9,7 +9,7 @@
 | [03-adr.md](03-adr.md) | 의사결정 기록 11건 |
 | [04-incidents.md](04-incidents.md) | 장애 분석 9건 |
 | [05-evaluation.md](05-evaluation.md) | 평가 결과: 실제 RFP 1건 결과, 지표별 측정, 개선 기록, 한계 |
-| [06-my-contribution.md](06-my-contribution.md) | 내 기여 (최민정, 조장·PM·DB) |
+| [06-my-contribution.md](06-my-contribution.md) | 내 기여 (최민정, 조장·PM·오케스트레이터·판정·AI 추출, 수료 뒤 개인 작업) |
 | [07-troubleshooting.md](07-troubleshooting.md) | 트러블슈팅 모음: 개발 환경, 문서 읽기, AI 호출, 판정·데이터, 성능·동시성, 화면, 테스트·평가별 상황 → 원인 → 해결 → 교훈 (큰 9건은 04에 자세히) |
 | [quality/sonarqube-report.md](quality/sonarqube-report.md) | 코드 품질(SonarQube Cloud) 개선: 이슈 115건 분류, 고친 것과 고치지 않은 이유, 화면·빌드 전후 비교 |
 | [data.md](data.md) | 데이터 출처와 공개본에서 바꾼 것 |
