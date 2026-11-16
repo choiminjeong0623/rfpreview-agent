@@ -2,7 +2,7 @@
 
 - 연결 요구사항: CR-12(AI 오류는 정해진 횟수만 재시도, 실패하면 멈춤과 실패 단계 기록), `review-workspace` 분석 실패 화면
 - 기준 목업: `Spec2Win_목업_v4.57.html#Fail`
-- 구현 방식: 실제 + 예시 영역 (`update-review-screens` 묶음 12). 화면 CSS는 목업 Fail CSS 그대로(`frontend/src/mockup/Fail.css`)
+- 구현 방식: 실제 + 예시 영역 (`update-review-screens` 묶음 12). 화면 CSS는 목업 Fail CSS 그대로(`frontend/src/styles/pages/Fail.css`)
 - 사용 API: `GET /runs/{id}`(`failed_step`, `error_message`, `started_at`, `finished_at`, 결과 수, `llm_model`), `GET /runs/{id}/documents`, `GET /runs`(다른 실패), `GET /runs/{id}/approval`(결재자)
 - 예정 API: 다시 시도(멈춘 단계부터), 멈춘 곳 원문 위치, 단계별 처리 기록
 

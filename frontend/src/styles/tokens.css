@@ -1,5 +1,5 @@
 /* 디자인 토큰 (add-ui-foundation). 값은 목업 v4.96 CSS 그대로이고 이름만 붙였다.
-   목업 CSS(mockup/*.css)는 그대로 두고, 우리가 쓴 CSS·화면 코드는 색을 직접 쓰지 않고 이 변수만 쓴다.
+   목업 CSS(styles/pages/*.css)는 그대로 두고, 우리가 쓴 CSS·화면 코드는 색을 직접 쓰지 않고 이 변수만 쓴다.
    검사: scripts/check-tokens.mjs (npm run lint). 쓰는 법: docs/screens/_디자인.md 2장, _프런트원칙.md 5장 */
 :root {
   /* 주 색 · 링크 */

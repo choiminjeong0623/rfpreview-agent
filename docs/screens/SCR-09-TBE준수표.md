@@ -2,7 +2,7 @@
 
 - 연결 요구사항: FR-07(판정), FR-09(일탈·질의), `bid-outputs` TBE 준수표, `review-workspace` TBE 준수표 화면
 - 기준 목업: `Spec2Win_목업_v4.57.html#Tbe`
-- 구현 방식: 실제 (`add-tbe-export`). 화면 CSS는 목업 Tbe CSS 그대로(`frontend/src/mockup/Tbe.css`)
+- 구현 방식: 실제 (`add-tbe-export`). 화면 CSS는 목업 Tbe CSS 그대로(`frontend/src/styles/pages/Tbe.css`)
 - 주소: `#/reviews/:id/tbe`. 검토 상세 머리 "TBE 준수표" 단추, 제출본 탭 "이 판정으로 TBE 준수표 받기"에서 연다
 - 사용 API: `GET /runs/{id}`, `GET /runs/{id}/tbe?include=all|confirmed&lang=en|ko|both&base=now|v1`, `GET /runs/{id}/tbe/export`(같은 인자, .xlsx)
 

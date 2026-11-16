@@ -2,7 +2,7 @@
 
 - 연결 요구사항: 없음 (입찰 결과·금액은 범위 밖. 금액은 가격 범위라 영업 권한 필요)
 - 기준 목업: `Spec2Win_목업_v4.57.html#Bids`
-- 구현 방식: 예시 화면 (`add-example-screens`). 데이터는 `frontend/src/examples/SCR-14.ts`, 화면은 `frontend/src/views/examples/Bids.tsx`, CSS는 목업 Bids CSS 그대로(`frontend/src/mockup/Bids.css`)
+- 구현 방식: 예시 화면 (`add-example-screens`). 데이터는 `frontend/src/examples/SCR-14.ts`, 화면은 `frontend/src/views/examples/Bids.tsx`, CSS는 목업 Bids CSS 그대로(`frontend/src/styles/pages/Bids.css`)
 - 사용 API: 없음 (서버를 부르지 않는다)
 - 예정 API: 입찰 결과 목록, 내보내기
 

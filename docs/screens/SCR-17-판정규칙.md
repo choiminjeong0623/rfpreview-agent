@@ -2,7 +2,7 @@
 
 - 연결 요구사항: `reference-data` 규칙 사전 조회·문서 종류 규칙 조회·규칙 사전 고치기·규칙 고침 이력, FR-01 문서 종류, FR-05 항목 이름, FR-06 위험 표현, FR-07 비교 방향
 - 기준 목업: `Spec2Win_목업_v4.57.html#Rules`
-- 구현 방식: 실제 (`add-reference-views`, 고치기는 `add-rule-editing`). 위 "사람이 제안한 표현"은 `add-rule-suggestion`으로 실제. 화면 CSS는 목업 Rules CSS 그대로(`frontend/src/mockup/Rules.css`)
+- 구현 방식: 실제 (`add-reference-views`, 고치기는 `add-rule-editing`). 위 "사람이 제안한 표현"은 `add-rule-suggestion`으로 실제. 화면 CSS는 목업 Rules CSS 그대로(`frontend/src/styles/pages/Rules.css`)
 - 사용 API: `GET /rules/compare`, `GET /rules/items`, `GET /rules/risk-expressions`, `GET /rules/doc-kinds` (`update-doc-kind-rules`),
   `POST /rules/{dictionary}`, `PUT·DELETE /rules/{dictionary}/{id}`, `GET /rules/edits` (`add-rule-editing`),
   `GET /rule-suggestions`, `POST /rule-suggestions/{id}/accept·decline` (`add-rule-suggestion`)

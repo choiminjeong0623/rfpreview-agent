@@ -1,12 +1,12 @@
 // 우리가 쓴 CSS·화면 코드에 색 값을 직접 쓰지 않았는지 본다 (add-ui-foundation, _프런트원칙.md 5장).
-// 목업 CSS(src/mockup)와 토큰 파일(src/styles/tokens.css)은 뺀다. 색은 var(--c-…) 토큰으로 쓴다.
+// 목업 CSS(src/styles/pages)와 토큰 파일(src/styles/tokens.css)은 뺀다. 색은 var(--c-…) 토큰으로 쓴다.
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 // 경로에 한글이 있어도 되게 (pathname은 %EA… 그대로라 폴더를 못 찾는다)
 const root = fileURLToPath(new URL('../src', import.meta.url))
-const skip = [join(root, 'mockup'), join(root, 'styles', 'tokens.css'), join(root, 'api.gen.ts')]
+const skip = [join(root, 'styles', 'pages'), join(root, 'styles', 'tokens.css'), join(root, 'api.gen.ts')]
 const color = /#[0-9A-Fa-f]{6}\b|#[0-9A-Fa-f]{3}\b(?![0-9A-Za-z-])|rgba?\(/g
 const bad = []
 

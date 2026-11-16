@@ -2,7 +2,7 @@
 
 - 연결 요구사항: FR-11(유형별 담당자 전달), `role-assignment`(할 일 상태, 협조 요청 메일 발송), `review-workspace` 협조 요청 현황 화면
 - 기준 목업: `Spec2Win_목업_v4.57.html#Todo`. **v4.96부터 `Spec2Win_목업_v4.96.html`이 기준**(맨 아래 "v4.96 바뀐 점")
-- 구현 방식: 실제 + 예시 창 (`update-review-screens` 묶음 13, `update-role-handoff-mail`). 화면 CSS는 목업 Todo CSS 그대로(`frontend/src/mockup/Todo.css`)
+- 구현 방식: 실제 + 예시 창 (`update-review-screens` 묶음 13, `update-role-handoff-mail`). 화면 CSS는 목업 Todo CSS 그대로(`frontend/src/styles/pages/Todo.css`)
 - 사용 API: `GET /assignments?role=COST|QUALITY|SALES`(모든 검토의 그 부서 요청, 검토 번호·파일 이름·보낸 기록·회신 기록 포함), `POST /runs/{id}/assignments/send`(엔지니어가 보내기·다시 보내기), `PUT /assignments/{id}`(엔지니어가 회신 받음 표시·되돌리기)
 - 메일은 시스템이 보낸다: 엔지니어가 판정을 확정하면(연결된 판정이 모두 사람 확인됨) 아직 안 보낸 요청을 부서별로 한 통씩, 채택한 제안 포인트는 채택할 때. 판정이 없는 요청은 이 화면의 [보내기]
 - 예정 API: 직접 요청 만들기
