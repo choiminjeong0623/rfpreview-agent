@@ -7,8 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint && node scripts/check-tokens.mjs",
+    "test": "vitest run",
     "preview": "vite preview",
     "e2e": "playwright test",
+    "e2e:install": "playwright install --with-deps chromium",
     "gen:api": "cd ../backend && uv run rfp-openapi > ../frontend/openapi.json && cd ../frontend && node scripts/gen-api-types.mjs",
     "check:api": "node scripts/check-api-types.mjs",
     "trace": "node scripts/trace.mjs",
@@ -29,6 +31,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "oxlint": "^1.88.0",
     "typescript": "~6.0.3",
-    "vite": "^8.3.4"
+    "vite": "^8.3.4",
+    "vitest": "^5.1.0"
   }
 }

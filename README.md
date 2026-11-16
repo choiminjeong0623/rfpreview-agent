@@ -96,7 +96,8 @@ flowchart LR
 | 평가 비용 상한은 시작 전 어림만 | 프롬프트 평가 CI는 11-16 저장소에 키를 등록한 뒤부터 실제로 돕니다(그 전 PR 4건은 "평가하지 않음"으로 건너뜀). 비용 상한(`RFP_EVAL_MAX_KRW`)은 시작 전 어림 비용으로만 막아, 회귀 시연 PR #25는 출력 토큰이 3배로 늘며 상한 1,000원을 넘은 1,586원이 들었습니다 | 실행 중 누적 비용이 상한을 넘으면 멈추기 |
 | 다른 회사 모델은 재지 않음 | 모델 비교 도구(FR-23)는 만들었지만, 실측은 Gemini 3.8 Flash와 로컬 3B 모델뿐입니다 | Claude·GPT 키로 같은 평가셋 비교 |
 | "확인 필요"가 많음 | 실제 입찰 서식 1건에서 비교한 줄의 60 %(2,718 / 4,515)가 확인 필요이고, 그중 87 %는 항목 사전에 없는 항목입니다. 추측하지 않는 대가입니다([05](docs/05-evaluation.md)) | 항목 사전 표현 넓히기(임베딩이 이미 후보를 냄) |
-| 배포 없음, 화면 테스트는 CI 밖 | 로컬 Docker Compose로만 돌립니다. 프런트 단위 테스트는 없고, 화면 E2E(Playwright)는 PR 전에 로컬에서 돌립니다 | — |
+| 공개 배포 없음 | 로컬 Docker Compose로만 돌립니다. 인증이 없는 채로 공개 주소에 올리면 누구나 결재자로 바꿔 승인하고 AI 키 비용을 쓸 수 있어, 인증을 넣기 전에는 공개 배포하지 않습니다. 배포에 필요한 것(백엔드 Dockerfile, 웹 서버와 처리기를 나눈 compose, `/api/health`, 환경 변수 설정)은 있습니다 | 인증을 넣은 뒤 AI를 끄고(`RFP_AI_MODE=off`) 합성 데이터만 넣은 시연 주소 |
+| 화면 테스트의 빈틈 | 11-16부터 CI가 화면 단위 테스트(Vitest, 계산 로직)와 화면 E2E(Playwright, 합성 문서·AI 끔) 전체를 돌립니다. 그 전에는 E2E가 CI 밖이라, 처음 CI에 넣을 때 252개 중 14개가 깨져 있었습니다(시험 환경에 메일 서버·문서 목록 설정이 빠짐 8, 화면이 바뀐 뒤 낡은 찾기 2, 공개본에서 사진을 빼며 제품 문서 탭까지 비어 버린 버그 2와 사진 시험 1, 탭 구성 1). 문서 탭 버그는 코드를 고쳤고, 사진 시험은 공개본에서 건너뛰며, 탭 구성이 스펙과 화면에서 다른 1개는 사람이 정할 때까지 멈춰 둡니다. CI에서 처음 돌리자 로컬에서는 타이밍 덕에 통과하던 시험 하나가 실패해, 판정을 바꿔 지금 거르기에서 빠지면 판정 상세가 "이 검토에 없는 판정"으로 보이던 버그를 찾아 고쳤습니다. 컴포넌트 렌더링 단위 테스트는 아직 없습니다 | 탭 구성 스펙 정리, 화면 부품 테스트 |
 | 코드 품질 수치 | SonarQube 이슈 115건을 전수 분류했고, 실제 버그는 0건이었습니다. 23건은 고쳤고, 92건은 오탐 15·의도했거나 위험 낮음 58·고치면 동작이 바뀌는 것 19로 나눠 근거를 남겼습니다. 대시보드의 미해결 이슈가 0이 된 것은 고친 23건과 근거를 남긴 92건을 합친 결과입니다([품질 보고서](docs/quality/sonarqube-report.md)) | 동작이 바뀌는 19건은 보고서 6장 "추후 개선" |
 
 ## 실행하기
@@ -154,11 +155,11 @@ CI(`.github/workflows/ci.yml`)와 같은 검사입니다. 공개본으로 다시
 
 ```bash
 cd backend && uv run ruff check . && TEST_DATABASE_URL=postgresql://rfp:rfp@localhost:5433/rfp_test uv run pytest
-cd frontend && npm run lint && npm run check:api && npm run check:trace && npm run build
+cd frontend && npm run lint && npm test && npm run check:api && npm run check:trace && npm run build
 npx --yes @fission-ai/openspec@1.14.3 validate --all --strict
 ```
 
-건너뛰는 것은 고객 RFP 원문(`data/private/`)이 있어야 도는 테스트와, 로컬 OCR 엔진(Tesseract)이 없을 때 건너뛰는 OCR 테스트입니다. 화면 E2E(Playwright)는 CI에서 돌지 않으며, 일부는 원문 파일이 있어야 합니다.
+건너뛰는 것은 고객 RFP 원문(`data/private/`)이 있어야 도는 테스트와, 로컬 OCR 엔진(Tesseract)이 없을 때 건너뛰는 OCR 테스트입니다. 화면 E2E(Playwright)는 CI의 `e2e` 작업이 DB·백엔드·화면·확인용 메일 서버를 띄우고 AI를 끈 채 돌립니다. 원문 파일이 있어야 하는 E2E는 스스로 건너뜁니다.
 
 ## 저장소 구조
 
