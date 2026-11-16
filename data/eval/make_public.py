@@ -16,7 +16,10 @@ TYPE_KEY = HERE.parent / "seed" / "answer_keys" / "synthetic_rfp28_type.csv"
 OUT = HERE / "public.jsonl"
 
 # 사람이 확인한 문항 번호 (확인한 사람이 넣는다). 비어 있으면 모두 Claude 초안
-HUMAN_CHECKED: set[str] = set()
+# 2026-11-16 최민정이 80줄(문항 68개)을 하나씩 확인, 모두 Claude 초안과 같음 → human_review/2026-11-16.csv
+HUMAN_CHECKED: set[str] = (
+    {f"lab-{n:03d}" for n in range(1, 21)} | {f"type-{n:03d}" for n in range(1, 31)}
+    | {f"draft-{n:03d}" for n in range(1, 11)} | {f"ast-{n:03d}" for n in range(1, 9)})
 
 META = {"meta": {"name": "public", "threshold_pp": 5,
                  "note": "문항이 적어(유형 30) 1문항 = 3.3 %p라 문턱을 5 %p로 둔다 (design 위험)"}}
