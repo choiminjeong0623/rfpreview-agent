@@ -156,7 +156,7 @@ export function Eval() {
           <h3 style={{ margin: '24px 0 8px' }}>유형 정답지</h3>
           <div className="sh-box">
             <div className="gt-tr sh-th"><span>고름</span><span>정답지</span><span>사람 확인</span><span>넣은 날</span><span>줄</span></div>
-            <label className="gt-tr ev-row"><input type="radio" name="answer-key" checked={chosenKey === null} onChange={() => setKeyId(null)} />
+            <label className="gt-tr ev-row" aria-label="유형 정답지 없이"><input type="radio" name="answer-key" checked={chosenKey === null} onChange={() => setKeyId(null)} />
               <span><b>유형 정답지 없이</b><span className="sh-mut" style={{ display: 'block' }}>K13을 재지 않습니다</span></span><span /><span /><span /></label>
             {keyList.map((k) => (
               <label key={k.key_id} className="gt-tr ev-row"><input type="radio" name="answer-key" checked={chosenKey === k.key_id} onChange={() => setKeyId(k.key_id)} />
@@ -168,7 +168,7 @@ export function Eval() {
           <h3 style={{ margin: '24px 0 8px' }}>요구사항 정답지</h3>
           <div className="sh-box">
             <div className="gt-tr sh-th"><span>고름</span><span>정답지</span><span>대상 문서</span><span>넣은 날</span><span>줄</span></div>
-            <label className="gt-tr ev-row"><input type="radio" name="req-key" checked={reqKeyId === null} onChange={() => setReqKeyId(null)} />
+            <label className="gt-tr ev-row" aria-label="요구사항 정답지 없이"><input type="radio" name="req-key" checked={reqKeyId === null} onChange={() => setReqKeyId(null)} />
               <span><b>요구사항 정답지 없이</b><span className="sh-mut" style={{ display: 'block' }}>K1·K2·K3·K10을 재지 않습니다</span></span><span /><span /><span /></label>
             {reqKeys.map((k) => (
               <label key={k.key_id} className="gt-tr ev-row" data-key={k.key_name}><input type="radio" name="req-key" checked={reqKeyId === k.key_id} onChange={() => setReqKeyId(k.key_id)} />
