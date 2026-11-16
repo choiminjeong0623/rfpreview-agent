@@ -6,6 +6,8 @@
 name: Prompt eval
 
 on:
+  # 손으로 돌리기: Actions 화면에서 지금 main의 프롬프트를 기준선과 비교 (실제 실행 기록 남기기)
+  workflow_dispatch:
   pull_request:
     paths:
       - backend/src/rfp_agent/llm/tasks.py
