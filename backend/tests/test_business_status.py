@@ -246,7 +246,8 @@ def test_state_rules(db, spec):
         business.link(db, run_id, business_id, None)
         set_stage(db, run_id, stage)
     assert states(db, business_id) == ["an", "fail", "ap", "sub"]
-    assert states(db, business_id) == states(db, business_id)        # 같은 데이터면 같은 상태
+    first, second = states(db, business_id), states(db, business_id)
+    assert first == second        # 같은 데이터면 같은 상태
 
 
 # ── 제출 완료 ───────────────────────────────────────────────

@@ -104,4 +104,5 @@ def test_same_hint_twice(db, spec, first):
     [old] = comply(db, first)
     act(db, first, old, "EDIT", {"result": "QUERY_CANDIDATE"}, "확인")
     second = new_run(db, spec)
-    assert listed(db, second) == listed(db, second)
+    first_list, second_list = listed(db, second), listed(db, second)
+    assert first_list == second_list

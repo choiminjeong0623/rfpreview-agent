@@ -82,7 +82,9 @@ def test_compare_result_change_same_value(db, pair):
 def test_compare_is_reproducible(db, pair):
     """같은 두 검토면 같은 결과 (CR-11)."""
     past, now = pair
-    assert past_compare.compare(db, now, past) == past_compare.compare(db, now, past)
+    first = past_compare.compare(db, now, past)
+    second = past_compare.compare(db, now, past)
+    assert first == second
 
 
 def test_compare_rejects(db, pair):
