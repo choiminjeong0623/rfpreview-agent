@@ -23,12 +23,12 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6.8.0
       # OCR 시험용 Tesseract (add-ocr)
       - run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-kor
       - run: uv sync --frozen
-      - run: uv run ruff check .
-      - run: uv run pytest
+      - run: uv run --frozen ruff check .
+      - run: uv run --frozen pytest
         env:
           TEST_DATABASE_URL: postgresql://rfp:rfp@localhost:5432/rfp_test
 

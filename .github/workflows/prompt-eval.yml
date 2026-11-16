@@ -47,15 +47,15 @@ jobs:
           fi
       - uses: actions/checkout@v4
         if: steps.key.outputs.has_key == 'true'
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6.8.0
         if: steps.key.outputs.has_key == 'true'
       - if: steps.key.outputs.has_key == 'true'
-        run: uv sync --frozen && uv run rfp-db migrate
+        run: uv sync --frozen && uv run --frozen rfp-db migrate
       - name: 공개 평가셋 평가 (반복 3회, 기준선과 같게)
         if: steps.key.outputs.has_key == 'true'
         run: |
           set +e
-          uv run rfp-db eval-prompts --set public --repeat 3 --baseline-file ../data/eval/baseline.json \
+          uv run --frozen rfp-db eval-prompts --set public --repeat 3 --baseline-file ../data/eval/baseline.json \
             --report "$RUNNER_TEMP/prompt-eval.md"
           code=$?
           set -e
