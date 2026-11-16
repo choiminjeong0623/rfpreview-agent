@@ -46,6 +46,7 @@ test('저장하지 않음', async ({ page }) => {
 
   // 다른 화면에 갔다 오면 처음 상태
   await page.goto('/#/')
+  await expect(page.locator('label.stck')).toHaveCount(0)        // 설정 화면이 실제로 내려간 뒤에 돌아감
   await page.goto('/#/settings')
   await expect(page.locator('label.stck input[type=checkbox]').first()).toBeChecked()
   await page.goto('/#/notice')

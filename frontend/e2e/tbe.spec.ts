@@ -11,7 +11,7 @@ test('넣을 줄 바꾸기', async ({ page, request }) => {
   await exportItem(page, 'TBE 준수표')
   await expect(page).toHaveURL(new RegExp(`#/reviews/${run.run_id}/tbe$`))
   await expect(page.getByRole('navigation', { name: '현재 위치' })).toContainText(run.review_no)
-  const sum = page.getByLabel('요약')
+  const sum = page.getByLabel('요약', { exact: true })
   await expect(sum).toContainText(/포함 항목\s*\d{2}/)
   await expect(page.getByText(`TBE_${run.review_no}_후보포함.xlsx`)).toBeVisible()
   await page.getByRole('radio', { name: '확정 항목만' }).check()
