@@ -29,6 +29,28 @@ type Chosen = { doc_kind: Kind; bundle: Bundle }
 const KINDS = Object.keys(DOC_KIND_NAMES) as Kind[]
 const BUNDLES: Bundle[] = ['A', 'B', 'C', 'D']
 
+/** 묶음 뜻 (등록 화면 안내만. 판정 대상은 백엔드가 정한다, CR-09). 제품표가 IEC 정격이라 A·B만 판정한다 */
+const BUNDLE_HELP: [Bundle, string, boolean][] = [
+  ['A', '같은 사업의 입찰 서식·데이터시트', true],
+  ['B', 'IEC 규격 고압 설비 사양서', true],
+  ['C', 'IEEE·UL 등 미국 규격, 제품표에 없는 저압·내진 문서, 글자를 읽지 못한 스캔 문서', false],
+  ['D', '한국 규격(KS·한전) 문서', false],
+]
+
+/** 파일 표 아래 묶음 설명 */
+function BundleLegend() {
+  return (
+    <div className="bundle-help" aria-label="묶음 설명">
+      <b>묶음이란?</b> 제품표가 IEC 정격이라 묶음 A·B 문서만 제품과 비교해 판정합니다.
+      <ul>
+        {BUNDLE_HELP.map(([b, text, judged]) => (
+          <li key={b}><b>묶음 {b}</b> {text} <span className={judged ? 'c-green' : 'dimv'}>{judged ? '판정함' : '판정 안 함'}</span></li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 /** 분류 추천 줄의 칸: 문서 종류·묶음 고르기, 언어, 판정 대상과 이유 */
 function ClassifyCells({ p, chosen, onChange }: {
   p: DocumentPreview | 'loading' | 'error' | undefined; chosen: Chosen | undefined; onChange: (c: Chosen) => void
@@ -293,6 +315,7 @@ export function Register({ businessId = null }: { businessId?: number | null }) 
               </table>
             </div>
           )}
+          {picked.length > 0 && <BundleLegend />}
         </div>
       )}
 
