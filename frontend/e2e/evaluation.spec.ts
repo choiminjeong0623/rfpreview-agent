@@ -12,7 +12,7 @@ test('지금 채점하기', async ({ page, request }) => {
   await expect(page.getByText('예시 화면 · 실제 데이터와 연결되지 않음')).toHaveCount(0)
   await page.getByRole('tab', { name: '정답지' }).click()
   await expect(page.locator('label.gt-tr', { hasText: run.review_no })).toBeVisible()
-  await page.getByLabel('유형 정답지 없이').check()
+  await page.getByRole('radio', { name: '유형 정답지 없이' }).check()
   const memo = `e2e 채점 ${Date.now()}`
   await page.getByLabel('무엇을 고쳤나').fill(memo)
   await page.getByRole('button', { name: '지금 채점하기' }).click()
@@ -109,4 +109,41 @@ test('검토 골라 채점하기', async ({ page }) => {
   await page.getByRole('button', { name: '지금 채점하기' }).click()
   await expect(page.getByRole('status')).toContainText('검토 1건')
   expect(sent).toMatchObject({ run_ids: [902] })
+})
+
+test('판정 정답지로 채점', async ({ page }) => {
+  // 명세 review-workspace "판정 정답지 고르기와 구간 표시" (add-eval-demo). 지표 계산은 백엔드 tests/test_eval_demo.py에서 본다.
+  const now = '2026-11-23T03:00:00Z'
+  await page.route('**/api/eval/keys', (route) => route.fulfill({ json: [{
+    key_id: 9, key_name: '합성 RFP 28 판정', key_kind: 'JUDGE', made_by: 'CLAUDE_DRAFT', doc_name: 'RFP_Product_Master_Evaluative_EN_With_Product_Switch',
+    created_at: now, rows: 30, human_checked: 0, ambiguous: 0,
+  }] }))
+  await page.route('**/api/eval/runs', (route) => route.fulfill({ json: [{
+    run_id: 51, review_no: 'RV-2026-051', review_name: '시연 검토', stage: 'ENGINEER_REVIEW', reviewed: 0, reviewer: null, last_reviewed_at: null,
+  }] }))
+  let sent: Record<string, unknown> = {}
+  const k5 = { code: 'K5-KEY', name: '판정 정확도(정답지)', measure: '판정 정답지 줄 중 시스템 판정(과 비교 제품)이 같은 비율', unit: '%', value: 96.7, num: 29, den: 30,
+    target: 80, better: 'up', passed: true, note: '대상 문서 1개', ci_low: 83.3, ci_high: 99.4 }
+  const score = { score_id: 1, run_ids: [51], key_id: null, key_name: null, key_made_by: null, req_key_id: null, req_key_name: null, req_key_made_by: null,
+    judge_key_id: 9, judge_key_name: '합성 RFP 28 판정', judge_key_made_by: 'CLAUDE_DRAFT',
+    metrics: { items: [k5], types: null, requirements: null, judgments: null, not_measured: [] }, note: null, code_version: null, scored_by: 1, scored_by_name: '엔지니어', scored_at: now }
+  await page.route('**/api/eval/scores', (route) => {
+    if (route.request().method() === 'POST') { sent = route.request().postDataJSON(); return route.fulfill({ json: score }) }
+    return route.fulfill({ json: Object.keys(sent).length ? [score] : [] })
+  })
+  await as(page, ENGINEER)
+  await page.goto('/#/eval')
+  await page.getByRole('tab', { name: '정답지' }).click()
+  await page.locator('label.gt-tr', { hasText: 'RV-2026-051' }).locator('input').check()
+  await expect(page.getByRole('radio', { name: '판정 정답지 없이' })).toBeChecked()
+  const key = page.locator('label[data-key="합성 RFP 28 판정"]')
+  await expect(key).toContainText('AI 초안 · 검수 전')
+  await key.locator('input').check()
+  await page.getByRole('button', { name: '지금 채점하기' }).click()
+  await expect(page.getByRole('status')).toContainText('판정 정답지 "합성 RFP 28 판정"')
+  expect(sent).toMatchObject({ run_ids: [51], judge_key_id: 9 })
+  const row = page.locator('[data-code="K5-KEY"]')
+  await expect(row).toContainText('96.7 %')
+  await expect(row).toContainText('95 % 구간 83.3–99.4 %')
+  await expect(row).toContainText('AI 초안 · 검수 전')
 })

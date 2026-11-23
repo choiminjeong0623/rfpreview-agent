@@ -6,6 +6,7 @@
 
 import csv
 import json
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -13,7 +14,7 @@ import psycopg
 from psycopg.rows import dict_row
 
 from rfp_agent.llm.tasks import TYPE_CODES
-from rfp_agent.pipeline import code_version, req_eval
+from rfp_agent.pipeline import code_version, judge_eval, req_eval
 from rfp_agent.pipeline.review import ReviewError, _user_role, default_user
 
 # 정답지 CSV 열: Claude 초안 열 이름과 영어 열 이름을 모두 받는다
@@ -28,7 +29,8 @@ COLUMNS = {
 }
 # 기획서 2-2 목표(가안). better: 높을수록(up) / 낮을수록(down) 좋음
 TARGETS = {"K1": 85.0, "K2": 80.0, "K3": 90.0, "K10": 80.0, "K4": 100.0, "K5": 80.0,
-           "K6": 80.0, "K11": 0, "K12": 0, "K13": 70.0, "TIME": 15.0}
+           "K6": 80.0, "K5-KEY": 80.0, "K6-KEY": 80.0, "K11": 0, "K12": 0, "K13": 70.0,
+           "TIME": 15.0}
 # 요구사항 정답지(add-requirement-answer-key)를 고르면 재는 지표. 고르지 않으면 "재지 않음"
 REQ_METRICS = [("K1", "요구사항 추출 재현율"), ("K2", "요구사항 추출 정확도"),
                ("K3", "값·단위 정확도"), ("K10", "위험 조건 탐지 재현율")]
@@ -130,16 +132,33 @@ def _pct(num: int, den: int) -> float | None:
     return round(num / den * 100, 1) if den else None
 
 
+Z95 = 1.96
+
+
+def wilson(num: int | None, den: int | None) -> tuple[float, float] | None:
+    """윌슨 95 % 신뢰 구간(백분율, 소수 첫째 자리). 분모가 없거나 0이면 None (add-eval-demo).
+
+    정규 근사와 달리 100 %·작은 표본에서도 폭이 0이 되지 않는다.
+    """
+    if not den or num is None:
+        return None
+    p, n, z2 = num / den, den, Z95 * Z95
+    center = (p + z2 / (2 * n)) / (1 + z2 / n)
+    half = Z95 * math.sqrt(p * (1 - p) / n + z2 / (4 * n * n)) / (1 + z2 / n)
+    return round(max(0.0, center - half) * 100, 1), round(min(1.0, center + half) * 100, 1)
+
+
 def _metric(code: str, name: str, measure: str, unit: str, value, num=None, den=None,
             better: str = "up", note: str | None = None) -> dict:
     target = TARGETS.get(code)
+    ci = wilson(num, den) if unit == "%" else None
     if value is None or target is None:
         passed = None
     else:
         passed = value >= target if better == "up" else value <= target
     return {"code": code, "name": name, "measure": measure, "unit": unit, "value": value,
             "num": num, "den": den, "target": target, "better": better, "passed": passed,
-            "note": note}
+            "note": note, "ci_low": ci[0] if ci else None, "ci_high": ci[1] if ci else None}
 
 
 def _judgment_scores(conn: psycopg.Connection, run_ids: list[int]) -> tuple[dict, dict]:
@@ -212,7 +231,7 @@ def _type_score(conn: psycopg.Connection, run_ids: list[int], key_id: int) -> tu
 
 
 def metrics(conn: psycopg.Connection, run_ids: list[int], key_id: int | None,
-            req_key_id: int | None = None) -> dict:
+            req_key_id: int | None = None, judge_key_id: int | None = None) -> dict:
     """지표를 잰다. 결과는 같은 입력이면 같다."""
     k4_num, k4_den = conn.execute(
         """SELECT count(*) FILTER (WHERE EXISTS (SELECT 1 FROM requirement_location rl
@@ -256,10 +275,16 @@ def metrics(conn: psycopg.Connection, run_ids: list[int], key_id: int | None,
     if req_key_id is not None:
         req_items, requirements = req_eval.scores(conn, run_ids, req_key_id, _metric)
         items = req_items + items
+    judgments = None
+    if judge_key_id is not None:
+        judge_items, judgments = judge_eval.scores(conn, run_ids, judge_key_id, _metric)
+        after = next(i for i, m in enumerate(items) if m["code"] == "K6") + 1
+        items = items[:after] + judge_items + items[after:]       # 사람 기준 K5·K6 바로 뒤
     items.append(_metric("TIME", "처리 시간", "검토 한 건 분석에 걸린 평균 시간", "분",
                          None if minutes is None else round(float(minutes), 1), better="down"))
     missing = (REQ_METRICS if req_key_id is None else []) + NOT_MEASURED
     return {"items": items, "types": types, "requirements": requirements,
+            "judgments": judgments,
             "not_measured": [{"code": c, "name": n, "note": "요구사항 정답지가 있어야 잽니다"
                               if (c, n) in REQ_METRICS else "아직 재는 방법이 없습니다"}
                              for c, n in missing]}
@@ -277,7 +302,7 @@ def _check_key(conn: psycopg.Connection, key_id: int | None, kind: str, label: s
 
 def score(conn: psycopg.Connection, run_ids: list[int], key_id: int | None = None,
           note: str | None = None, actor_id: int | None = None,
-          req_key_id: int | None = None) -> dict:
+          req_key_id: int | None = None, judge_key_id: int | None = None) -> dict:
     """채점하고 기록한다."""
     ids = sorted(set(run_ids))
     if not ids:
@@ -289,14 +314,15 @@ def score(conn: psycopg.Connection, run_ids: list[int], key_id: int | None = Non
         raise ReviewError(404, f"채점할 수 없는 검토입니다 ({', '.join(map(str, missing))}).")
     _check_key(conn, key_id, "TYPE", "유형 정답지")
     _check_key(conn, req_key_id, "REQ", "요구사항 정답지")
+    _check_key(conn, judge_key_id, "JUDGE", "판정 정답지")
     actor_id = actor_id or default_user(conn, "ENGINEER")
     _user_role(conn, actor_id)
-    result = metrics(conn, ids, key_id, req_key_id)
+    result = metrics(conn, ids, key_id, req_key_id, judge_key_id)
     score_id = conn.execute(
-        """INSERT INTO eval_score (run_ids, key_id, req_key_id, metrics, note, code_version,
-                                   scored_by)
-           VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING score_id""",
-        (ids, key_id, req_key_id, json.dumps(result, ensure_ascii=False),
+        """INSERT INTO eval_score (run_ids, key_id, req_key_id, judge_key_id, metrics, note,
+                                   code_version, scored_by)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING score_id""",
+        (ids, key_id, req_key_id, judge_key_id, json.dumps(result, ensure_ascii=False),
          (note or "").strip() or None, code_version(), actor_id)).fetchone()[0]
     conn.commit()
     return history(conn, score_id)[0]
@@ -308,10 +334,13 @@ def history(conn: psycopg.Connection, score_id: int | None = None) -> list[dict]
         return cur.execute(
             """SELECT s.score_id, s.run_ids, s.key_id, k.key_name, k.made_by AS key_made_by,
                       s.req_key_id, rk.key_name AS req_key_name, rk.made_by AS req_key_made_by,
+                      s.judge_key_id, jk.key_name AS judge_key_name,
+                      jk.made_by AS judge_key_made_by,
                       s.metrics, s.note, s.code_version, s.scored_by, u.user_name AS scored_by_name,
                       s.scored_at
                  FROM eval_score s LEFT JOIN answer_key k USING (key_id)
                  LEFT JOIN answer_key rk ON rk.key_id = s.req_key_id
+                 LEFT JOIN answer_key jk ON jk.key_id = s.judge_key_id
                  LEFT JOIN app_user u ON u.user_id = s.scored_by
                 WHERE %(id)s::int IS NULL OR s.score_id = %(id)s
                 ORDER BY s.scored_at DESC, s.score_id DESC""", {"id": score_id}).fetchall()

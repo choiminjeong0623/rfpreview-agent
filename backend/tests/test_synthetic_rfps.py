@@ -2,7 +2,7 @@
 
 명세 reference-data "시연용 합성 RFP"의 Scenario. 합성 RFP 원문은 저장소에 없다(data/private).
 원문과 TEST_DATABASE_URL이 있을 때만 돈다(test_corpus와 같음).
-파일 27은 generate_risk_rfp.py, 파일 28은 generate_switch_rfp.py로 만든다.
+파일 24~28은 저장소 맨 위 generate_*_rfp.py로 차례로 만든다(rfp-db demo-setup 안내 참고).
 """
 
 import os
@@ -93,10 +93,13 @@ def load_keys(db) -> tuple[int, int]:
 
 @pytest.mark.skipif(not FILE_28.exists(), reason="파일 28 없음 — generate_switch_rfp.py로 만든다")
 def test_synthetic_answer_key_score(db):
-    """Scenario: 합성 RFP 정답지 채점 — K1 65/65, K2 65/67, K3 30/30, K10 4/4, K13 42/42."""
+    """Scenario: 합성 RFP 정답지 채점 — K1 65/65, K2 65/66, K3 30/30, K10 4/4, K13 42/42.
+
+    K2는 공개본 스크립트로 다시 만든 파일 28 기준(원래 파일 65/67, add-eval-demo design D8).
+    """
     run_id = processed(db, FILE_28)
     req_key, type_key = load_keys(db)
     got = {m["code"]: (m["num"], m["den"])
            for m in evaluation.metrics(db, [run_id], type_key, req_key)["items"]}
     assert {k: got[k] for k in ("K1", "K2", "K3", "K10", "K13")} == {
-        "K1": (65, 65), "K2": (65, 67), "K3": (30, 30), "K10": (4, 4), "K13": (42, 42)}
+        "K1": (65, 65), "K2": (65, 66), "K3": (30, 30), "K10": (4, 4), "K13": (42, 42)}

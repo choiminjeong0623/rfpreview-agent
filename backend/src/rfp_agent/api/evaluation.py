@@ -18,6 +18,7 @@ class ScoreRequest(BaseModel):
     run_ids: list[int] = Field(min_length=1)
     key_id: int | None = None                         # 유형 정답지
     req_key_id: int | None = None                     # 요구사항 정답지 (K1·K2·K3·K10)
+    judge_key_id: int | None = None                   # 판정 정답지 (K5-정답지·K6-정답지)
     note: str | None = Field(None, max_length=500)    # 무엇을 고쳤나
 
 
@@ -44,6 +45,6 @@ def score(body: ScoreRequest, user: CurrentUser) -> EvalScore:
     with connect() as conn:
         try:
             return evaluation.score(conn, body.run_ids, body.key_id, body.note, user.user_id,
-                                    body.req_key_id)
+                                    body.req_key_id, body.judge_key_id)
         except review.ReviewError as exc:
             raise HTTPException(exc.status, str(exc)) from exc

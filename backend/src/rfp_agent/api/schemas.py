@@ -1316,14 +1316,15 @@ class AiUsage(Out):
 # 정답지·채점 (add-evaluation, 명세 evaluation)
 
 class AnswerKey(Out):
-    """정답지. TYPE = 유형 정답지, REQ = 요구사항 정답지(add-requirement-answer-key).
+    """정답지. TYPE = 유형 정답지, REQ = 요구사항 정답지(add-requirement-answer-key),
+    JUDGE = 판정 정답지(add-eval-demo).
 
     made_by가 CLAUDE_DRAFT(Claude 초안)·AUTO(코드 자동)면 사람 확인 전."""
     key_id: int
     key_name: str
-    key_kind: Literal["TYPE", "REQ"]
+    key_kind: Literal["TYPE", "REQ", "JUDGE"]
     made_by: Literal["CLAUDE_DRAFT", "HUMAN", "AUTO"]
-    doc_name: str | None                # 요구사항 정답지의 대상 문서 이름
+    doc_name: str | None                # 요구사항·판정 정답지의 대상 문서 이름
     created_at: datetime
     rows: int
     human_checked: int
@@ -1354,6 +1355,8 @@ class EvalMetric(Out):
     better: Literal["up", "down"]
     passed: bool | None
     note: str | None
+    ci_low: float | None = None         # 윌슨 95 % 구간 아래(%), 분모가 없으면 null (add-eval-demo)
+    ci_high: float | None = None
 
 
 class EvalTypeDetail(Out):
@@ -1379,6 +1382,22 @@ class EvalRequirementDetail(Out):
     risk_found: int
 
 
+class EvalJudgmentCell(Out):
+    expected: str                       # 정답 판정
+    system: str                         # 시스템 판정, 맞는 판정이 없으면 NONE
+    count: int
+
+
+class EvalJudgmentDetail(Out):
+    """판정 정답지 채점의 자세한 수 (K5-정답지·K6-정답지, add-eval-demo)."""
+    rows: int
+    matched: int
+    not_found: int
+    ambiguous: int
+    ambiguous_hit: int
+    table: list[EvalJudgmentCell]
+
+
 class EvalNotMeasured(Out):
     code: str
     name: str
@@ -1389,6 +1408,7 @@ class EvalMetrics(Out):
     items: list[EvalMetric]
     types: EvalTypeDetail | None
     requirements: EvalRequirementDetail | None = None
+    judgments: EvalJudgmentDetail | None = None
     not_measured: list[EvalNotMeasured]
 
 
@@ -1402,6 +1422,9 @@ class EvalScore(Out):
     req_key_id: int | None
     req_key_name: str | None
     req_key_made_by: Literal["CLAUDE_DRAFT", "HUMAN", "AUTO"] | None
+    judge_key_id: int | None = None
+    judge_key_name: str | None = None
+    judge_key_made_by: Literal["CLAUDE_DRAFT", "HUMAN", "AUTO"] | None = None
     metrics: EvalMetrics
     note: str | None
     code_version: str | None
