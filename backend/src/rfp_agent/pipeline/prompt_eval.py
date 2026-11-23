@@ -222,7 +222,7 @@ def find_set(name: str, settings) -> Path:
 class Answer:
     ok: bool | None                  # None = 답 없음
     answer: dict | None = None
-    error: str | None = None         # FORMAT / FAILED / CONFIG
+    error: str | None = None         # FORMAT / FAILED / CONFIG / BUDGET(비용 상한으로 묻지 않음)
     signature: str | None = None     # 주입 짝 비교용 결과 요약
     counts: dict = field(default_factory=dict)   # 지표 재료 {지표: (num, den)}
     ms: int | None = None            # 묻는 데 걸린 시간(재시도·도구 반복 포함, add-model-compare)
@@ -682,10 +682,30 @@ def evaluate(evalset: EvalSet, llm: LLM | None, ai_mode: str, repeat: int = 1,
                         "그래도 하려면 --yes를 주세요.")
     usage = usage_of(llm)
     before = usage.copy() if usage else None
+    # 실행 중 비용 상한 (add-ops-metrics): 확인 없으면 상한, 확인했으면 상한과 어림 두 배 중 큰 값
+    stop_at = max_krw if not confirmed or est["cost_krw"] is None \
+        else max(max_krw, est["cost_krw"] * 2)
+    unasked = 0
+
+    def spent() -> int | None:
+        return _spent_krw(model, usage, before)
+
+    def guarded(item: Item) -> Answer:
+        nonlocal unasked
+        cost = spent()
+        if cost is not None and cost > stop_at:
+            unasked += 1
+            return Answer(None, error="BUDGET", counts=no_answer_counts(item))
+        return timed_ask(llm, item, fixture)
+
     started = time.monotonic()
     per_repeat = []
-    for _ in range(repeat):
-        jobs = [lambda item=item: timed_ask(llm, item, fixture) for item in evalset.items]
+    for n in range(repeat):
+        cost = spent()
+        if cost is not None and cost > stop_at:
+            unasked += len(evalset.items) * (repeat - n)                 # 남은 반복은 통째로
+            break
+        jobs = [lambda item=item: guarded(item) for item in evalset.items]
         answers = run_ordered(jobs, workers_of(llm))
         result.answers.append(answers)
         per_repeat.append(_role_metrics(evalset.items, answers))
@@ -700,8 +720,22 @@ def evaluate(evalset: EvalSet, llm: LLM | None, ai_mode: str, repeat: int = 1,
         result.output_tokens, result.thinking_tokens = d.output_tokens, d.thinking_tokens
         result.cost_krw = estimated_cost_krw(model, d.input_tokens, d.output_tokens,
                                              d.thinking_tokens)
+    if unasked:
+        result.status = "FAILED"
+        result.skip_reason = (f"비용 상한 {stop_at:,}원을 넘어 멈췄습니다 "
+                              f"(쓴 비용 약 {spent():,}원, 묻지 않은 문항 {unasked}개, "
+                              "팀 가정 단가)")
+        return result
     result.status = "DONE"
     return result
+
+
+def _spent_krw(model: str | None, usage, before) -> int | None:
+    """지금까지 쓴 비용(팀 가정 단가). 사용량을 세지 않거나 단가를 모르면 None (상한 적용 안 함)."""
+    if not usage or not before:
+        return None
+    d = usage.minus(before)
+    return estimated_cost_krw(model, d.input_tokens, d.output_tokens, d.thinking_tokens)
 
 
 # ── 기준선 비교 ────────────────────────────────────────────────────────
@@ -812,7 +846,7 @@ def save(conn: psycopg.Connection, result: EvalResult, baseline: bool = False,
          note: str | None = None, run_by: str | None = None) -> int:
     """평가 기록과 문항별 결과. baseline이면 같은 평가셋의 이전 기준선을 풀고 이번을 기준선으로."""
     with conn.transaction():
-        if baseline:
+        if baseline and result.status == "DONE":       # 멈춘 평가는 예전 기준선을 풀지 않음
             conn.execute("UPDATE prompt_eval_run SET is_baseline = FALSE "
                          "WHERE set_name = %s AND is_baseline", (result.set.name,))
         eval_id = conn.execute(
@@ -924,6 +958,9 @@ def report(result: EvalResult, cmp: Comparison | None) -> str:
              "",
              f"| 역할 | 지표 | 기준 | 값(최소) | 최대 | 사람 | 코드 | Claude 초안({WEAK}) |",
              "|---|---|---|---:|---:|---:|---:|---:|"]
+    if result.status == "FAILED" and result.skip_reason:
+        head.insert(len(head) - 3, f"- **멈춤**: {result.skip_reason}. 아래 값은 멈추기 전 답만 "
+                                   "센 것이라 기준선과 비교하지 않습니다")
     rows = []
     for role, metrics in result.metrics.items():
         for metric, v in metrics.items():

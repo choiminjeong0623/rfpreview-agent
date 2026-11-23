@@ -5884,6 +5884,84 @@
         "title": "AiCall",
         "description": "AI 호출 한 건 (add-ai-call-trace, FR-21). 원문은 없고 해시만."
       },
+      "AiCallRoleStat": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "requests": {
+            "type": "integer",
+            "title": "Requests"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "p50_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P50 Ms"
+          },
+          "p95_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P95 Ms"
+          },
+          "failure_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Rate"
+          },
+          "dropped_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dropped Rate"
+          },
+          "recovered": {
+            "type": "integer",
+            "title": "Recovered"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "role",
+          "requests",
+          "attempts",
+          "p50_ms",
+          "p95_ms",
+          "failure_rate",
+          "dropped_rate",
+          "recovered"
+        ],
+        "title": "AiCallRoleStat",
+        "description": "AI 역할 하나의 운영 지표 (add-ops-metrics). 비율은 %, 분모가 0이면 null."
+      },
       "AiCalls": {
         "properties": {
           "calls": {
@@ -5903,6 +5981,14 @@
             },
             "type": "object",
             "title": "By Result"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/AiCallRoleStat"
+            },
+            "type": "array",
+            "title": "Roles",
+            "default": []
           },
           "step_ms": {
             "items": {
@@ -5936,7 +6022,7 @@
           "different_answers"
         ],
         "title": "AiCalls",
-        "description": "검토의 AI 호출 기록과 요약: 결과별 수, 단계별 AI 시간 합, 같은 입력·다른 답 수."
+        "description": "검토의 AI 호출 기록과 요약: 결과별 수, 역할별 지표, 단계별 AI 시간, 같은 입력·다른 답."
       },
       "AiCallsLangfuse": {
         "properties": {

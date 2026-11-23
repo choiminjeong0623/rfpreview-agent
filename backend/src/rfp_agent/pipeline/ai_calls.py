@@ -41,9 +41,49 @@ def summary(conn: psycopg.Connection, run_id: int) -> dict:
     shown = [{k: v for k, v in r.items() if k != "run_token"} for r in rows]
     return {"calls": shown, "count": len(rows),
             "by_result": dict(Counter(r["result"] for r in rows)),
+            "roles": role_stats(rows),
             "step_ms": [{"step": k, "ms": v} for k, v in by_step.items()],
             "different_answers": different_answers(conn, run_id) if rows else 0,
             "langfuse": _langfuse(conn, run_id)}
+
+
+def _requests(rows: list[dict]) -> list[list[dict]]:
+    """시도를 요청으로 묶는다. attempt 0이면 새 요청, 아니면 같은 입력 해시의 최근 요청에."""
+    requests: list[list[dict]] = []
+    open_by_hash: dict[str, list[dict]] = {}
+    for r in sorted(rows, key=lambda r: r["call_id"]):
+        req = open_by_hash.get(r["input_hash"]) if r["attempt"] > 0 else None
+        if req is None:
+            req = []
+            requests.append(req)
+            open_by_hash[r["input_hash"]] = req
+        req.append(r)
+    return requests
+
+
+def role_stats(rows: list[dict]) -> list[dict]:
+    """역할별 운영 지표 (add-ops-metrics, P1-1). 백분위는 모델 비교와 같은 가까운 순위."""
+    from rfp_agent.pipeline.prompt_eval import nearest_rank
+
+    def pct(num: int, den: int) -> float | None:
+        return round(100 * num / den, 1) if den else None
+
+    by_role: dict[str, list[dict]] = {}
+    for r in rows:
+        by_role.setdefault(r["role"] or "—", []).append(r)
+    out = []
+    for role, tries in by_role.items():
+        reqs = _requests(tries)
+        ok = [t for t in tries if t["result"] == "OK"]
+        times = [t["duration_ms"] for t in tries]
+        recovered = sum(1 for q in reqs
+                        if q[0]["result"] != "OK" and any(t["result"] == "OK" for t in q[1:]))
+        out.append({"role": role, "requests": len(reqs), "attempts": len(tries),
+                    "p50_ms": nearest_rank(times, 50), "p95_ms": nearest_rank(times, 95),
+                    "failure_rate": pct(len(tries) - len(ok), len(tries)),
+                    "dropped_rate": pct(sum(t["dropped_reason"] is not None for t in ok), len(ok)),
+                    "recovered": recovered})
+    return sorted(out, key=lambda x: x["role"])
 
 
 def _langfuse(conn: psycopg.Connection, run_id: int) -> dict | None:

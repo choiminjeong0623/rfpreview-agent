@@ -200,6 +200,9 @@ def _text(value: dict) -> str:
     return text
 
 
+BULK_REASON = "한꺼번에 확정"          # 사람 수정 비율에서 한 줄씩 본 줄과 나눔 (add-ops-metrics)
+
+
 def bulk_confirm(ctx: RunContext, run_id: int, judgment_ids: list[int],
                  actor_id: int | None = None) -> dict:
     """여러 현재 판정을 한 번에 제안대로 확정한다. 줄마다 이력을 남기고 다시 만들기는 한 번.
@@ -226,7 +229,7 @@ def bulk_confirm(ctx: RunContext, run_id: int, judgment_ids: list[int],
     for before in befores:
         _apply(conn, "judgment", before, "CONFIRM", {})
         after = row(conn, "judgment", before["judgment_id"], run_id)
-        log(conn, run_id, "judgment", before["judgment_id"], "CONFIRM", before, after, None,
+        log(conn, run_id, "judgment", before["judgment_id"], "CONFIRM", before, after, BULK_REASON,
             actor_id)
     conn.commit()
     docs = readable_documents(conn, [r[0] for r in conn.execute(
