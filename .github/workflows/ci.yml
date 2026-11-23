@@ -54,6 +54,73 @@ jobs:
       - run: npm run check:trace
       - run: npm run build
 
+  # 핵심 흐름 e2e (add-e2e-ci): 실제 백엔드·화면으로 올리기 → 판정 확정 → 상신 → 승인 → 인계 패키지.
+  # AI 끔. 건너뛴 시험이 있으면 실패한다 (준비가 빠진 skip을 통과로 보지 않음)
+  e2e:
+    runs-on: ubuntu-24.04   # Playwright 1.56이 지원하는 판 (ubuntu-latest 26.04는 브라우저 설치 거절)
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: rfp
+          POSTGRES_PASSWORD: rfp
+          POSTGRES_DB: rfp_e2e
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U rfp -d rfp_e2e" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://rfp:rfp@localhost:5432/rfp_e2e
+      RFP_AI_MODE: "off"
+      RFP_RUN_MODE: inline
+      PYTHONPATH: ${{ github.workspace }}/backend/src   # 프로젝트를 설치하지 않고(--no-install-project) 소스로 실행
+      E2E_PASSWORD: demo-pass-1            # 시험 DB 전용 값 (비밀값 아님, e2e/helpers.ts 기본값)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6.8.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: 백엔드 준비 (마이그레이션·규칙 사전·실제 제품표, 합성 데이터시트 문서 목록 줄, 로그인)
+        working-directory: backend
+        run: |
+          uv sync --frozen --no-build --no-install-project
+          .venv/bin/python -m rfp_agent.db.cli setup
+          .venv/bin/python -c "import os, psycopg; c = psycopg.connect(os.environ['DATABASE_URL']); c.execute(\"INSERT INTO document_catalog (file_no, file_key, bundle, language) VALUES (91, 'synthetic_judgment', 'A', 'en')\"); c.commit()"
+          for login in engineer approver; do echo "$E2E_PASSWORD" | .venv/bin/python -m rfp_agent.db.cli set-password --login "$login" --password-stdin; done
+      - name: 백엔드 띄우기 (8000)
+        working-directory: backend
+        run: |
+          nohup .venv/bin/python -m uvicorn rfp_agent.api.main:app --port 8000 > "$RUNNER_TEMP/backend.log" 2>&1 &
+          for i in $(seq 1 60); do curl -sf localhost:8000/api/health > /dev/null && exit 0; sleep 1; done
+          cat "$RUNNER_TEMP/backend.log"; exit 1
+      - name: 화면 띄우기 (5173)
+        working-directory: frontend
+        run: |
+          npm ci --ignore-scripts
+          nohup npm run dev > "$RUNNER_TEMP/frontend.log" 2>&1 &
+          for i in $(seq 1 60); do curl -sf localhost:5173 > /dev/null && exit 0; sleep 1; done
+          cat "$RUNNER_TEMP/frontend.log"; exit 1
+      - working-directory: frontend
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: e2e (핵심 흐름, 정답지·채점)
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: e2e-results.json
+        run: ./node_modules/.bin/playwright test e2e/core-flow.spec.ts e2e/evaluation.spec.ts --trace off --reporter=list,json
+      - name: 건너뛴 시험 없음 확인
+        working-directory: frontend
+        run: node scripts/check-e2e-report.mjs
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            frontend/test-results
+            frontend/e2e-results.json
+          if-no-files-found: ignore
+
   openspec:
     runs-on: ubuntu-latest
     steps:
