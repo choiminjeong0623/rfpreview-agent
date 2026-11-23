@@ -80,11 +80,11 @@ export type AiUsageRow = {
   estimated_cost_krw: number | null
 }
 
-/** 정답지. TYPE = 유형 정답지, REQ = 요구사항 정답지(add-requirement-answer-key). made_by가 CLAUDE_DRAFT(Claude 초안)·AUTO(코드 자동)면 사람 확인 전. */
+/** 정답지. TYPE = 유형 정답지, REQ = 요구사항 정답지(add-requirement-answer-key), JUDGE = 판정 정답지(add-eval-demo). made_by가 CLAUDE_DRAFT(Claude 초안)·AUTO(코드 자동)면 사람 확인 전. */
 export type AnswerKey = {
   key_id: number
   key_name: string
-  key_kind: 'TYPE' | 'REQ'
+  key_kind: 'TYPE' | 'REQ' | 'JUDGE'
   made_by: 'CLAUDE_DRAFT' | 'HUMAN' | 'AUTO'
   doc_name: string | null
   created_at: string
@@ -642,6 +642,22 @@ export type Equipment = {
   ambiguous: number
 }
 
+export type EvalJudgmentCell = {
+  expected: string
+  system: string
+  count: number
+}
+
+/** 판정 정답지 채점의 자세한 수 (K5-정답지·K6-정답지, add-eval-demo). */
+export type EvalJudgmentDetail = {
+  rows: number
+  matched: number
+  not_found: number
+  ambiguous: number
+  ambiguous_hit: number
+  table: EvalJudgmentCell[]
+}
+
 /** 지표 하나. 값이 없으면(분모 0) null. 목표가 없으면 passed는 null. */
 export type EvalMetric = {
   code: string
@@ -655,12 +671,15 @@ export type EvalMetric = {
   better: 'up' | 'down'
   passed: boolean | null
   note: string | null
+  ci_low?: number | null
+  ci_high?: number | null
 }
 
 export type EvalMetrics = {
   items: EvalMetric[]
   types: EvalTypeDetail | null
   requirements?: EvalRequirementDetail | null
+  judgments?: EvalJudgmentDetail | null
   not_measured: EvalNotMeasured[]
 }
 
@@ -704,6 +723,9 @@ export type EvalScore = {
   req_key_id: number | null
   req_key_name: string | null
   req_key_made_by: 'CLAUDE_DRAFT' | 'HUMAN' | 'AUTO' | null
+  judge_key_id?: number | null
+  judge_key_name?: string | null
+  judge_key_made_by?: 'CLAUDE_DRAFT' | 'HUMAN' | 'AUTO' | null
   metrics: EvalMetrics
   note: string | null
   code_version: string | null
@@ -1735,6 +1757,7 @@ export type ScoreRequest = {
   run_ids: number[]
   key_id?: number | null
   req_key_id?: number | null
+  judge_key_id?: number | null
   note?: string | null
 }
 

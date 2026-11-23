@@ -1,8 +1,9 @@
 """DB 명령: rfp-db migrate | seed-rules [--reset-edits] | seed-products [--replace] | setup
 | demo-businesses --business 사업명 a.docx [b.docx ...] (시연용 사업, add-project-status)
-| load-answer-key 정답지.csv --name 이름 [--human] [--kind REQ --doc 문서] (정답지)
+| load-answer-key 정답지.csv --name 이름 [--human] [--kind REQ|JUDGE --doc 문서] (정답지)
 | make-answer-key 공급사답안.docx --name 이름 (요구사항 정답지, add-requirement-answer-key)
 | demo-setup [--create] [--file 파일] (빈 DB에 시연 준비, add-demo-setup)
+| eval-demo [--create] [--report 경로] (AI 끄고 시연 준비 + 세 정답지로 채점 표, add-eval-demo)
 | export-eval-set --key 정답지이름 [--out 경로] [--synthetic]
   (유형 정답지 → 평가셋, add-prompt-eval)
 | eval-prompts --set 이름 [--repeat N] [--baseline] [--yes] [--report 경로]
@@ -96,6 +97,7 @@ def fill_due(due_in: int) -> None:
 def load_answer_key(path: Path, name: str, human: bool, kind: str = "TYPE",
                     doc: str | None = None) -> None:
     from rfp_agent.pipeline.evaluation import load_key
+    from rfp_agent.pipeline.judge_eval import load_judge_key
     from rfp_agent.pipeline.req_eval import load_req_key
 
     if not path.exists():
@@ -103,6 +105,8 @@ def load_answer_key(path: Path, name: str, human: bool, kind: str = "TYPE",
     with connect() as conn:
         if kind == "REQ":
             report = load_req_key(conn, path, name, doc, human)
+        elif kind == "JUDGE":
+            report = load_judge_key(conn, path, name, doc, human)
         else:
             report = load_key(conn, path, name, human)
     who = "사람" if human else "Claude 초안"
@@ -285,7 +289,13 @@ def compare_prompts(set_name: str, models: str, repeat: int, yes: bool,
 
 DEMO_FILE = "RFP_Product_Master_Evaluative_EN_With_Product_Switch.docx"
 DEMO_KEYS = [("synthetic_rfp28_req.csv", "합성 RFP 28 요구사항", "REQ"),
-             ("synthetic_rfp28_type.csv", "합성 RFP 28 유형", "TYPE")]
+             ("synthetic_rfp28_type.csv", "합성 RFP 28 유형", "TYPE"),
+             ("synthetic_rfp28_judge.csv", "합성 RFP 28 판정", "JUDGE")]
+# 합성 RFP 파일 24 → 25 → 26 → 27 → 28 (add-eval-demo: 파일 25 스크립트 복원)
+SYNTHETIC_SCRIPTS = ("generate_evaluative_rfp.py", "generate_deviation_rfp.py",
+                     "generate_collaboration_rfp.py", "generate_risk_rfp.py",
+                     "generate_switch_rfp.py")
+MAKE_SYNTHETIC = "cd backend && " + " && ".join(f"uv run python ../{s}" for s in SYNTHETIC_SCRIPTS)
 AI_MODE_TEXT = {"GEMINI": "Gemini(외부로 보냄, 요금)", "LOCAL": "사내 모델",
                 "OFF": "AI 끔 — 규칙만"}
 
@@ -359,9 +369,7 @@ def demo_setup(create: bool, file: Path | None, password: str | None = None) -> 
     if password is not None and len(password) < auth.MIN_PASSWORD:
         sys.exit(f"비밀번호는 {auth.MIN_PASSWORD}자 이상이어야 합니다.")
     if not path.exists():
-        sys.exit(f"시연 파일이 없습니다: {path}\n"
-                 "  cd backend && uv run python ../generate_risk_rfp.py && "
-                 "uv run python ../generate_switch_rfp.py")
+        sys.exit(f"시연 파일이 없습니다: {path}\n  {MAKE_SYNTHETIC}")
     print(f"[시연 준비] AI 방식: {AI_MODE_TEXT[ai_mode(settings)]}")
     with connect() as conn:
         applied = migrate(conn, settings.migrations_dir)
@@ -375,7 +383,7 @@ def demo_setup(create: bool, file: Path | None, password: str | None = None) -> 
                   + ", ".join(DEMO_LOGINS))
     for csv_name, name, kind in DEMO_KEYS:
         load_answer_key(settings.seed_dir / "answer_keys" / csv_name, name, False, kind,
-                        DEMO_FILE.removesuffix(".docx") if kind == "REQ" else None)
+                        None if kind == "TYPE" else DEMO_FILE.removesuffix(".docx"))
     demo_businesses([["시연 사업", str(path)]], "Demo Grid Co.", 14)
     print("[시연 준비] 끝. 이 DB로 백엔드를 띄우면 검토 목록에 시연 검토가 하나 보입니다.")
     if password is None:
@@ -432,15 +440,17 @@ def main(argv: list[str] | None = None) -> None:
                                             "make-answer-key", "fill-due", "demo-setup",
                                             "export-eval-set", "eval-prompts",
                                             "langfuse-push-prompts", "langfuse-push-traces",
-                                            "langfuse-push-dataset", "set-password"])
+                                            "langfuse-push-dataset", "set-password",
+                                            "eval-demo"])
     parser.add_argument("path", nargs="?",
                         help="load-answer-key: 정답지 CSV / make-answer-key: 공급사 답안 docx")
     parser.add_argument("--name", help="load-answer-key: 정답지 이름 (같은 이름이면 줄을 바꿈)")
     parser.add_argument("--human", action="store_true",
                         help="load-answer-key: 사람이 만든 정답지 (주지 않으면 Claude 초안)")
-    parser.add_argument("--kind", choices=["TYPE", "REQ"], default="TYPE",
-                        help="load-answer-key: TYPE 유형 정답지(기본) / REQ 요구사항 정답지")
-    parser.add_argument("--doc", help="--kind REQ: 대상 문서 이름(파일 이름에 든 글자)")
+    parser.add_argument("--kind", choices=["TYPE", "REQ", "JUDGE"], default="TYPE",
+                        help="load-answer-key: TYPE 유형 정답지(기본) / REQ 요구사항 정답지 / "
+                             "JUDGE 판정 정답지")
+    parser.add_argument("--doc", help="--kind REQ·JUDGE: 대상 문서 이름(파일 이름에 든 글자)")
     parser.add_argument("--business", action="append", nargs="+", metavar=("사업명", "DOCX"),
                         help="demo-businesses: 사업명과 docx 파일들 (여러 번 줄 수 있음)")
     parser.add_argument("--customer", help="demo-businesses: 고객사 (주지 않으면 비움)")
@@ -450,8 +460,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--replace", action="store_true",
                         help="이전 제품과 검토 실행 결과를 지우고 파일 내용만 넣음")
     parser.add_argument("--create", action="store_true",
-                        help="demo-setup: DATABASE_URL의 DB가 없으면 만듦")
-    parser.add_argument("--file", help="demo-setup: 시연 파일 (기본: 합성 RFP 파일 28)")
+                        help="demo-setup·eval-demo: DATABASE_URL의 DB가 없으면 만듦")
+    parser.add_argument("--file",
+                        help="demo-setup·eval-demo: 시연 파일 (기본: 합성 RFP 파일 28)")
     parser.add_argument("--reset-edits", action="store_true",
                         help="화면에서 고친 규칙을 버리고 사전 파일 내용만 넣음 (이력은 남음)")
     parser.add_argument("--key", help="export-eval-set: 유형 정답지 이름")
@@ -466,7 +477,7 @@ def main(argv: list[str] | None = None) -> None:
                         help="eval-prompts: 이번 실행을 기준선으로 (이전 기준선은 풂)")
     parser.add_argument("--yes", action="store_true",
                         help="eval-prompts: 어림 비용이 상한(RFP_EVAL_MAX_KRW)을 넘어도 시작")
-    parser.add_argument("--report", help="eval-prompts: 마크다운 보고서를 쓸 경로")
+    parser.add_argument("--report", help="eval-prompts·eval-demo: 마크다운 보고서를 쓸 경로")
     parser.add_argument("--write-baseline-file", action="store_true",
                         help="eval-prompts: 결과를 기준선 파일(data/eval/baseline.json)로 씀")
     parser.add_argument("--models",
@@ -527,6 +538,12 @@ def main(argv: list[str] | None = None) -> None:
         return
     if args.command == "demo-setup":
         demo_setup(args.create, Path(args.file) if args.file else None, args.password)
+        return
+    if args.command == "eval-demo":
+        from rfp_agent.db import eval_demo
+
+        eval_demo.run(args.create, Path(args.report) if args.report else None,
+                      Path(args.file) if args.file else None)
         return
     if args.command == "fill-due":
         fill_due(args.due_in)

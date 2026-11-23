@@ -64,7 +64,7 @@ docker compose exec backend rfp-db seed-products   # 제품표 적재 (처음 �
 docker compose exec backend rfp-db set-password --login engineer   # 로그인 비밀번호 (approver 등 사용자마다)
 ```
 
-화면은 <http://localhost:5173>(아이디 `engineer`·`approver` 등과 위에서 정한 비밀번호로 로그인), API 상태는 <http://localhost:8000/api/health>입니다. 고객 원문 없이 시연하려면 저장소 맨 위의 `generate_*.py`로 합성 RFP를 만든 뒤 `rfp-db demo-setup`으로 검토 1건을 준비합니다. 로컬 직접 실행, 시연 파일 안내, Langfuse 연동, 검사 명령은 [docs/setup.md](docs/setup.md)에 있습니다.
+화면은 <http://localhost:5173>(아이디 `engineer`·`approver` 등과 위에서 정한 비밀번호로 로그인), API 상태는 <http://localhost:8000/api/health>입니다. 고객 원문 없이 시연하려면 저장소 맨 위의 `generate_*.py`로 합성 RFP를 만든 뒤 `rfp-db demo-setup`으로 검토 1건을 준비합니다. 평가 숫자를 저장소만으로 다시 내려면 `rfp-db eval-demo --create`(AI 끔, 정답지 셋으로 채점, [docs/05 0장](docs/05-evaluation.md#0-저장소만으로-다시-재기-rfp-db-eval-demo)). 로컬 직접 실행, 시연 파일 안내, Langfuse 연동, 검사 명령은 [docs/setup.md](docs/setup.md)에 있습니다.
 
 ## 문서
 

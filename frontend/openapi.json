@@ -6121,7 +6121,8 @@
             "type": "string",
             "enum": [
               "TYPE",
-              "REQ"
+              "REQ",
+              "JUDGE"
             ],
             "title": "Key Kind"
           },
@@ -6177,7 +6178,7 @@
           "ambiguous"
         ],
         "title": "AnswerKey",
-        "description": "정답지. TYPE = 유형 정답지, REQ = 요구사항 정답지(add-requirement-answer-key).\n\nmade_by가 CLAUDE_DRAFT(Claude 초안)·AUTO(코드 자동)면 사람 확인 전."
+        "description": "정답지. TYPE = 유형 정답지, REQ = 요구사항 정답지(add-requirement-answer-key),\nJUDGE = 판정 정답지(add-eval-demo).\n\nmade_by가 CLAUDE_DRAFT(Claude 초안)·AUTO(코드 자동)면 사람 확인 전."
       },
       "Approval": {
         "properties": {
@@ -10044,6 +10045,73 @@
         ],
         "title": "Equipment"
       },
+      "EvalJudgmentCell": {
+        "properties": {
+          "expected": {
+            "type": "string",
+            "title": "Expected"
+          },
+          "system": {
+            "type": "string",
+            "title": "System"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected",
+          "system",
+          "count"
+        ],
+        "title": "EvalJudgmentCell"
+      },
+      "EvalJudgmentDetail": {
+        "properties": {
+          "rows": {
+            "type": "integer",
+            "title": "Rows"
+          },
+          "matched": {
+            "type": "integer",
+            "title": "Matched"
+          },
+          "not_found": {
+            "type": "integer",
+            "title": "Not Found"
+          },
+          "ambiguous": {
+            "type": "integer",
+            "title": "Ambiguous"
+          },
+          "ambiguous_hit": {
+            "type": "integer",
+            "title": "Ambiguous Hit"
+          },
+          "table": {
+            "items": {
+              "$ref": "#/components/schemas/EvalJudgmentCell"
+            },
+            "type": "array",
+            "title": "Table"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rows",
+          "matched",
+          "not_found",
+          "ambiguous",
+          "ambiguous_hit",
+          "table"
+        ],
+        "title": "EvalJudgmentDetail",
+        "description": "판정 정답지 채점의 자세한 수 (K5-정답지·K6-정답지, add-eval-demo)."
+      },
       "EvalMetric": {
         "properties": {
           "code": {
@@ -10135,6 +10203,28 @@
               }
             ],
             "title": "Note"
+          },
+          "ci_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ci Low"
+          },
+          "ci_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ci High"
           }
         },
         "additionalProperties": false,
@@ -10178,6 +10268,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/EvalRequirementDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "judgments": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvalJudgmentDetail"
               },
               {
                 "type": "null"
@@ -10443,6 +10543,44 @@
               }
             ],
             "title": "Req Key Made By"
+          },
+          "judge_key_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Judge Key Id"
+          },
+          "judge_key_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Judge Key Name"
+          },
+          "judge_key_made_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "CLAUDE_DRAFT",
+                  "HUMAN",
+                  "AUTO"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Judge Key Made By"
           },
           "metrics": {
             "$ref": "#/components/schemas/EvalMetrics"
@@ -17833,6 +17971,17 @@
               }
             ],
             "title": "Req Key Id"
+          },
+          "judge_key_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Judge Key Id"
           },
           "note": {
             "anyOf": [
