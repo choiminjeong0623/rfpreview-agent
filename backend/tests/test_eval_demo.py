@@ -2,6 +2,7 @@
 
 import csv
 import os
+from pathlib import Path
 
 import pytest
 
@@ -142,7 +143,7 @@ def env(db_url, monkeypatch):
 
 
 @pytest.mark.skipif(not FILE_28.exists(), reason="파일 28 없음 — " + cli.MAKE_SYNTHETIC)
-def test_eval_demo_same_table(db, env, db_url, tmp_path):
+def test_eval_demo_same_table(db, env, db_url, tmp_path, monkeypatch):
     """Scenario: 재현 채점 — 같은 표, 정답지 세 개 지표, 처리 시간 없음.
 
     Scenario: 합성 RFP 정답지 넣기 · 합성 RFP 정답지 채점 (공개본 스크립트로 만든 파일 28).
@@ -152,7 +153,8 @@ def test_eval_demo_same_table(db, env, db_url, tmp_path):
     # 시험 DB에는 시험용 제품표가 있다. 빈 DB처럼 실제 제품표로 바꿔 둔다
     seed_products(db, [get_settings().seed_dir / "products" / "product_master.csv"], replace=True)
     db.commit()
-    first = eval_demo.run(False, tmp_path / "a.md", None)
+    monkeypatch.chdir(tmp_path)
+    first = eval_demo.run(False, Path("a.md"), None)
     keys = {k["key_name"]: (k["key_kind"], k["rows"], k["made_by"]) for k in evaluation.keys(db)}
     assert keys == {"합성 RFP 28 요구사항": ("REQ", 69, "CLAUDE_DRAFT"),
                     "합성 RFP 28 유형": ("TYPE", 65, "CLAUDE_DRAFT"),

@@ -75,6 +75,11 @@ def run(create: bool, report: Path | None, file: Path | None) -> str:
     text = table(saved["metrics"], keys, code_version())
     print(text)
     if report is not None:
-        report.write_text(text, encoding="utf-8")
+        # 표는 명령을 돌린 폴더 안에만 쓴다(다른 곳 파일을 덮지 않음)
+        here = Path.cwd().resolve()
+        target = (here / report).resolve()
+        if not target.is_relative_to(here):
+            raise SystemExit(f"[재현 채점] 표는 지금 폴더 안에만 씁니다: {report}")
+        target.write_text(text, encoding="utf-8")
         print(f"[재현 채점] 표를 썼습니다: {report}")
     return text
