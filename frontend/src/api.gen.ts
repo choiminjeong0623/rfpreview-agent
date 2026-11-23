@@ -43,11 +43,24 @@ export type AiCall = {
   batch_lines: number
 }
 
-/** 검토의 AI 호출 기록과 요약: 결과별 수, 단계별 AI 시간 합, 같은 입력·다른 답 수. */
+/** AI 역할 하나의 운영 지표 (add-ops-metrics). 비율은 %, 분모가 0이면 null. */
+export type AiCallRoleStat = {
+  role: string
+  requests: number
+  attempts: number
+  p50_ms: number | null
+  p95_ms: number | null
+  failure_rate: number | null
+  dropped_rate: number | null
+  recovered: number
+}
+
+/** 검토의 AI 호출 기록과 요약: 결과별 수, 역할별 지표, 단계별 AI 시간, 같은 입력·다른 답. */
 export type AiCalls = {
   calls: AiCall[]
   count: number
   by_result: Record<string, number>
+  roles?: AiCallRoleStat[]
   step_ms: StepMs[]
   different_answers: number
   langfuse?: AiCallsLangfuse | null

@@ -295,6 +295,30 @@ function LangfuseSent({ v }: { v: NonNullable<AiCalls['langfuse']> }) {
   )
 }
 
+const rate = (v: number | null) => (v === null ? '—' : `${v} %`)
+
+/** 역할별 AI 호출 지표 (add-ops-metrics): 요청·시도·p50·p95·실패율·버린 비율·재시도 뒤 성공 */
+function RoleStats({ roles }: { roles: AiCalls['roles'] }) {
+  if (!roles || roles.length === 0) return null
+  return (
+    <table className="mini rlroletbl" aria-label="역할별 AI 호출 지표">
+      <thead><tr><th>역할</th><th>요청</th><th>시도</th><th>p50</th><th>p95</th>
+        <th>실패율 <Info text="성공하지 못한 시도(시간 초과·연결 오류·형식 오류·설정 오류)의 비율입니다. 재시도도 한 번의 시도로 셉니다." /></th>
+        <th>버린 비율 <Info text="AI가 답했지만 코드가 근거와 대조해 버린 답의 비율입니다." /></th>
+        <th>재시도 뒤 성공</th></tr></thead>
+      <tbody>
+        {roles.map((r) => (
+          <tr key={r.role} data-role={r.role}>
+            <td>{roleName(r.role === '—' ? null : r.role)}</td><td>{num(r.requests)}</td><td>{num(r.attempts)}</td>
+            <td>{r.p50_ms === null ? '—' : secs(r.p50_ms / 1000)}</td><td>{r.p95_ms === null ? '—' : secs(r.p95_ms / 1000)}</td>
+            <td>{r.failure_rate ? <span className="c-ora">{rate(r.failure_rate)}</span> : rate(r.failure_rate)}</td>
+            <td>{rate(r.dropped_rate)}</td><td>{num(r.recovered)}</td>
+          </tr>
+        ))}
+      </tbody></table>
+  )
+}
+
 /** AI 호출 목록 (add-ai-call-trace, FR-21): 이름 붙은 거르기(단계·역할)·느린 순·초기화, 결과 없음 안내 (Fiori 거르기 막대·No Data) */
 function AiCallList({ runId, data, error }: { runId: number; data: AiCalls | null; error: string | null }) {
   const [step, setStep] = useState('')
@@ -319,6 +343,7 @@ function AiCallList({ runId, data, error }: { runId: number; data: AiCalls | nul
         {' · '}같은 입력에 다른 답 {data.different_answers}건{' '}
         <Info text="문서 원문은 저장하지 않고, 같은 입력인지 비교할 수 있는 요약값(해시)만 저장합니다." /></p>
       {data.langfuse && <LangfuseSent v={data.langfuse} />}
+      <RoleStats roles={data.roles} />
       <div className="rlfilter" role="group" aria-label="AI 호출 거르기">
         <label>단계<select className="fi" aria-label="단계 거르기" value={step} onChange={(e) => setStep(e.target.value)}>
           <option value="">모든 단계</option>

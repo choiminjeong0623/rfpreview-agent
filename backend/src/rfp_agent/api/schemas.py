@@ -1232,11 +1232,24 @@ class AiCallsLangfuse(Out):
     error: str | None                        # 마지막으로 보내지 못한 이유 (보내면 비움)
 
 
+class AiCallRoleStat(Out):
+    """AI 역할 하나의 운영 지표 (add-ops-metrics). 비율은 %, 분모가 0이면 null."""
+    role: str
+    requests: int                            # 요청 수 (재시도는 같은 요청)
+    attempts: int                            # 시도 수 (재시도 포함)
+    p50_ms: int | None
+    p95_ms: int | None
+    failure_rate: float | None               # 성공이 아닌 시도 / 시도
+    dropped_rate: float | None               # 성공한 시도 중 코드 검사로 버린 비율
+    recovered: int                           # 첫 시도가 실패하고 재시도로 성공한 요청 수
+
+
 class AiCalls(Out):
-    """검토의 AI 호출 기록과 요약: 결과별 수, 단계별 AI 시간 합, 같은 입력·다른 답 수."""
+    """검토의 AI 호출 기록과 요약: 결과별 수, 역할별 지표, 단계별 AI 시간, 같은 입력·다른 답."""
     calls: list[AiCall]
     count: int
     by_result: dict[str, int]
+    roles: list[AiCallRoleStat] = []
     step_ms: list[StepMs]
     different_answers: int
     # 작업이 끝날 때 Langfuse로 보낸 결과 (add-langfuse-trace-push). 보낸 적·실패한 적이 없으면 null

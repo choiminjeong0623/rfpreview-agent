@@ -190,6 +190,42 @@ def _judgment_scores(conn: psycopg.Connection, run_ids: list[int]) -> tuple[dict
     return k5, k6
 
 
+def _edit_rate(conn: psycopg.Connection, run_ids: list[int]) -> dict:
+    """사람 수정 비율: 한 줄씩 본 판정(확정·수정·반려) 중 수정·반려 (add-ops-metrics, P1-8).
+
+    마지막 확정 이력이 한꺼번에 확정이면 분모에서 뺀다. 표시가 없는 예전 이력은 같은 검토·같은 사람·
+    같은 시각(한 트랜잭션)에 확정한 줄이 둘 이상이면 한꺼번에 확정으로 본다.
+    """
+    from rfp_agent.pipeline.review import BULK_REASON
+
+    edited, single, bulk = conn.execute(
+        """WITH last_confirm AS (
+             SELECT DISTINCT ON (l.target_id) l.target_id, l.run_id, l.actor_id, l.acted_at,
+                    l.reason
+               FROM review_log l
+              WHERE l.run_id = ANY(%s) AND l.target_table = 'judgment' AND l.action = 'CONFIRM'
+              ORDER BY l.target_id, l.log_id DESC),
+           confirmed AS (
+             SELECT j.judgment_id,
+                    COALESCE(c.reason = %s, FALSE) OR EXISTS (
+                      SELECT 1 FROM review_log o
+                       WHERE o.run_id = c.run_id AND o.actor_id = c.actor_id
+                         AND o.acted_at = c.acted_at AND o.target_table = 'judgment'
+                         AND o.action = 'CONFIRM' AND o.target_id <> c.target_id) AS is_bulk
+               FROM judgment j LEFT JOIN last_confirm c ON c.target_id = j.judgment_id
+              WHERE j.run_id = ANY(%s) AND j.is_current AND j.review_status = 'CONFIRMED')
+         SELECT (SELECT count(*) FROM judgment WHERE run_id = ANY(%s) AND is_current
+                   AND review_status IN ('EDITED', 'REJECTED')),
+                count(*) FILTER (WHERE NOT is_bulk), count(*) FILTER (WHERE is_bulk)
+           FROM confirmed""", (run_ids, BULK_REASON, run_ids, run_ids)).fetchone()
+    den = edited + single
+    return _metric("EDIT-RATE", "사람 수정 비율",
+                   "사람이 한 줄씩 본 판정 중 수정·반려한 비율", "%", _pct(edited, den),
+                   edited, den,
+                   better="down",
+                   note=f"한꺼번에 확정 {bulk}줄 뺌" if bulk else None)
+
+
 def _type_score(conn: psycopg.Connection, run_ids: list[int], key_id: int) -> tuple[dict, dict]:
     """K13: 정답지 줄과 글자가 같은 요구사항의 주 유형이 정답과 같은 비율."""
     reqs = conn.execute(
@@ -261,7 +297,7 @@ def metrics(conn: psycopg.Connection, run_ids: list[int], key_id: int | None,
     items = [
         _metric("K4", "원문 위치 정확도", "판정 줄 중 원문 위치가 붙은 비율", "%",
                 _pct(k4_num, k4_den), k4_num, k4_den),
-        k5, k6,
+        k5, k6, _edit_rate(conn, run_ids),
         _metric("K11", "보증값 지어냄", "제품표·회사 고정값에 없는 보증값 후보 수", "건", k11,
                 better="down"),
         _metric("K12", "근거 없는 제안 포인트", "요구 원문 위치가 없는 제안 포인트 수", "건", k12,

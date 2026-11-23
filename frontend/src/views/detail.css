@@ -128,7 +128,8 @@
 .rlseg{display:flex;border:1px solid var(--c-line);border-radius:var(--r-sm);overflow:hidden}
 .rlseg button{border:0;background:var(--c-white);padding:4px 10px;font-size:var(--fs-sm);cursor:pointer}
 .rlseg button.on{background:var(--c-navy);color:var(--c-white)}
-.rlsteptbl,.rlcalltbl,.rlprompt{width:100%}
+.rlsteptbl,.rlcalltbl,.rlprompt,.rlroletbl{width:100%}
+.rlroletbl{margin:0 0 12px}
 .rlsteptbl td:nth-child(2){width:38%}
 .rltime{display:grid;grid-template-columns:1fr 64px;gap:var(--s-2);align-items:center}
 .rltime>span:last-child{text-align:right}
