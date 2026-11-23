@@ -29,7 +29,7 @@
 - [x] 5.1 `#/login`을 예시 화면에서 실제 로그인 화면으로: 틀리면 "아이디 또는 비밀번호가 맞지 않습니다.", 성공하면 `next` 주소로. 예시 화면 목록에서 로그인을 뺌. 확인: e2e Scenario "실제 로그인 화면"
 - [x] 5.2 `shell/session.tsx`: `localStorage` `s2w.user` 대신 `GET /api/auth/me`, API 401이면 `#/login?next=<지금 주소>`, 머리글 사용자 바꾸기 겹창은 로그인한 사용자와 [로그아웃]·[다른 사용자로 로그인]. 확인: e2e Scenario "로그인한 사용자 보이기", "사용자 바꾸기", "로그아웃", "세션 없이 화면 열기"
 - [x] 5.3 화면 API 호출에서 `actor_id`·`user_id`를 보내던 곳을 지움. 확인: `npm run lint`·`npm run build` 통과, 남은 `actor_id` grep 0
-- [ ] 5.4 e2e `helpers.ts` `as()`를 `request.post('/api/auth/login')`(비밀번호 `E2E_PASSWORD`)로 바꿈. 확인: 기존 e2e를 로컬에서 돌려 통과·건너뛴 수 보고
+- [x] 5.4 e2e `helpers.ts` `as()`를 `request.post('/api/auth/login')`(비밀번호 `E2E_PASSWORD`)로 바꿈. 확인: 기존 e2e를 로컬에서 돌려 통과·건너뛴 수 보고
 
 ## 6. 문서
 
@@ -37,7 +37,7 @@
 
 ## 7. 통합 확인
 
-- [ ] 7.1 AGENTS.md 7장 검사 모두 통과: ruff, pytest(DB), `npm run lint`·`check:api`·`check:trace`·`build`, `openspec validate --all --strict`
+- [x] 7.1 AGENTS.md 7장 검사 모두 통과: ruff, pytest(DB), `npm run lint`·`check:api`·`check:trace`·`build`, `openspec validate --all --strict`
 
 ## Workflow follow-up
 
