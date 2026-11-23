@@ -4,15 +4,11 @@ import { as, deviationRun, ENGINEER, openTab, backFromJudgment } from './helpers
 // 명세 review-workspace "검토 상세 요약 칸과 탭"·"판정 표 거르기"·"판정 상세 패널"의 Scenario (change update-review-screens).
 
 test('탭으로 내용 바꾸기', async ({ page, request }) => {
-  // 코드와 스펙이 어긋나 있어 멈춰 둔다(2026-11-16 E2E를 CI에 넣으며 발견). 화면 탭은 판정 다음에 "강점 제안"이 있는데
-  // (src/views/detail/tabs.ts MAIN_TABS), 명세 review-workspace "검토 상세 요약 칸과 탭"은 판정·위험 조건·문서 읽기 점검·상업 조건·이력이다.
-  // 어느 쪽이 맞는지 사람이 정한 뒤 스펙이나 이 테스트를 고친다.
-  test.fixme(true, '탭 구성이 스펙(5개)과 화면(강점 제안 포함 6개)에서 다릅니다')
   const run = await deviationRun(request, `탭 ${Date.now()}`)
   await page.goto(`/#/reviews/${run.run_id}`)
   const tabs = page.getByRole('tablist', { name: '검토 메뉴' })
-  // 탭 5개 + 더 보기 (update-detail-header). 탭 이름 옆 수는 빼고 본다
-  await expect(tabs.getByRole('tab')).toHaveText([/^판정/, /^위험 조건/, /^문서 읽기 점검/, /^상업 조건/, '이력'])
+  // 탭 6개 + 더 보기 (update-detail-tabs-spec). 탭 이름 옆 수는 빼고 본다
+  await expect(tabs.getByRole('tab')).toHaveText([/^판정/, /^강점 제안/, /^위험 조건/, /^문서 읽기 점검/, /^상업 조건/, '이력'])
   await tabs.getByRole('tab', { name: '이력' }).click()
   await expect(tabs.getByRole('tab', { name: '이력' })).toHaveAttribute('aria-selected', 'true')
   await expect(page.locator('#log')).toContainText('사유: 시험용 일탈')
