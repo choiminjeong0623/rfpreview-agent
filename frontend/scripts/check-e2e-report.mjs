@@ -1,9 +1,11 @@
 // CI e2e 결과 검사 (add-e2e-ci, 명세 spec-verification "핵심 흐름 e2e").
 // Playwright JSON 결과(PLAYWRIGHT_JSON_OUTPUT_NAME)를 읽어, 실패·예상 밖 결과·건너뛴 시험이 있거나
 // 돈 시험이 하나도 없으면 실패한다. 준비가 빠져 test.skip한 것을 "통과"로 보지 않기 위해서다.
-// 실행: node scripts/check-e2e-report.mjs e2e-results.json
+// 실행: frontend 폴더에서 node scripts/check-e2e-report.mjs (읽는 파일은 e2e-results.json으로 정해 둠)
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+
+const REPORT = 'e2e-results.json'
 
 /** 결과 stats로 문제 목록을 만든다. 비면 통과. */
 export function problems(stats) {
@@ -17,8 +19,7 @@ export function problems(stats) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const path = process.argv[2] ?? 'e2e-results.json'
-  const { stats } = JSON.parse(readFileSync(path, 'utf8'))
+  const { stats } = JSON.parse(readFileSync(REPORT, 'utf8'))
   const found = problems(stats)
   if (found.length) {
     console.error(`e2e 결과 검사 실패: ${found.join(', ')}`)

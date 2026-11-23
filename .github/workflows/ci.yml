@@ -111,7 +111,7 @@ jobs:
         run: ./node_modules/.bin/playwright test e2e/core-flow.spec.ts e2e/evaluation.spec.ts --trace off --reporter=list,json
       - name: 건너뛴 시험 없음 확인
         working-directory: frontend
-        run: node scripts/check-e2e-report.mjs e2e-results.json
+        run: node scripts/check-e2e-report.mjs
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
