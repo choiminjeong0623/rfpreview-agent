@@ -18,4 +18,5 @@ test('직접 작성할 칸 표시', async ({ page, request }) => {
   // 확인 필요 비율은 v4.96부터 결재 상신 창에만 있다 (update-detail-header). AR-03 줄에 뺀 칸 수를 적는다
   await page.getByRole('button', { name: '결재 상신' }).click()
   await expect(page.getByRole('dialog', { name: '결재 상신' })).toContainText('직접 작성할 칸 3개는 뺌')
+  await page.unrouteAll({ behavior: 'ignoreErrors' })   // 창이 다시 부른 결재 정보 요청이 시험이 끝난 뒤 닫힌 화면에서 실패하지 않게
 })
