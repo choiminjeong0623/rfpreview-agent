@@ -10,11 +10,10 @@
     "test": "vitest run",
     "preview": "vite preview",
     "e2e": "playwright test",
-    "e2e:install": "playwright install --with-deps chromium",
     "gen:api": "cd ../backend && uv run rfp-openapi > ../frontend/openapi.json && cd ../frontend && node scripts/gen-api-types.mjs",
     "check:api": "node scripts/check-api-types.mjs",
     "trace": "node scripts/trace.mjs",
-    "check:trace": "node scripts/trace.mjs --check && node --test scripts/trace.test.mjs scripts/sync-main.test.mjs",
+    "check:trace": "node scripts/trace.mjs --check && node --test scripts/trace.test.mjs scripts/sync-main.test.mjs scripts/check-e2e-report.test.mjs",
     "sync-main": "node scripts/sync-main.mjs",
     "test:trace": "node --test scripts/trace.test.mjs",
     "compare:mockup": "node scripts/compare-mockup.mjs"

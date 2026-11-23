@@ -52,6 +52,8 @@ def enqueue(conn: psycopg.Connection, run_id: int, kind: str, paths: list[Path],
     """작업을 넣는다. 새 토큰을 검토에 적어 지금 돌고 있는 옛 실행의 소유권을 빼앗는다."""
     assert kind in KINDS
     token = str(uuid.uuid4())
+    # 아래 UPDATE가 검토 행을 잠근다. 옛 실행은 커밋 직전에 같은 행을 FOR UPDATE로 잠그므로
+    # 둘 중 먼저 잠근 쪽이 이기고 다른 쪽은 기다린다 (update-run-fencing)
     with conn.transaction():
         conn.execute("UPDATE run_job SET status = 'DROPPED', finished_at = now() "
                      "WHERE run_id = %s AND status = 'QUEUED'", (run_id,))
@@ -180,6 +182,7 @@ def reclaim(conn: psycopg.Connection, now_sql: str = "now()") -> list[int]:
                          "error = '살아 있음 끊김' WHERE job_id = %s", (job_id,))
             if attempts < MAX_REQUEUE:
                 token = str(uuid.uuid4())
+                # enqueue와 같이 검토 행을 잠가 옛 실행의 커밋과 순서를 정한다 (update-run-fencing)
                 conn.execute("UPDATE review_run SET run_token = %s WHERE run_id = %s",
                              (token, run_id))
                 new_id = conn.execute(

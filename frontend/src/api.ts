@@ -268,9 +268,11 @@ export const api = {
   evalKeys: () => call<AnswerKey[]>('/eval/keys'),
   evalRuns: () => call<EvalRun[]>('/eval/runs'),
   evalScores: () => call<EvalScore[]>('/eval/scores'),
-  // key_id 유형 정답지(K13), req_key_id 요구사항 정답지(K1·K2·K3·K10, add-requirement-answer-key)
-  score: (run_ids: number[], key_id: number | null, note: string, req_key_id: number | null = null) =>
-    call<EvalScore>('/eval/scores', json('POST', { run_ids, key_id, req_key_id, note })),
+  // key_id 유형 정답지(K13), req_key_id 요구사항 정답지(K1·K2·K3·K10, add-requirement-answer-key),
+  // judge_key_id 판정 정답지(K5-정답지·K6-정답지, add-eval-demo)
+  score: (run_ids: number[], key_id: number | null, note: string, req_key_id: number | null = null,
+    judge_key_id: number | null = null) =>
+    call<EvalScore>('/eval/scores', json('POST', { run_ids, key_id, req_key_id, judge_key_id, note })),
   // 처리 중 취소, 실패·취소한 검토 다시 시도 (add-run-control)
   cancelRun: (id: number) => call<RunSummary>(`/runs/${id}/cancel`, { method: 'POST' }),
   retryRun: (id: number) => call<RunSummary>(`/runs/${id}/retry`, { method: 'POST' }),

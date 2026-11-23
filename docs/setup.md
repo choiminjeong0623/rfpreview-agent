@@ -17,6 +17,7 @@ docker compose exec backend rfp-db set-password --login engineer   # 로그인 �
 - 화면: <http://localhost:5173> · API 상태: <http://localhost:8000/api/health> · 보낸 메일: <http://localhost:8025> (밖으로 나가지 않음)
 - 고객 RFP 원문은 이 저장소에 없습니다. 시연용 합성 RFP는 저장소 맨 위의 `generate_*.py`로 만듭니다(`data/private/rfp_docx/`에 생성, git 제외). `frontend/e2e/fixtures/`에도 합성 문서가 있습니다.
 - 화면에서 `frontend/e2e/fixtures/synthetic_154kV_GIS_spec.docx`를 올려 시연할 때는 검토 등록 2단계 문서 표에서 **묶음을 B로 바꾼 뒤** [다음]을 누릅니다. 이 파일은 문서 목록에 없고 규격 표기(IEC)가 2번뿐이라 추천 묶음이 C(판정 안 함)로 나오고, 그대로 두면 "판정 대상 문서(묶음 A·B)가 없습니다"로 막힙니다(판정은 묶음 A·B 문서만, CR-09). 묶음을 고르지 않아도 되는 시연은 `rfp-db demo-setup`(합성 RFP 파일 28, 문서 목록 묶음 B)을 씁니다.
+- 합성 RFP 파일 24~28 만들기: `cd backend && for s in evaluative deviation collaboration risk switch; do uv run python ../generate_${s}_rfp.py; done`(파일은 `data/private/rfp_docx/`, 커밋하지 않음). 재현 채점: `rfp-db eval-demo --create [--report 경로]`는 AI를 끄고 새 DB에 시연 준비를 한 뒤 요구사항·유형·판정 정답지로 채점 표(95 % 구간 포함)를 냅니다.
 
 ## 로컬에서 직접 실행
 
@@ -66,5 +67,5 @@ cd frontend && npm run lint && npm test && npm run check:api && npm run check:tr
 npx --yes @fission-ai/openspec@1.14.3 validate --all --strict
 ```
 
-건너뛰는 것은 고객 RFP 원문(`data/private/`)이 있어야 도는 테스트와, 로컬 OCR 엔진(Tesseract)이 없을 때 건너뛰는 OCR 테스트입니다. 화면 E2E(Playwright)는 CI의 `e2e` 작업이 DB·백엔드·화면·확인용 메일 서버를 띄우고 AI를 끈 채 돌립니다. 원문 파일이 있어야 하는 E2E는 스스로 건너뜁니다. E2E는 `engineer`·`approver`·`cost`·`quality`에 같은 비밀번호를 정하고 `E2E_PASSWORD`(기본 `demo-pass-1`)로 넘깁니다. 시작할 때 엔지니어로 로그인한 쿠키를 `frontend/e2e/.auth/`에 저장합니다(커밋하지 않음).
+건너뛰는 것은 고객 RFP 원문(`data/private/`)이 있어야 도는 테스트와, 로컬 OCR 엔진(Tesseract)이 없을 때 건너뛰는 OCR 테스트입니다. 화면 E2E(Playwright)는 CI `e2e` 작업이 PR마다 AI 없이 돕니다. 먼저 핵심 흐름(`core-flow.spec.ts`)과 정답지·채점(`evaluation.spec.ts`)을 돌려 건너뛴 시험이 있으면 실패하고(add-e2e-ci), 이어서 전체를 확인용 메일 서버와 함께 돌립니다. 원문 파일이 있어야 하는 시험만 스스로 건너뜁니다. 합성 문서로 판정이 생기려면 문서 목록 줄이 필요합니다: `INSERT INTO document_catalog (file_no, file_key, bundle, language) VALUES (91, 'synthetic_judgment', 'A', 'en'), (94, 'synthetic_loss', 'A', 'en')`. E2E는 `engineer`·`approver`·`cost`·`quality`에 같은 비밀번호를 정하고 `E2E_PASSWORD`(기본 `demo-pass-1`)로 넘깁니다. 시작할 때 엔지니어로 로그인한 쿠키를 `frontend/e2e/.auth/`에 저장합니다(커밋하지 않음).
 

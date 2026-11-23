@@ -28,6 +28,8 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-kor
       - run: uv sync --frozen
       - run: uv run --frozen ruff check .
+      # 합성 RFP 파일 24~28 (add-eval-demo): 합성 RFP·재현 채점 테스트가 건너뛰지 않고 돈다. 커밋하지 않는 파일
+      - run: for s in evaluative deviation collaboration risk switch; do .venv/bin/python "../generate_${s}_rfp.py"; done
       - run: uv run --frozen pytest
         env:
           TEST_DATABASE_URL: postgresql://rfp:rfp@localhost:5432/rfp_test
@@ -54,90 +56,84 @@ jobs:
       - run: npm run check:trace
       - run: npm run build
 
-  # 화면 E2E (Playwright). 고객 원문 없이 합성 문서(frontend/e2e/fixtures)만 쓰고, AI는 끈다(RFP_AI_MODE=off).
-  # 원문이나 공개본에서 뺀 파일이 있어야 하는 테스트는 스스로 건너뛴다(test.skip).
+  # 핵심 흐름 e2e (add-e2e-ci): 실제 백엔드·화면으로 올리기 → 판정 확정 → 상신 → 승인 → 인계 패키지.
+  # AI 끔. 건너뛴 시험이 있으면 실패한다 (준비가 빠진 skip을 통과로 보지 않음).
+  # 이어서 화면 E2E 전체를 돌린다. 원문(data/private)이 있어야 하는 시험만 스스로 건너뛴다
   e2e:
-    # Playwright 1.56.1이 지원하는 마지막 Ubuntu (ubuntu-latest 26.04는 브라우저 설치를 거절함)
-    runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    runs-on: ubuntu-24.04   # Playwright 1.56이 지원하는 판 (ubuntu-latest 26.04는 브라우저 설치 거절)
     services:
       postgres:
         image: postgres:16
         env:
           POSTGRES_USER: rfp
-          POSTGRES_DB: rfp
-          # 이 작업 안에서만 쓰는 시험용 DB라 비밀번호 없이 연결한다(설정 파일에 비밀번호 글자를 두지 않음)
-          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_PASSWORD: rfp
+          POSTGRES_DB: rfp_e2e
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U rfp" --health-interval 5s --health-retries 10
+          --health-cmd "pg_isready -U rfp -d rfp_e2e" --health-interval 5s --health-retries 10
       # 협조 요청 메일을 받는 확인용 메일 서버 (밖으로 나가지 않음)
       mailpit:
         image: axllent/mailpit:v1.27@sha256:e22dce5b36f93c77082e204a3942fb6b283b7896e057458400a4c88344c3df68
         ports: ["1025:1025"]
     env:
-      DATABASE_URL: postgresql://rfp@localhost:5432/rfp
+      DATABASE_URL: postgresql://rfp:rfp@localhost:5432/rfp_e2e
       RFP_AI_MODE: "off"
+      RFP_RUN_MODE: inline
+      PYTHONPATH: ${{ github.workspace }}/backend/src   # 프로젝트를 설치하지 않고(--no-install-project) 소스로 실행
+      E2E_PASSWORD: demo-pass-1            # 시험 DB 전용 값 (비밀값 아님, e2e/helpers.ts 기본값)
       RFP_SMTP_HOST: localhost
       RFP_MAIL_COST: cost@example.com
       RFP_MAIL_QUALITY: quality@example.com
       RFP_MAIL_SALES: sales@example.com
     steps:
-      # 실패 기록을 올리는 작업이라 GitHub 토큰을 작업 폴더(.git/config)에 남기지 않는다
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
       - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6.8.0
-        with:
-          # 띄워 둔 백엔드(uv run)가 캐시를 잡고 있어 작업 끝 캐시 정리가 5분 기다리다 실패하던 것
-          prune-cache: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: DB 준비 (마이그레이션·규칙 사전·제품표, e2e 합성 문서를 문서 목록 묶음 A로)
+      - name: 백엔드 준비 (마이그레이션·규칙 사전·실제 제품표, 합성 데이터시트 문서 목록 줄, 로그인)
         working-directory: backend
         run: |
-          uv sync --frozen
-          uv run --frozen rfp-db setup
-          # E2E 로그인 사용자 비밀번호: 실행마다 새로 만들어 시험용 DB와 E2E에만 넘김(설정 파일에 비밀번호 글자를 두지 않음)
-          E2E_PASSWORD="$(openssl rand -hex 16)"
-          echo "::add-mask::$E2E_PASSWORD"
-          echo "E2E_PASSWORD=$E2E_PASSWORD" >> "$GITHUB_ENV"
-          for u in engineer approver cost quality; do
-            echo "$E2E_PASSWORD" | uv run --frozen rfp-db set-password --login "$u" --password-stdin
-          done
-          psql "$DATABASE_URL" -c "INSERT INTO document_catalog (file_no, file_key, bundle, language) VALUES (91, 'synthetic_judgment', 'A', 'en'), (94, 'synthetic_loss', 'A', 'en')"
-      - name: 백엔드 띄우기
+          uv sync --frozen --no-build --no-install-project
+          .venv/bin/python -m rfp_agent.db.cli setup
+          .venv/bin/python -c "import os, psycopg; c = psycopg.connect(os.environ['DATABASE_URL']); c.execute(\"INSERT INTO document_catalog (file_no, file_key, bundle, language) VALUES (91, 'synthetic_judgment', 'A', 'en'), (94, 'synthetic_loss', 'A', 'en')\"); c.commit()"
+          for login in engineer approver cost quality; do echo "$E2E_PASSWORD" | .venv/bin/python -m rfp_agent.db.cli set-password --login "$login" --password-stdin; done
+      - name: 백엔드 띄우기 (8000)
         working-directory: backend
-        run: nohup uv run --frozen uvicorn rfp_agent.api.main:app --port 8000 > "$RUNNER_TEMP/backend.log" 2>&1 &
-      - name: 프런트 띄우기
-        working-directory: frontend
         run: |
-          npm ci
-          npm run e2e:install
-          nohup npm run dev -- --port 5173 --strictPort > "$RUNNER_TEMP/frontend.log" 2>&1 &
-          for i in $(seq 1 60); do
-            curl -sf localhost:8000/api/health > /dev/null && curl -sf localhost:5173 > /dev/null && exit 0
-            sleep 2
-          done
+          nohup .venv/bin/python -m uvicorn rfp_agent.api.main:app --port 8000 > "$RUNNER_TEMP/backend.log" 2>&1 &
+          for i in $(seq 1 60); do curl -sf localhost:8000/api/health > /dev/null && exit 0; sleep 1; done
           cat "$RUNNER_TEMP/backend.log"; exit 1
-      - name: E2E
+      - name: 화면 띄우기 (5173)
         working-directory: frontend
-        run: npm run e2e -- --trace off --workers=1 --reporter=list
-      - name: 띄운 서버 끄기
-        if: always()
-        run: pkill -f "uvicorn rfp_agent" || true; pkill -f vite || true
-      - name: 실패하면 화면·서버 기록 남기기
-        if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        run: |
+          npm ci --ignore-scripts
+          nohup npm run dev > "$RUNNER_TEMP/frontend.log" 2>&1 &
+          for i in $(seq 1 60); do curl -sf localhost:5173 > /dev/null && exit 0; sleep 1; done
+          cat "$RUNNER_TEMP/frontend.log"; exit 1
+      - working-directory: frontend
+        run: ./node_modules/.bin/playwright install --with-deps chromium
+      - name: e2e (핵심 흐름, 정답지·채점)
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: e2e-results.json
+        run: ./node_modules/.bin/playwright test e2e/core-flow.spec.ts e2e/evaluation.spec.ts --trace off --reporter=list,json
+      - name: 건너뛴 시험 없음 확인
+        working-directory: frontend
+        run: node scripts/check-e2e-report.mjs
+      - name: e2e 전체 (원문이 있어야 하는 시험만 건너뜀)
+        working-directory: frontend
+        run: ./node_modules/.bin/playwright test --trace off --workers=1 --reporter=list
+      - if: failure()
+        uses: actions/upload-artifact@v4
         with:
           name: e2e-results
           path: |
             frontend/test-results
-            ${{ runner.temp }}/backend.log
-          retention-days: 7
+            frontend/e2e-results.json
+          if-no-files-found: ignore
 
   openspec:
     runs-on: ubuntu-latest
@@ -147,3 +143,28 @@ jobs:
         with:
           node-version: 22
       - run: npx --yes @fission-ai/openspec@1.14.3 validate --all --strict
+
+  # 의존성 취약점과 저장소 비밀값 검사 (포트폴리오 점검 P1-7). 결과가 나오면 고치거나,
+  # 고칠 수 없으면 근거를 docs/quality/security-scan.md에 남기고 무시 목록에 넣는다
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6.8.0
+      - name: Python 의존성 (pip-audit)
+        working-directory: backend
+        run: |
+          uv export --frozen --no-dev --no-hashes --no-emit-project > "$RUNNER_TEMP/requirements.txt"
+          uvx pip-audit==2.10.1 -r "$RUNNER_TEMP/requirements.txt" --disable-pip --no-deps
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 화면 의존성 (npm audit, 운영 의존성 high 이상)
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+      - name: 비밀값 (gitleaks)
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7  # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

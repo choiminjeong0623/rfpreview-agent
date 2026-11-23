@@ -143,6 +143,61 @@ def test_cancel_then_retry_runs_once(env, db, db_url, spec):
     assert count(db, "run_job", "status = 'DONE'") == 1
 
 
+
+def requeue_from_other(db_url, run_id):
+    """화면에서 다시 시도한 것처럼 다른 연결로 새 작업(새 토큰)을 넣는다."""
+    with psycopg.connect(db_url, autocommit=True) as other:
+        run_queue.enqueue(other, run_id, "RETRY", [], {})
+
+
+def test_superseded_just_before_step_save(env, db, db_url, spec, monkeypatch):
+    """Scenario: 단계 저장 직전에 밀려남 — 확인 뒤 저장 전에 다시 넣으면 옛 실행의 판정은 0건."""
+    from rfp_agent.pipeline import run as run_mod
+
+    run_id = queued_run(db, spec)
+    old = run_queue.claim(db, "old", 2)
+    real_judge = run_mod.judge_run
+
+    def judge_then_requeue(conn, rid, *args, **kwargs):
+        n = real_judge(conn, rid, *args, **kwargs)      # 판정 줄을 쓴 뒤(커밋 전)
+        assert n > 0
+        requeue_from_other(db_url, rid)                 # 그 사이 새 작업이 토큰을 바꿈
+        return n
+
+    monkeypatch.setattr(run_mod, "judge_run", judge_then_requeue)
+    ctx = RunContext(db, VERSION, None, None, token=old.token)
+    assert execute_run(ctx, run_id, [spec], {spec.name: {"bundle": "B"}}) == "SUPERSEDED"
+    assert count(db, "judgment", f"run_id = {run_id}") == 0     # 옛 실행의 판정은 남지 않음
+    assert stage(db, run_id) == "PROCESSING"
+
+
+def test_superseded_before_parallel_document_save(env, db, db_url, spec, monkeypatch):
+    """Scenario: 단계 저장 직전에 밀려남 — 문서를 동시에 처리하는 연결도 같은 규칙."""
+    from rfp_agent.pipeline import run as run_mod
+
+    env.setenv("RFP_DOC_WORKERS", "2")
+    get_settings.cache_clear()
+    second = spec.parent / f"second_{spec.name}"
+    second.write_bytes(spec.read_bytes())
+    run_id = create_run(db, VERSION, None)
+    run_queue.enqueue(db, run_id, "START", [spec, second],
+                      {spec.name: {"bundle": "B"}, second.name: {"bundle": "B"}})
+    old = run_queue.claim(db, "old", 2)
+    real_save = run_mod._save_run_document
+    done = []
+
+    def save_after_requeue(conn, rid, document_id):
+        if not done:
+            done.append(True)
+            requeue_from_other(db_url, rid)
+        real_save(conn, rid, document_id)
+
+    monkeypatch.setattr(run_mod, "_save_run_document", save_after_requeue)
+    ctx = RunContext(db, VERSION, None, None, token=old.token)
+    assert execute_run(ctx, run_id, [spec, second],
+                       {spec.name: {"bundle": "B"}, second.name: {"bundle": "B"}}) == "SUPERSEDED"
+    assert count(db, "run_document", f"run_id = {run_id}") == 0
+
 # ── 살아 있음과 다시 넣기 ──────────────────────────────────────────────
 
 def stale(conn, job_id):
@@ -216,3 +271,20 @@ def test_no_worker_alive(env, db, spec):
     health = client.get("/api/health").json()
     assert (health["run_mode"], health["workers_alive"], health["jobs_queued"]) == \
         ("WORKER", 0, 1)
+
+
+def test_owned_transaction_block_rolls_back(env, db, db_url, spec):
+    """Scenario: 단계 저장 직전에 밀려남 — 바깥 transaction() 블록도 끝에서 확인해 되돌린다."""
+    from rfp_agent.pipeline.ownership import OwnedConnection, RunSuperseded
+
+    run_id = queued_run(db, spec)
+    old = run_queue.claim(db, "old", 2)
+    db.commit()
+    owned = OwnedConnection(db, run_id, old.token)
+    with owned.transaction():                            # 토큰이 맞으면 그대로 저장
+        owned.execute("UPDATE review_run SET review_name = 'kept' WHERE run_id = %s", (run_id,))
+    requeue_from_other(db_url, run_id)
+    with pytest.raises(RunSuperseded), owned.transaction():
+        owned.execute("UPDATE review_run SET review_name = 'lost' WHERE run_id = %s", (run_id,))
+    assert db.execute("SELECT review_name FROM review_run WHERE run_id = %s",
+                      (run_id,)).fetchone()[0] == "kept"
