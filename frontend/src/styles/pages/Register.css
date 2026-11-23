@@ -482,3 +482,6 @@ body,.app,.wk,.ws,.layout,.main{background:#fff}
 .pjo b{font-weight:600;font-size:var(--fs-sm)}
 .pjo .fi{max-width:420px}
 .pjo .fi[disabled]{background:#F7F9FC;color:#98A2B3}
+.bundle-help{margin-top:10px;font-size:var(--fs-xs);color:var(--c-muted);line-height:1.6}
+.bundle-help ul{margin:4px 0 0;padding-left:18px}
+.bundle-help li b{color:var(--c-text)}
