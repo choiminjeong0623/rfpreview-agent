@@ -98,17 +98,17 @@ jobs:
       - name: 화면 띄우기 (5173)
         working-directory: frontend
         run: |
-          npm ci
+          npm ci --ignore-scripts
           nohup npm run dev > "$RUNNER_TEMP/frontend.log" 2>&1 &
           for i in $(seq 1 60); do curl -sf localhost:5173 > /dev/null && exit 0; sleep 1; done
           cat "$RUNNER_TEMP/frontend.log"; exit 1
       - working-directory: frontend
-        run: npx playwright install --with-deps chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
       - name: e2e (핵심 흐름, 정답지·채점)
         working-directory: frontend
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: e2e-results.json
-        run: npx playwright test e2e/core-flow.spec.ts e2e/evaluation.spec.ts --trace off --reporter=list,json
+        run: ./node_modules/.bin/playwright test e2e/core-flow.spec.ts e2e/evaluation.spec.ts --trace off --reporter=list,json
       - name: 건너뛴 시험 없음 확인
         working-directory: frontend
         run: node scripts/check-e2e-report.mjs e2e-results.json
