@@ -258,7 +258,7 @@ archive는 마지막 묶음을 끝낸 사람이 한다.
 
 ```bash
 cd backend && uv run ruff check . && TEST_DATABASE_URL=postgresql://rfp:rfp@localhost:5433/rfp_test uv run pytest
-cd frontend && npm run lint && npm run check:api && npm run check:trace && npm run build
+cd frontend && npm run lint && npm test && npm run check:api && npm run check:trace && npm run build
 openspec validate --all --strict
 ```
 

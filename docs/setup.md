@@ -63,9 +63,9 @@ CI(`.github/workflows/ci.yml`)와 같은 검사입니다. 공개본으로 다시
 
 ```bash
 cd backend && uv run ruff check . && TEST_DATABASE_URL=postgresql://rfp:rfp@localhost:5433/rfp_test uv run pytest
-cd frontend && npm run lint && npm run check:api && npm run check:trace && npm run build
+cd frontend && npm run lint && npm test && npm run check:api && npm run check:trace && npm run build
 npx --yes @fission-ai/openspec@1.14.3 validate --all --strict
 ```
 
-건너뛰는 것은 고객 RFP 원문(`data/private/`)이 있어야 도는 테스트와, 로컬 OCR 엔진(Tesseract)이 없을 때 건너뛰는 OCR 테스트입니다. 화면 E2E(Playwright) 가운데 핵심 흐름(`core-flow.spec.ts`)과 정답지·채점(`evaluation.spec.ts`)은 CI `e2e` 작업이 PR마다 AI 없이 돌리고, 건너뛴 시험이 있으면 실패합니다(add-e2e-ci). 나머지는 로컬에서 돌리며 일부는 원문 파일·메일 서버가 있어야 합니다. 합성 데이터시트로 판정이 생기려면 문서 목록 줄이 필요합니다: `INSERT INTO document_catalog (file_no, file_key, bundle, language) VALUES (91, 'synthetic_judgment', 'A', 'en')`. E2E는 `engineer`·`approver`·`cost`·`quality`에 같은 비밀번호를 정하고 `E2E_PASSWORD`(기본 `demo-pass-1`)로 넘깁니다. 시작할 때 엔지니어로 로그인한 쿠키를 `frontend/e2e/.auth/`에 저장합니다(커밋하지 않음).
+건너뛰는 것은 고객 RFP 원문(`data/private/`)이 있어야 도는 테스트와, 로컬 OCR 엔진(Tesseract)이 없을 때 건너뛰는 OCR 테스트입니다. 화면 E2E(Playwright)는 CI `e2e` 작업이 PR마다 AI 없이 돕니다. 먼저 핵심 흐름(`core-flow.spec.ts`)과 정답지·채점(`evaluation.spec.ts`)을 돌려 건너뛴 시험이 있으면 실패하고(add-e2e-ci), 이어서 전체를 확인용 메일 서버와 함께 돌립니다. 원문 파일이 있어야 하는 시험만 스스로 건너뜁니다. 합성 문서로 판정이 생기려면 문서 목록 줄이 필요합니다: `INSERT INTO document_catalog (file_no, file_key, bundle, language) VALUES (91, 'synthetic_judgment', 'A', 'en'), (94, 'synthetic_loss', 'A', 'en')`. E2E는 `engineer`·`approver`·`cost`·`quality`에 같은 비밀번호를 정하고 `E2E_PASSWORD`(기본 `demo-pass-1`)로 넘깁니다. 시작할 때 엔지니어로 로그인한 쿠키를 `frontend/e2e/.auth/`에 저장합니다(커밋하지 않음).
 

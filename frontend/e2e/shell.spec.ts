@@ -126,6 +126,6 @@ test('역할별 판과 판 기록', async ({ page }) => {
   await expect(nav.getByRole('link', { name: '프롬프트 관리' })).toHaveAttribute('aria-current', 'page')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('프롬프트 관리')
   await page.getByRole('row', { name: /유형/ }).first().click()
-  await expect(page.getByText('판 기록')).toBeVisible()
+  await expect(page.getByRole('heading', { name: /^판 기록/ })).toBeVisible()
   await expect(page.getByText('지금 판').first()).toBeVisible()
 })

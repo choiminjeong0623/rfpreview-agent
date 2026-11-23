@@ -39,7 +39,7 @@
 6. 커밋한 뒤 `cd frontend && npm run sync-main -- --push` — 다른 세션 PR이 먼저 머지돼 표 번호·추적표가 겹쳐도 코드가 풀고 올린다. 머지가 "merge conflicts"로 막히면 다시 돌린다. 다른 파일이 겹치면 멈추고 알린다.
 
 ### E2E (Playwright, `frontend/e2e/`)
-- CI `e2e` 작업은 `core-flow.spec.ts`·`evaluation.spec.ts`만 AI 없이 돌리고 건너뛴 시험이 있으면 실패한다(`scripts/check-e2e-report.mjs`, add-e2e-ci). 나머지는 PR 전에 로컬에서 돌린다.
+- CI `e2e` 작업은 AI 없이 두 번 돈다. 먼저 `core-flow.spec.ts`·`evaluation.spec.ts`를 돌려 건너뛴 시험이 있으면 실패하고(`scripts/check-e2e-report.mjs`, add-e2e-ci), 이어서 전체를 돌린다(원문이 있어야 하는 시험만 건너뜀). 원문으로 보는 시험은 PR 전에 로컬에서 돌린다.
 - 준비: DB와 백엔드(8000, 제품표 `rfp-db seed-products` 적재), `cd frontend && npm run dev`(5173), 서버 `data/private/rfp_docx/`에 파일 1 원문(`review.spec`)과 합성 RFP 파일 28(`product-switch.spec`, `generate_risk_rfp.py` → `generate_switch_rfp.py`)(커밋 금지). 로그인 비밀번호: `rfp-db set-password --login engineer`(approver·cost·quality도 같은 값)와 `E2E_PASSWORD`(기본 `demo-pass-1`). 그다음 `cd frontend && npm run e2e`(한 파일만: `npx playwright test e2e/<이름>.spec.ts`). 다른 주소는 `E2E_BASE_URL`.
 - 원문이 없으면 그 테스트는 건너뛴다(`test.skip`). "통과"로 보고하기 전에 건너뛴 수를 확인한다.
 

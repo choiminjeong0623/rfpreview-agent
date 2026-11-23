@@ -9,7 +9,7 @@ test('칸 확정', async ({ page, request }) => {
   await page.goto(`/#/reviews/${run.run_id}`)
   await exportItem(page, '데이터시트 채우기')
   await expect(page).toHaveURL(new RegExp(`#/reviews/${run.run_id}/datasheet$`))
-  const ok = page.getByLabel('요약').locator('div', { hasText: '채움 · 확정' }).locator('b')
+  const ok = page.getByLabel('요약', { exact: true }).locator('div', { hasText: '채움 · 확정' }).locator('b')
   await expect(page.locator('table.ds-t tbody tr').first()).toBeVisible()
   const before = Number(await ok.textContent())
   const row = page.locator('table.ds-t tbody tr', { has: page.getByRole('button', { name: '확정' }) }).first()
