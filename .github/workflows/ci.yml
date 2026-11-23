@@ -60,3 +60,28 @@ jobs:
         with:
           node-version: 22
       - run: npx --yes @fission-ai/openspec@1.14.3 validate --all --strict
+
+  # 의존성 취약점과 저장소 비밀값 검사 (포트폴리오 점검 P1-7). 결과가 나오면 고치거나,
+  # 고칠 수 없으면 근거를 docs/quality/security-scan.md에 남기고 무시 목록에 넣는다
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6.8.0
+      - name: Python 의존성 (pip-audit)
+        working-directory: backend
+        run: |
+          uv export --frozen --no-dev --no-hashes --no-emit-project > "$RUNNER_TEMP/requirements.txt"
+          uvx pip-audit==2.10.1 -r "$RUNNER_TEMP/requirements.txt" --disable-pip --no-deps
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 화면 의존성 (npm audit, 운영 의존성 high 이상)
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+      - name: 비밀값 (gitleaks)
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7  # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
