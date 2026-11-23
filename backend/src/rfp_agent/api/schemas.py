@@ -52,6 +52,14 @@ class User(Out):
     role: Role
 
 
+class SessionUser(Out):
+    """로그인한 사용자 (add-session-auth)."""
+    user_id: int
+    user_name: str
+    role: Role
+    login_id: str | None
+
+
 class ReviewFields(Out):
     """사람이 넣는 검토 정보 (add-review-info)와 연결된 사업 (add-project-status). 빈 값은 null."""
     project_name: str | None

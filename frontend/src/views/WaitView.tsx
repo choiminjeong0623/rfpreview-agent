@@ -91,8 +91,8 @@ export function WaitView({ run, onChanged, onWithdrawn }: { run: RunSummary; onC
     p.then(done, (e: Error) => setError(e.message)).finally(() => setBusy(false))
   }
   // 취소되면 검토가 담당자 확인으로 돌아가므로 바로 검토 상세(판정 탭)로 보낸다. 알림은 검토 상세가 띄운다
-  const withdraw = () => act(api.withdraw(id, user!.user_id), onWithdrawn)
-  const decide = (d: 'APPROVED' | 'REJECTED') => act(api.decide(id, d, comment.trim(), user!.user_id), onChanged)
+  const withdraw = () => act(api.withdraw(id), onWithdrawn)
+  const decide = (d: 'APPROVED' | 'REJECTED') => act(api.decide(id, d, comment.trim()), onChanged)
 
   let barTitle = `${appr}의 결재를 기다리고 있습니다`
   if (isApprover) barTitle = '결재할 검토입니다'

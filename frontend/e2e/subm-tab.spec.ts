@@ -1,14 +1,14 @@
 import { readFileSync } from 'node:fs'
 import { expect, test } from '@playwright/test'
-import { APPROVER, as, COMMENT, deviationRun, ENGINEER, openTab, salesMailUnavailable } from './helpers'
+import { APPROVER, as, COMMENT, deviationRun, ENGINEER, openTab, salesMailUnavailable, asLogin } from './helpers'
 
 // 명세 review-workspace "제출본 탭"의 Scenario (change update-review-screens).
 
 test('승인된 실행의 제출본', async ({ page, request }) => {
   const run = await deviationRun(request, `제출본 ${Date.now()}`)
   const url = `/api/runs/${run.run_id}`
-  expect((await request.post(`${url}/finish-review`, { data: { approver_id: APPROVER, comment: COMMENT, actor_id: ENGINEER } })).status()).toBe(200)
-  expect((await request.post(`${url}/approval`, { data: { decision: 'APPROVED', comment: '승인', actor_id: APPROVER } })).status()).toBe(200)
+  expect((await request.post(`${url}/finish-review`, { data: { approver_id: APPROVER, comment: COMMENT } })).status()).toBe(200)
+  expect((await asLogin(request, 'approver', () => request.post(`${url}/approval`, { data: { decision: 'APPROVED', comment: '승인' } }))).status()).toBe(200)
   const summary = await (await request.get(url)).json() as { judgments: number }
   await as(page, ENGINEER)
   await page.goto(`/#/reviews/${run.run_id}`)
@@ -36,8 +36,8 @@ test('인계 패키지 영업에 넘기기', async ({ page, request }) => {
   // change add-submission-package
   const run = await deviationRun(request, `인계 패키지 ${Date.now()}`)
   const url = `/api/runs/${run.run_id}`
-  expect((await request.post(`${url}/finish-review`, { data: { approver_id: APPROVER, comment: COMMENT, actor_id: ENGINEER } })).status()).toBe(200)
-  expect((await request.post(`${url}/approval`, { data: { decision: 'APPROVED', comment: '승인', actor_id: APPROVER } })).status()).toBe(200)
+  expect((await request.post(`${url}/finish-review`, { data: { approver_id: APPROVER, comment: COMMENT } })).status()).toBe(200)
+  expect((await asLogin(request, 'approver', () => request.post(`${url}/approval`, { data: { decision: 'APPROVED', comment: '승인' } }))).status()).toBe(200)
   await as(page, ENGINEER)
   await page.goto(`/#/reviews/${run.run_id}`)
   await openTab(page, '제출본')
@@ -58,8 +58,8 @@ test('인계 패키지 영업에 넘기기', async ({ page, request }) => {
 test('인계 패키지 만드는 동안 진행 표시', async ({ page, request }) => {
   const run = await deviationRun(request, `패키지 진행 ${Date.now()}`)
   const url = `/api/runs/${run.run_id}`
-  expect((await request.post(`${url}/finish-review`, { data: { approver_id: APPROVER, comment: COMMENT, actor_id: ENGINEER } })).status()).toBe(200)
-  expect((await request.post(`${url}/approval`, { data: { decision: 'APPROVED', comment: '승인', actor_id: APPROVER } })).status()).toBe(200)
+  expect((await request.post(`${url}/finish-review`, { data: { approver_id: APPROVER, comment: COMMENT } })).status()).toBe(200)
+  expect((await asLogin(request, 'approver', () => request.post(`${url}/approval`, { data: { decision: 'APPROVED', comment: '승인' } }))).status()).toBe(200)
   // 큰 검토처럼 서버가 늦게 답하게 한다 (응답은 실제 zip)
   await page.route(`**/api/runs/${run.run_id}/package`, async (route) => {
     const res = await route.fetch()
@@ -87,8 +87,8 @@ test('인계 패키지 만드는 동안 진행 표시', async ({ page, request }
 async function approvedRun(request: import('@playwright/test').APIRequestContext, name: string) {
   const run = await deviationRun(request, `${name} ${Date.now()}`)
   const url = `/api/runs/${run.run_id}`
-  expect((await request.post(`${url}/finish-review`, { data: { approver_id: APPROVER, comment: COMMENT, actor_id: ENGINEER } })).status()).toBe(200)
-  expect((await request.post(`${url}/approval`, { data: { decision: 'APPROVED', comment: '승인', actor_id: APPROVER } })).status()).toBe(200)
+  expect((await request.post(`${url}/finish-review`, { data: { approver_id: APPROVER, comment: COMMENT } })).status()).toBe(200)
+  expect((await asLogin(request, 'approver', () => request.post(`${url}/approval`, { data: { decision: 'APPROVED', comment: '승인' } }))).status()).toBe(200)
   return run
 }
 

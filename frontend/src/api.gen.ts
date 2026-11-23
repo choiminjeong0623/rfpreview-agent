@@ -4,7 +4,6 @@
 export type AcceptBody = {
   value: Record<string, unknown>
   reason?: string | null
-  actor_id?: number | null
 }
 
 export type Action = {
@@ -13,7 +12,6 @@ export type Action = {
   action: string
   value?: Record<string, unknown> | null
   reason?: string | null
-  actor_id?: number | null
 }
 
 /** 확정·수정·반려 하나. 바뀌기 전·후 줄은 대상 표마다 칸이 달라 자유 형식이다. */
@@ -21,18 +19,6 @@ export type ActionResult = {
   before: Record<string, unknown> | null
   after: Record<string, unknown> | null
   submission_check: SubmissionCheck | null
-}
-
-export type Actor = {
-  actor_id?: number | null
-}
-
-export type ActorBody = {
-  actor_id?: number | null
-}
-
-export type ActorIn = {
-  actor_id: number
 }
 
 /** AI 호출 한 건 (add-ai-call-trace, FR-21). 원문은 없고 해시만. */
@@ -225,7 +211,6 @@ export type AssistantStep = {
 
 export type Body_add_documents_api_runs__run_id__documents_post = {
   files: string[]
-  actor_id?: number | null
   choices?: string | null
 }
 
@@ -237,7 +222,6 @@ export type Body_run_upload_api_runs_post = {
   country?: string | null
   due_date?: string | null
   engineer_id?: number | null
-  actor_id?: number | null
   choices?: string | null
   business_id?: number | null
   new_business_name?: string | null
@@ -252,7 +236,6 @@ export type BulkAction = {
   target?: string
   ids: number[]
   action?: string
-  actor_id?: number | null
 }
 
 export type BulkResult = {
@@ -316,7 +299,6 @@ export type BusinessInfo = {
   order_mode?: string | null
   due_date?: string | null
   sales_id?: number | null
-  actor_id?: number | null
 }
 
 export type BusinessList = {
@@ -519,7 +501,6 @@ export type DatasheetRow = {
 export type Decision = {
   decision: string
   comment?: string | null
-  actor_id?: number | null
 }
 
 export type DecisionResult = {
@@ -535,7 +516,6 @@ export type DecisionResult = {
 
 export type DeclineBody = {
   reason?: string | null
-  actor_id?: number | null
 }
 
 export type DeliverableOutput = {
@@ -625,7 +605,6 @@ export type DocumentPreview = {
 }
 
 export type DraftIn = {
-  actor_id: number
   text: string
   message?: string | null
 }
@@ -777,7 +756,6 @@ export type FlowStep = {
 }
 
 export type HandoffRequest = {
-  actor_id?: number | null
   table_id?: number | null
 }
 
@@ -879,7 +857,6 @@ export type LibraryRun = {
   country?: string | null
   due_date?: string | null
   engineer_id?: number | null
-  actor_id?: number | null
   files: string[]
   choices?: Record<string, DocumentChoice>
   request_key?: string | null
@@ -910,6 +887,11 @@ export type LogEntry = {
   actor: string | null
   acted_at: string
   target_label: string | null
+}
+
+export type LoginBody = {
+  login_id: string
+  password: string
 }
 
 export type Loss = {
@@ -1168,7 +1150,6 @@ export type ProductUse = {
 }
 
 export type PromoteIn = {
-  actor_id: number
   job_id: number
 }
 
@@ -1449,7 +1430,6 @@ export type ReviewInfo = {
   country?: string | null
   due_date?: string | null
   engineer_id?: number | null
-  actor_id?: number | null
 }
 
 export type ReviewRatio = {
@@ -1473,7 +1453,6 @@ export type Revision = {
 export type Rewind = {
   step: string
   reason: string
-  actor_id?: number | null
 }
 
 /** 지표 하나: 출처별 값, 기준 출처(사람 → 코드 → Claude 초안), 반복 최소·최대·평균. */
@@ -1535,7 +1514,6 @@ export type RiskMember = {
 export type RuleChange = {
   value: Record<string, unknown>
   reason?: string | null
-  actor_id?: number | null
 }
 
 /** 규칙 고침 이력 한 줄 (add-rule-editing). row_key는 고치기 전(추가는 추가한) 줄 키, after_key는 고친 뒤 키. */
@@ -1556,7 +1534,6 @@ export type RuleEdit = {
 
 export type RuleRemoval = {
   reason?: string | null
-  actor_id?: number | null
 }
 
 /** 위험 표현 사전에 추가 제안 (add-rule-suggestion). 위치는 표현이 나온 첫 문장. */
@@ -1581,7 +1558,6 @@ export type RuleSuggestion = {
 
 export type RunBusiness = {
   business_id?: number | null
-  actor_id?: number | null
 }
 
 export type RunDocument = {
@@ -1760,7 +1736,6 @@ export type ScoreRequest = {
   key_id?: number | null
   req_key_id?: number | null
   note?: string | null
-  actor_id?: number | null
 }
 
 /** 요약 상자 문장 (add-screen-summary, 결정 Q1). 코드가 틀에 채운 문장, 같은 데이터면 같은 문장. */
@@ -1773,7 +1748,6 @@ export type ScreenSummary = {
 
 export type SendRequests = {
   assignment_ids: number[]
-  actor_id?: number | null
   resend?: boolean
 }
 
@@ -1782,6 +1756,14 @@ export type SendResult = {
   failed: number
   no_address: number
   mails: number
+}
+
+/** 로그인한 사용자 (add-session-auth). */
+export type SessionUser = {
+  user_id: number
+  user_name: string
+  role: 'ENGINEER' | 'COST' | 'QUALITY' | 'SALES' | 'APPROVER'
+  login_id: string | null
 }
 
 export type SourceLine = {
@@ -1818,7 +1800,6 @@ export type SubmissionCheck = {
 }
 
 export type Submit = {
-  actor_id?: number | null
   approver_id?: number | null
   comment?: string | null
 }
@@ -1832,7 +1813,6 @@ export type SubmitResult = {
 export type SuggestBody = {
   expression: string
   note?: string | null
-  actor_id?: number | null
 }
 
 /** 요약 문장 조각 (add-screen-summary). link면 href는 화면 주소(#는 화면이 붙임), strong은 강조. */
@@ -1844,7 +1824,6 @@ export type SummaryPart = {
 
 export type TaskStatus = {
   status: string
-  actor_id: number
   reply_note?: string | null
 }
 
@@ -1887,7 +1866,6 @@ export type TbeRow = {
 export type TypeEdit = {
   type_code: string
   reason?: string | null
-  actor_id?: number | null
 }
 
 /** 사람 유형 고치기 결과 (add-type-examples). NONE은 미분류. */

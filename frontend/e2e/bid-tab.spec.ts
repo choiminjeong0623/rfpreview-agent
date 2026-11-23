@@ -39,7 +39,7 @@ test('제안 포인트 채택', async ({ page }) => {
   await expect(point.locator('.st')).toHaveText('후보')
   await point.getByRole('button', { name: '채택' }).click()
   await expect(point.locator('.st')).toHaveText('채택')
-  expect(actions).toContainEqual(expect.objectContaining({ target: 'proposal_point', target_id: 9001, action: 'ADOPT', actor_id: ENGINEER }))
+  expect(actions).toContainEqual(expect.objectContaining({ target: 'proposal_point', target_id: 9001, action: 'ADOPT' }))
 })
 
 test('사유 없이 버리기', async ({ page }) => {

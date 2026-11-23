@@ -156,3 +156,43 @@ def fake_mailer():
     set_mailer(mailer)
     yield mailer
     set_mailer(None)
+
+
+# ── 로그인 (add-session-auth) ──────────────────────────────────────
+# API 시험 대부분은 로그인 흐름이 아니라 그 뒤 동작을 본다. 그래서 `current_user`를 바꿔 끼워
+# 머리 `X-Test-User`(사용자 번호)의 사용자, 없으면 기본 엔지니어로 로그인한 것처럼 둔다.
+# 실제 쿠키·세션을 보는 시험은 `@pytest.mark.real_auth`를 붙여 바꿔 끼우지 않는다.
+TEST_USER = "x-test-user"
+
+
+def as_user(user_id: int) -> dict:
+    """그 사용자로 로그인한 요청의 머리 (시험 전용)."""
+    return {TEST_USER: str(user_id)}
+
+
+@pytest.fixture(autouse=True)
+def logged_in(request):
+    from fastapi import Request
+
+    from rfp_agent.api.auth import current_user
+    from rfp_agent.api.main import app
+    from rfp_agent.auth import User
+    from rfp_agent.db.connection import connect
+
+    if request.node.get_closest_marker("real_auth"):
+        yield
+        return
+
+    def fake_user(req: Request) -> User:
+        sent = req.headers.get(TEST_USER)
+        with connect() as conn:
+            row = conn.execute(
+                "SELECT user_id, user_name, role, login_id FROM app_user WHERE user_id = "
+                + ("%s" if sent else "(SELECT min(user_id) FROM app_user WHERE role = 'ENGINEER')"),
+                (int(sent),) if sent else None).fetchone()
+        assert row, f"시험 사용자 {sent}이(가) 없습니다"
+        return User(*row)
+
+    app.dependency_overrides[current_user] = fake_user
+    yield
+    app.dependency_overrides.pop(current_user, None)

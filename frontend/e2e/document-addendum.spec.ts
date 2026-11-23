@@ -16,7 +16,7 @@ test('문서 추가하고 다시 분석', async ({ page, request }) => {
   const edited = before.find((j) => j.review_status === 'EDITED')!
   const other = before.find((j) => j.review_status === 'CANDIDATE')!
   const ok = await request.post(`/api/runs/${run.run_id}/actions`, {
-    data: { target: 'judgment', target_id: other.judgment_id, action: 'CONFIRM', actor_id: ENGINEER },
+    data: { target: 'judgment', target_id: other.judgment_id, action: 'CONFIRM' },
   })
   expect(ok.status()).toBe(200)
 

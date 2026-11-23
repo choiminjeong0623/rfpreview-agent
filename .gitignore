@@ -16,6 +16,7 @@ dist/
 frontend/test-results/
 frontend/playwright-report/
 frontend/compare-out/
+frontend/e2e/.auth/
 
 # 고객 RFP 문장이 든 실험 정답지·결과 (클렌징본이라도 저장소에 올리지 않음)
 experiments/model_compare/정답지_*.csv

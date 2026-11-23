@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { PASSWORD } from './helpers'
 
 // 명세 review-workspace "예시 화면"의 Scenario (change add-example-screens).
 // 예시 데이터만 쓰므로 RFP 원문이나 실행 데이터가 없어도 된다.
@@ -64,14 +65,21 @@ test('금액 가림', async ({ page }) => {
   await expect(page.getByTitle('영업 권한 필요').first()).toBeVisible()
 })
 
-test('로그인 화면', async ({ page }) => {
+test('실제 로그인 화면', async ({ browser }) => {
+  // change add-session-auth: 로그인은 예시가 아니다. 틀린 비밀번호는 서버 문구, 맞으면 홈
+  const ctx = await browser.newContext({ storageState: { cookies: [], origins: [] } })
+  const page = await ctx.newPage()
   await page.goto('/#/login')
   await expect(page.getByRole('navigation', { name: '메뉴' })).toHaveCount(0)
   await page.getByRole('button', { name: '로그인', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('입력하지 않은 칸이 있습니다')
-  await page.getByLabel('사번 또는 회사 이메일').fill('20261234')
-  await page.getByLabel('비밀번호', { exact: true }).fill('example')
+  await page.getByLabel('아이디').fill('engineer')
+  await page.getByLabel('비밀번호', { exact: true }).fill('wrong-password')
+  await page.getByRole('button', { name: '로그인', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('아이디 또는 비밀번호가 맞지 않습니다.')
+  await page.getByLabel('비밀번호', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: '로그인', exact: true }).click()
   await expect(page).toHaveURL(/#\/$/, { timeout: 10_000 })
   await expect(page.getByRole('navigation', { name: '메뉴' })).toBeVisible()
+  await ctx.close()
 })

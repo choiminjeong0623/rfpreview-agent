@@ -10,8 +10,10 @@ Docker Compose로 DB·백엔드·프런트엔드·확인용 메일 서버(Mailpi
 cp .env.example .env              # AI를 쓰려면 GEMINI_API_KEY를 채움. 비우거나 RFP_AI_MODE=off면 규칙만으로 동작
 docker compose up --build         # db(:5433), backend(:8000), frontend(:5173), mailpit(:8025)
 docker compose exec backend rfp-db seed-products   # 제품표 적재 (처음 한 번)
+docker compose exec backend rfp-db set-password --login engineer   # 로그인 비밀번호 (사용자마다)
 ```
 
+- 로그인: 아이디는 `engineer`(기술 검토 엔지니어)·`approver`(결재자)·`cost`·`quality`·`sales`이고, 비밀번호는 위 명령으로 정합니다(8자 이상). 정하지 않은 사용자는 로그인할 수 없습니다. 시연 DB는 `rfp-db demo-setup --password <값>`으로 다섯 명에 같은 비밀번호를 한 번에 둡니다.
 - 화면: <http://localhost:5173> · API 상태: <http://localhost:8000/api/health> · 보낸 메일: <http://localhost:8025> (밖으로 나가지 않음)
 - 고객 RFP 원문은 이 저장소에 없습니다. 시연용 합성 RFP는 저장소 맨 위의 `generate_*.py`로 만듭니다(`data/private/rfp_docx/`에 생성, git 제외). `frontend/e2e/fixtures/`에도 합성 문서가 있습니다.
 - 화면에서 `frontend/e2e/fixtures/synthetic_154kV_GIS_spec.docx`를 올려 시연할 때는 검토 등록 2단계 문서 표에서 **묶음을 B로 바꾼 뒤** [다음]을 누릅니다. 이 파일은 문서 목록에 없고 규격 표기(IEC)가 2번뿐이라 추천 묶음이 C(판정 안 함)로 나오고, 그대로 두면 "판정 대상 문서(묶음 A·B)가 없습니다"로 막힙니다(판정은 묶음 A·B 문서만, CR-09). 묶음을 고르지 않아도 되는 시연은 `rfp-db demo-setup`(합성 RFP 파일 28, 문서 목록 묶음 B)을 씁니다.
@@ -24,6 +26,7 @@ docker compose exec backend rfp-db seed-products   # 제품표 적재 (처음 �
 cd backend && uv sync
 export DATABASE_URL=postgresql://rfp:rfp@localhost:5433/rfp
 uv run rfp-db setup                                  # 마이그레이션 + 규칙 사전 + 제품표
+uv run rfp-db set-password --login engineer          # 로그인 비밀번호 (approver 등 사용자마다)
 uv run uvicorn rfp_agent.api.main:app --reload
 cd ../frontend && npm install && npm run dev
 ```
@@ -63,5 +66,5 @@ cd frontend && npm run lint && npm run check:api && npm run check:trace && npm r
 npx --yes @fission-ai/openspec@1.14.3 validate --all --strict
 ```
 
-건너뛰는 것은 고객 RFP 원문(`data/private/`)이 있어야 도는 테스트와, 로컬 OCR 엔진(Tesseract)이 없을 때 건너뛰는 OCR 테스트입니다. 화면 E2E(Playwright)는 CI에서 돌지 않으며, 일부는 원문 파일이 있어야 합니다.
+건너뛰는 것은 고객 RFP 원문(`data/private/`)이 있어야 도는 테스트와, 로컬 OCR 엔진(Tesseract)이 없을 때 건너뛰는 OCR 테스트입니다. 화면 E2E(Playwright)는 CI에서 돌지 않으며, 일부는 원문 파일이 있어야 합니다. E2E는 `engineer`·`approver`·`cost`·`quality`에 같은 비밀번호를 정하고 `E2E_PASSWORD`(기본 `demo-pass-1`)로 넘깁니다. 시작할 때 엔지니어로 로그인한 쿠키를 `frontend/e2e/.auth/`에 저장합니다(커밋하지 않음).
 

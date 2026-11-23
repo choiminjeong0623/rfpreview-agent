@@ -2,7 +2,7 @@
 
 - 연결 요구사항: 없음 (범위 밖. 앱은 로그인 대신 머리글에서 사용자를 고른다)
 - 기준 목업: `Spec2Win_목업_v4.57.html#Login`
-- 구현 방식: 예시 화면 (`add-example-screens`). 화면은 `frontend/src/views/examples/Login.tsx`, CSS는 목업 Login CSS 그대로
+- 구현 방식: 실제 로그인 (`add-session-auth`, 처음은 예시 화면 `add-example-screens`). 화면은 `frontend/src/views/Login.tsx`, CSS는 목업 Login CSS 그대로. SSO 단추·로그인 상태 유지·비밀번호 찾기는 없다(범위 밖), 접근 권한 요청 탭은 예시로 보내지 않는다
 - 주소: `#/login` (왼쪽 메뉴에 없다). 앱 틀(메뉴·머리글) 없이 화면 전체를 쓴다
 - 사용 API: 없음. 입력한 사번·비밀번호·요청 내용은 어디에도 보내지 않는다
 

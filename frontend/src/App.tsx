@@ -14,7 +14,7 @@ import { BidView } from './views/examples/BidView'
 import { Bids } from './views/examples/Bids'
 import { Eval } from './views/Eval'
 import { Files } from './views/examples/Files'
-import { Login } from './views/examples/Login'
+import { Login } from './views/Login'
 import { Notice } from './views/examples/Notice'
 import { Phrases } from './views/examples/Phrases'
 import { Project } from './views/Project'
@@ -148,7 +148,7 @@ function route(path: string): Route {
 export default function App() {
   const path = useHashPath()
   // 로그인 화면은 앱 틀(메뉴·머리글) 없이 화면 전체를 쓴다 (SCR-01-로그인.md)
-  if (path === '/login') return <Login />
+  if (path.split('?')[0] === '/login') return <Login />
   const { menu, crumbs, body } = route(path)
   return <Shell active={menu} crumbs={crumbs}>{body}</Shell>
 }

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { mockMe } from './helpers'
 
 // 명세 review-workspace "판정 상세 화면"·"판정 상세 근거와 출처"·"판정 상세에서 확정과 바꾸기"의 Scenario (change add-judgment-view).
 // 검토 하나의 API 응답을 테스트가 정한 값으로 바꿔 화면만 본다(백엔드·RFP 원문 없이). 원문 줄 API는 백엔드 tests/test_judgment_view.py.
@@ -85,7 +86,7 @@ async function mock(page: Page, stage = 'ENGINEER_REVIEW', withWarranty = false)
     if (path in json) return r.fulfill({ json: json[path] })
     return r.fulfill({ json: [] })
   })
-  await page.addInitScript(() => localStorage.setItem('s2w.user', '1'))
+  await mockMe(page)
   return posts
 }
 
@@ -168,7 +169,7 @@ test('제안대로 확정하고 다음 판정', async ({ page }) => {
   await expect(page.locator('.uisnk')).toContainText('판정을 제안대로 확정했습니다.')
   await expect(page.locator('h1#mdTitle')).toContainText('모선 연결 정격 전류')
   await expect(page.locator('.mdpos')).toHaveText('판정 2 / 3')
-  expect(posts).toEqual([expect.objectContaining({ target_id: 501, action: 'CONFIRM', actor_id: 1 })])
+  expect(posts).toEqual([expect.objectContaining({ target_id: 501, action: 'CONFIRM' })])
 })
 
 test('단계 때문에 못 고침', async ({ page }) => {

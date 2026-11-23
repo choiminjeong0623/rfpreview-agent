@@ -125,7 +125,7 @@ export function Register({ businessId = null }: { businessId?: number | null }) 
   const library = useLoad(() => api.library(), [])
   // 진행 중인 사업 (제출 완료가 아닌 것)
   // 주소로 사업을 고른 채 열었으면 목록이 왔을 때 그 사업 값으로 한 번 채운다
-  const businesses = useLoad(() => api.businesses(null, 'all').then((l) => {
+  const businesses = useLoad(() => api.businesses('all').then((l) => {
     const items = l.items.filter((b) => b.submitted_at === null)
     if (businessId !== null) pickBusiness(items.find((b) => b.business_id === businessId) ?? null)
     return items
@@ -213,7 +213,7 @@ export function Register({ businessId = null }: { businessId?: number | null }) 
     setError(null)
     const biz = chosenBiz ? { business_id: chosenBiz.business_id }
       : info.project_name.trim() ? { new_business_name: info.project_name.trim() } : {}
-    const start = { ...info, ...biz, engineer_id: typeof owner === 'number' ? owner : null, actor_id: user?.user_id ?? null,
+    const start = { ...info, ...biz, engineer_id: typeof owner === 'number' ? owner : null,
       request_key: requestKey.current }
     // 보이는 분류를 모두 보낸다. 규칙 추천과 같은 값은 서버가 규칙 결과로 둔다.
     const choices: Record<string, DocumentChoice> = {}

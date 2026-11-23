@@ -8,6 +8,7 @@ import pytest
 from rfp_agent.config import get_settings
 from rfp_agent.pipeline import datasheet, queries, review, sales_handoff
 from rfp_agent.pipeline.run import RunContext, create_run, execute_run
+from tests.conftest import as_user
 
 VERSION = "test-dict-v1"
 
@@ -163,12 +164,12 @@ def test_handoff_api(db, db_url, run, fake_mailer, monkeypatch):
     try:
         c = TestClient(app)
         boss = review.default_user(db, "APPROVER")
-        res = c.post(f"/api/runs/{run}/datasheet/handoff", json={"table_id": table,
-                                                                 "actor_id": boss})
+        res = c.post(f"/api/runs/{run}/datasheet/handoff", json={"table_id": table},
+                     headers=as_user(boss))
         assert res.status_code == 403 and fake_mailer.sent == []
         assert c.get(f"/api/runs/{run}/package").status_code == 409
         res = c.post(f"/api/runs/{run}/datasheet/handoff",
-                     json={"table_id": table, "actor_id": engineer(db)})
+                     json={"table_id": table})
         assert res.status_code == 200 and res.json()["sent"]
         [h] = c.get(f"/api/runs/{run}/handoffs").json()
         assert h["kind"] == "DATASHEET" and h["sent_by_name"] == "기본 엔지니어"

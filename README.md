@@ -61,9 +61,10 @@ flowchart LR
 cp .env.example .env              # AI를 쓰려면 GEMINI_API_KEY를 채움. 비우면 규칙만으로 동작
 docker compose up --build         # db(:5433), backend(:8000), frontend(:5173), mailpit(:8025)
 docker compose exec backend rfp-db seed-products   # 제품표 적재 (처음 한 번)
+docker compose exec backend rfp-db set-password --login engineer   # 로그인 비밀번호 (approver 등 사용자마다)
 ```
 
-화면은 <http://localhost:5173>, API 상태는 <http://localhost:8000/api/health>입니다. 고객 원문 없이 시연하려면 저장소 맨 위의 `generate_*.py`로 합성 RFP를 만든 뒤 `rfp-db demo-setup`으로 검토 1건을 준비합니다. 로컬 직접 실행, 시연 파일 안내, Langfuse 연동, 검사 명령은 [docs/setup.md](docs/setup.md)에 있습니다.
+화면은 <http://localhost:5173>(아이디 `engineer`·`approver` 등과 위에서 정한 비밀번호로 로그인), API 상태는 <http://localhost:8000/api/health>입니다. 고객 원문 없이 시연하려면 저장소 맨 위의 `generate_*.py`로 합성 RFP를 만든 뒤 `rfp-db demo-setup`으로 검토 1건을 준비합니다. 로컬 직접 실행, 시연 파일 안내, Langfuse 연동, 검사 명령은 [docs/setup.md](docs/setup.md)에 있습니다.
 
 ## 문서
 

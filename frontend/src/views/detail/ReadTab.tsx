@@ -30,7 +30,7 @@ export function ReadTab({ run, tick, onChanged }: { run: RunSummary; tick: numbe
   const toggle = (r: ReadCheck, on: boolean) => {
     setBusy(r.key)
     setError(null)
-    ;(on ? api.checkRead(id, r.key, user!.user_id) : api.uncheckRead(id, r.key, user!.user_id))
+    ;(on ? api.checkRead(id, r.key) : api.uncheckRead(id, r.key))
       .then(onChanged)
       .catch((e: Error) => setError(e.message))
       .finally(() => setBusy(null))

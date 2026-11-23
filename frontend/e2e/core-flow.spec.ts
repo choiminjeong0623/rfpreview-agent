@@ -57,8 +57,7 @@ test('RFP 한 건 처음부터 끝까지', async ({ page, request }) => {
   await expect(page.getByText('기본 승인자의 결재를 기다리고 있습니다')).toBeVisible()
 
   // 5. 지정 결재자가 결재 대기 화면 (SCR-12)에서 승인
-  await page.evaluate((id) => localStorage.setItem('s2w.user', String(id)), APPROVER)
-  await page.addInitScript((id) => localStorage.setItem('s2w.user', String(id)), APPROVER)
+  await as(page, APPROVER)
   await page.goto(`/#/reviews/${runId}`)
   await page.reload()
   await expect(page.getByText('결재할 검토입니다')).toBeVisible()
@@ -67,7 +66,7 @@ test('RFP 한 건 처음부터 끝까지', async ({ page, request }) => {
   await expect(page.getByText('승인됨', { exact: true }).first()).toBeVisible()
 
   // 6. 엔지니어가 제출본 탭 (SCR-08-8)에서 인계 패키지(zip)를 내려받는다
-  await page.addInitScript((id) => localStorage.setItem('s2w.user', String(id)), ENGINEER)
+  await as(page, ENGINEER)
   await page.goto(`/#/reviews/${runId}`)
   await page.reload()
   await openTab(page, '제출본')

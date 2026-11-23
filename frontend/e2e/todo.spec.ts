@@ -130,7 +130,7 @@ test('협조 요청 상세에서 유형 고치기', async ({ page, request }) =>
   const log = await (await request.get(`/api/runs/${run.run_id}/history`)).json() as { target_table: string; after_value: { type_code?: string } | null }[]
   expect(log.some((h) => h.target_table === 'requirement' && h.after_value?.type_code === 'MAKER_QUAL')).toBe(true)
   const back = await request.post(`/api/runs/${run.run_id}/requirements/${before.requirement_id}/type`,
-    { data: { type_code: before.type_code, reason: 'e2e 되돌림', actor_id: ENGINEER } })
+    { data: { type_code: before.type_code, reason: 'e2e 되돌림' } })
   expect(back.ok()).toBe(true)
 })
 

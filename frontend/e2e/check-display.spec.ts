@@ -11,7 +11,7 @@ async function checkRun(request: APIRequestContext) {
   const res = await request.post('/api/runs', {
     multipart: {
       files: { name: file, mimeType: 'application/octet-stream', buffer: readFileSync(new URL(`./fixtures/${file}`, import.meta.url)) },
-      review_name: `검산 표시 ${Date.now()}`, actor_id: String(ENGINEER), due_date: dueIn(), choices: JSON.stringify({ [file]: { bundle: 'A' } }),
+      review_name: `검산 표시 ${Date.now()}`, due_date: dueIn(), choices: JSON.stringify({ [file]: { bundle: 'A' } }),
     },
   })
   expect(res.status(), await res.text()).toBe(202)

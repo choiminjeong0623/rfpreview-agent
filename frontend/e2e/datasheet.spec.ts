@@ -54,8 +54,8 @@ test('데이터시트 영업에 넘기기', async ({ page, request }) => {
     const r = data.rows.find((x) => x.state === 'cand')
     if (!r) break
     const body = r.target === 'warranty'
-      ? { target: 'warranty_candidate', target_id: r.candidate_id, action: 'CONFIRM', actor_id: ENGINEER }
-      : { target: 'judgment', target_id: r.judgment_id, action: 'CONFIRM', actor_id: ENGINEER }
+      ? { target: 'warranty_candidate', target_id: r.candidate_id, action: 'CONFIRM' }
+      : { target: 'judgment', target_id: r.judgment_id, action: 'CONFIRM' }
     expect((await request.post(`/api/runs/${run.run_id}/actions`, { data: body })).status()).toBe(200)
   }
   await as(page, ENGINEER)

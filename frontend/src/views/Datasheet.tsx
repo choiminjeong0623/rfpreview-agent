@@ -56,7 +56,7 @@ export function Datasheet({ runId }: { runId: number }) {
     const body = x.target === 'warranty'
       ? { target: 'warranty_candidate', target_id: x.candidate_id!, action: 'CONFIRM' }
       : { target: 'judgment', target_id: x.judgment_id, action: 'CONFIRM' }
-    api.act(runId, { ...body, actor_id: user!.user_id }).then(() => {
+    api.act(runId, { ...body }).then(() => {
       setTick((t) => t + 1)
       say(`칸 ${x.no} ${x.item} 값을 확정했습니다.`)
     }, (e: Error) => setError(e.message)).finally(() => setConfirming(null))
@@ -81,7 +81,7 @@ export function Datasheet({ runId }: { runId: number }) {
     if (sending || sendBlock || tableId === null) return
     setSending(true)
     setError(null)
-    api.handoffDatasheet(runId, tableId, user!.user_id).then((res) => {
+    api.handoffDatasheet(runId, tableId).then((res) => {
       setTick((t) => t + 1)
       if (res.sent) say(`영업 담당(${res.mail_to})에게 넘겼습니다. 확인 필요 ${res.empty ?? 0}칸은 비운 채로 넘어갑니다.`)
       else setError(res.error === '주소 없음' ? '영업 담당 메일 주소가 설정되지 않아 넘기지 못했습니다. 시스템 담당자에게 문의하세요.' : `영업에 넘기지 못했습니다: ${res.error}`)

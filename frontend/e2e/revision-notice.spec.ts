@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { mockMe } from './helpers'
 
 // 명세 review-workspace "개정 안내 띠"의 Scenario (change add-revision-notice). 검토 하나의 응답을 테스트가 정한 값으로 바꿔 화면만 본다.
 // 개정 결과 계산은 백엔드 tests/test_revision_notice.py.
@@ -80,7 +81,7 @@ async function mock(page: Page, stage = 'ENGINEER_REVIEW', revised = true) {
     if (path in json) return r.fulfill({ json: json[path] })
     return r.fulfill({ json: [] })
   })
-  await page.addInitScript(() => localStorage.setItem('s2w.user', '1'))
+  await mockMe(page)
   return posts
 }
 
@@ -140,7 +141,7 @@ test('홈에 문서 추가', async ({ page }) => {
     if (path.endsWith('/judgment-counts')) return r.fulfill({ json: { by_result: {}, total: 0, unconfirmed: 0, unconfirmed_comply: 0, past_seen: 0, past_differs: 0 } })
     return r.fulfill({ json: [] })
   })
-  await page.addInitScript(() => localStorage.setItem('s2w.user', '1'))
+  await mockMe(page)
   await page.goto('/#/')
   const chg = page.getByRole('region', { name: '어제 이후 바뀐 것' })
   await expect(chg.getByRole('button', { name: /어제 이후 바뀐 것/ })).toContainText('문서 추가 1')

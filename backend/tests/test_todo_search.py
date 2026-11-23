@@ -12,6 +12,7 @@ from openpyxl import load_workbook
 
 from rfp_agent.pipeline import queries, review
 from rfp_agent.pipeline.handoff_mail import send_requests
+from tests.conftest import as_user
 from tests.docx_factory import build_judgment_spec
 from tests.test_role_assignment import TYPE_TEST, build_task_spec, ctx, run_once, sent
 
@@ -128,7 +129,7 @@ def test_resend_engineer_only(tasks_run, fake_mailer, client):
     task = _quality_sent(conn, run_id, fake_mailer)
     cost_user = review.default_user(conn, "COST")
     res = client.post(f"/api/runs/{run_id}/assignments/send", json={
-        "assignment_ids": [task["assignment_id"]], "resend": True, "actor_id": cost_user})
+        "assignment_ids": [task["assignment_id"]], "resend": True}, headers=as_user(cost_user))
     assert res.status_code == 403
     conn.rollback()
     assert sent(conn, run_id, "QUALITY")[0]["mail_sent_at"] == task["mail_sent_at"]

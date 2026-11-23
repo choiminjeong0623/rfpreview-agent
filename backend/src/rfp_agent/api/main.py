@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from rfp_agent.api import (
     assistant,
+    auth,
     businesses,
     evaluation,
     prompt_evals,
@@ -25,14 +26,12 @@ from rfp_agent.llm.client import ai_mode, ai_model
 from rfp_agent.pipeline import ocr, run_queue
 
 app = FastAPI(title="RFP 기술 검토 지원 API", version="0.2.0")
-app.include_router(runs.router)
-app.include_router(reference.router)
-app.include_router(businesses.router)
-app.include_router(evaluation.router)
-app.include_router(suggestions.router)
-app.include_router(assistant.router)
-app.include_router(prompt_evals.router)
-app.include_router(prompts.router)
+# 공개 경로는 /api/health와 /api/auth/login뿐. 나머지는 모두 로그인을 요구한다 (add-session-auth)
+app.include_router(auth.public)
+app.include_router(auth.router)
+for _router in (runs.router, reference.router, businesses.router, evaluation.router,
+                suggestions.router, assistant.router, prompt_evals.router, prompts.router):
+    app.include_router(_router, dependencies=auth.LOGIN)
 
 log = logging.getLogger(__name__)
 

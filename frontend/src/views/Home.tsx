@@ -117,7 +117,7 @@ export function Home() {
   const todo = all.filter(turn).sort(byDue)
   // 요약 상자 (add-screen-summary): 첫 문장의 수 = "내가 처리할 건" (같은 규칙·같은 최근 200건). 내 차례 수가 바뀌면 다시 쓴다
   const uid = user?.user_id ?? null
-  const summary = useCallback(() => api.homeSummary(uid), [uid, todo.length]) // eslint-disable-line react-hooks/exhaustive-deps
+  const summary = useCallback(() => api.homeSummary(), [uid, todo.length]) // eslint-disable-line react-hooks/exhaustive-deps
   const failed = board.find((r) => r.stage === 'FAILED')
   const today = new Date(now)
   const dim = (r: RunListItem) => (filter && !FILTERS[filter](r) ? ' dim' : '')
@@ -130,7 +130,7 @@ export function Home() {
     if (retrying !== null) return
     setRetrying(r.run_id)
     setRetryError(null)
-    api.retryRun(r.run_id, user?.user_id ?? null).then(() => {
+    api.retryRun(r.run_id).then(() => {
       toast.done('다시 분석을 시작했습니다', { href: href(`/reviews/${r.run_id}`), label: '검토 열기' })
       runs.reload()
     }, (e: Error) => setRetryError({ id: r.run_id, text: e.message })).finally(() => setRetrying(null))

@@ -3,7 +3,6 @@ import { api, type RunSummary } from '../api'
 import { dday, dueText, reviewTitle, stamp } from '../components/format'
 import { DOC_KIND_NAMES, STEP_NAMES } from '../components/labels'
 import { useLoad } from '../components/useLoad'
-import { useSession } from '../shell/useSession'
 import { ExampleBand } from './detail/ExampleTab'
 import { useToast } from '../ui'
 
@@ -41,7 +40,6 @@ function stepStates(run: RunSummary): { label: string; cls: string; note: string
 }
 
 export function FailView({ run, approver, onChanged }: { run: RunSummary; approver: string | null; onChanged: () => void }) {
-  const { user } = useSession()
   const [busy, setBusy] = useState(false)
   const docs = useLoad(() => api.documents(run.run_id), [run.run_id])
   const others = useLoad(() => api.runs().then((rs) => rs.filter((r) => r.stage === 'FAILED' && r.run_id !== run.run_id)), [run.run_id])
@@ -53,7 +51,7 @@ export function FailView({ run, approver, onChanged }: { run: RunSummary; approv
   const go = () => {
     if (pick !== 'retry') { toast.done('예시 화면이라 처리하지 않았습니다.'); return }
     setBusy(true)
-    api.retryRun(run.run_id, user?.user_id ?? null).then(onChanged, (e: Error) => { toast.show(e.message, 'error'); setBusy(false) })
+    api.retryRun(run.run_id).then(onChanged, (e: Error) => { toast.show(e.message, 'error'); setBusy(false) })
   }
   const failedAt = run.finished_at ?? run.started_at
   const due = run.due_date ? dday(run.due_date) : null

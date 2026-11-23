@@ -27,7 +27,7 @@ export async function unconfirmedComplyIds(runId: number): Promise<number[]> {
 }
 
 /** 확정하지 않은 준수 판정을 모두 제안대로 확정하고 알림 문장을 돌려준다 */
-export async function confirmAllComply(runId: number, actorId: number): Promise<string> {
+export async function confirmAllComply(runId: number): Promise<string> {
   const ids = await unconfirmedComplyIds(runId)
-  return bulkMessage(await api.bulkConfirm(runId, ids, actorId))
+  return bulkMessage(await api.bulkConfirm(runId, ids))
 }

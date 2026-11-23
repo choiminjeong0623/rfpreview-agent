@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { APPROVER, COMMENT, ENGINEER, as, deviationRun } from './helpers'
+import { APPROVER, COMMENT, ENGINEER, as, deviationRun, asLogin } from './helpers'
 
 // 명세 review-workspace "검토 목록 내가 올린 결재 보기"·"결재 대기 칸으로 거르기"(update-list-summary-filter)의 Scenario
 // (change update-review-list-approval). 상신·반려는 API로 하고 화면은 검토 목록(SCR-06)만 본다.
@@ -7,7 +7,7 @@ import { APPROVER, COMMENT, ENGINEER, as, deviationRun } from './helpers'
 async function submit(request: Parameters<typeof deviationRun>[0], name: string) {
   const run = await deviationRun(request, name)
   const sent = await request.post(`/api/runs/${run.run_id}/finish-review`,
-    { data: { approver_id: APPROVER, comment: COMMENT, actor_id: ENGINEER } })
+    { data: { approver_id: APPROVER, comment: COMMENT } })
   expect(sent.status()).toBe(200)
   return run
 }
@@ -21,8 +21,7 @@ test('내가 올린 결재 보기', async ({ page, request }) => {
   const tag = `올린 결재 ${Date.now()}`
   await submit(request, `${tag} 대기`)
   const rejected = await submit(request, `${tag} 반려`)
-  await request.post(`/api/runs/${rejected.run_id}/approval`,
-    { data: { decision: 'REJECTED', comment: '시험 반려', actor_id: APPROVER } })
+  await asLogin(request, 'approver', () => request.post(`/api/runs/${rejected.run_id}/approval`, { data: { decision: 'REJECTED', comment: '시험 반려' } }))
   await deviationRun(request, `${tag} 상신 전`)          // 상신하지 않은 검토는 보이지 않는다
   await as(page, ENGINEER)
   await page.goto('/#/reviews')

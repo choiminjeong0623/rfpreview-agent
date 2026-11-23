@@ -69,7 +69,7 @@ export function InfoBox({ run, docs, approver, head, onDocs, onTab, onComply, co
   onDocs: () => void; onTab: (t: DetailTab) => void; onComply: (() => void) | null; complying: boolean
 }) {
   const { user } = useSession()
-  const biz = useLoad(() => (run.business_id ? api.business(run.business_id, user?.user_id ?? null) : Promise.resolve(null)),
+  const biz = useLoad(() => (run.business_id ? api.business(run.business_id) : Promise.resolve(null)),
     [run.business_id, user?.user_id])
   const due = run.due_date ? dday(run.due_date) : null
   const by = submitBy(run.due_date)

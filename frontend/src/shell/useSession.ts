@@ -1,11 +1,20 @@
 import { createContext, useContext } from 'react'
-import type { User } from '../api'
+import type { SessionUser, User } from '../api'
 
-export type Session = { user: User | null; users: User[]; setUserId: (id: number) => void; signOut: () => void; usersError: string | null }
+export type Session = {
+  user: SessionUser | null
+  users: User[]
+  /** 로그인한 뒤 사용자 다시 읽기 */
+  refresh: () => void
+  signOut: () => Promise<void>
+  usersError: string | null
+}
 
-export const SessionContext = createContext<Session>({ user: null, users: [], setUserId: () => undefined, signOut: () => undefined, usersError: null })
+export const SessionContext = createContext<Session>({
+  user: null, users: [], refresh: () => undefined, signOut: async () => undefined, usersError: null,
+})
 
-/** 머리글에서 고른 사용자 (SessionProvider). */
+/** 로그인한 사용자 (SessionProvider, add-session-auth). */
 export function useSession(): Session {
   return useContext(SessionContext)
 }

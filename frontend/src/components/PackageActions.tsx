@@ -45,7 +45,7 @@ export function PackageActions({ runId, label }: { runId: number; label?: React.
     if (busy || !user) return
     setBusy('send')
     setNote(null)
-    api.handoffPackage(runId, user.user_id).then((res) => {
+    api.handoffPackage(runId).then((res) => {
       setTick((t) => t + 1)
       setNote(res.sent
         ? { ok: true, text: `영업 담당(${res.mail_to})에게 인계 패키지를 보냈습니다. 파일 ${res.files.length - 1}개와 목록.txt` }
