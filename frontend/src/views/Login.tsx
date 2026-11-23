@@ -1,13 +1,12 @@
-import { useEffect, useState, type MouseEvent, type ReactNode } from 'react'
-import { ROLE_NAMES } from '../../components/labels'
-import { usePageCss } from '../../shell/pageCss'
-import { navigate } from '../../shell/router'
-import { useSession } from '../../shell/useSession'
-import { useFakeLoad } from './useFakeLoad'
+import { useEffect, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react'
+import { api } from '../api'
+import { usePageCss } from '../shell/pageCss'
+import { currentPath, navigate, pathQuery } from '../shell/router'
+import { useSession } from '../shell/useSession'
 
 // SCR-01 로그인 (목업 v4.57 Login). docs/screens/SCR-01-로그인.md
-// 앱에는 로그인이 없다. 주소 #/login으로만 열고, 로그인을 누르면 홈으로 간다. 사용자는 머리글에서 고른다.
-// 아이디·비밀번호는 어디에도 보내지 않고, 접근 권한 요청도 보내지 않는다 (예시 화면 규칙).
+// 실제 로그인 (add-session-auth): 아이디·비밀번호를 서버에 보내 세션 쿠키를 받고, 주소의 next(없으면 홈)로 간다.
+// 세션이 없는 화면에서 API가 401을 주면 이 화면으로 온다. 접근 권한 요청 탭은 예시로 남아 보내지 않는다.
 
 type Card = { icon: string; label: string; dot?: string } | { tag: string; label: string; dir: 'ltr' | 'rtl'; lang: string }
 type Slide = { h: string; art: 'globe' | 'check' | 'calc' | 'target'; cards: Card[] }
@@ -20,7 +19,6 @@ const SLIDES: Slide[] = [
   { h: '돈으로 본다', art: 'calc', cards: [{ icon: 'gavel', label: '지체상금 조항', dot: 'var(--c-red-dot)' }, { icon: 'warning', label: '포괄 조항 1건', dot: 'var(--c-orange-dot)' }, { icon: 'payments', label: '평가 가격 영업 권한 필요' }] },
   { h: '이기는 제안을 만든다', art: 'target', cards: [{ icon: 'description', label: '일탈 목록 초안' }, { icon: 'help', label: '질의서 초안' }, { icon: 'trending_up', label: '제안 포인트 2건', dot: 'var(--c-green-dot)' }] },
 ]
-const LOGIN_STAGES: [number, string][] = [[0, '사내 계정 확인 중'], [30, '사용 권한 확인 중'], [55, '내 할 일 불러오는 중'], [80, '홈 화면 준비 중']]
 const MAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const ARTS: Record<Slide['art'], ReactNode> = {
@@ -102,8 +100,7 @@ function SlideCard({ c, k }: { c: Card; k: number }) {
 
 export function Login() {
   usePageCss('Login')
-  const { user } = useSession()
-  const loader = useFakeLoad()
+  const { refresh } = useSession()
   const [big, setBig] = useState(false)
   const [slide, setSlide] = useState(0)
   const [paused, setPaused] = useState(reducedMotion)
@@ -112,10 +109,9 @@ export function Login() {
   const [id, setId] = useState('')
   const [pw, setPw] = useState('')
   const [showPw, setShowPw] = useState(false)
-  const [keep, setKeep] = useState(true)
   const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [done, setDone] = useState(false)
+  const [failed, setFailed] = useState<string | null>(null)
   const [req, setReq] = useState({ name: '', mail: '', role: 'eng', why: '' })
   const [reqTried, setReqTried] = useState(false)
   const [reqSent, setReqSent] = useState(false)
@@ -130,15 +126,24 @@ export function Login() {
   const pwErr = tried && !pw
   const nameErr = reqTried && !req.name.trim()
   const mailErr = reqTried && !MAIL.test(req.mail.trim())
-  const finish = () => {
-    setBusy(true)
-    loader.start('로그인', LOGIN_STAGES, '', () => { setBusy(false); setDone(true); navigate('/') })
-  }
-  const doLogin = () => {
+  const doLogin = async () => {
     if (!id.trim() || !pw) { setTried(true); return }
     setTried(false)
-    finish()
+    setFailed(null)
+    setBusy(true)
+    try {
+      await api.login(id.trim(), pw)
+    } catch (e) {
+      // 틀린 비밀번호·없는 아이디는 서버가 같은 문장("아이디 또는 비밀번호가 맞지 않습니다.")을 준다
+      setFailed((e as Error).message)
+      setBusy(false)
+      return
+    }
+    refresh()
+    const next = pathQuery(currentPath()).get('next')
+    navigate(next && next.startsWith('/') && !next.startsWith('/login') ? next : '/', { replace: true })
   }
+  const onEnter = (e: KeyboardEvent) => { if (e.key === 'Enter' && !busy) void doLogin() }
   const doReq = () => {
     if (!req.name.trim() || !MAIL.test(req.mail.trim())) { setReqTried(true); return }
     setReqTried(false)
@@ -188,17 +193,10 @@ export function Login() {
 
           <div className="mid">
             <div className="form">
-              {done ? (
-                <div className="done" role="status">
-                  <div className="ic"><span className="ms" aria-hidden="true">check</span></div>
-                  <h2>로그인했습니다</h2>
-                  <p>{user ? `${user.user_name} · ${ROLE_NAMES[user.role] ?? user.role}` : '머리글에서 사용자를 고르세요'}</p>
-                  <a className="go" href="#/">홈으로 이동<span className="ms" aria-hidden="true" style={{ fontSize: 'var(--ic-s)' }}>arrow_forward</span></a>
-                </div>
-              ) : (
+              {(
                 <>
                   <h1 className="lh"><img src="/img/spec2win-color.png" alt="Spec2Win" width={141} height={28} /><span>로그인</span></h1>
-                  <p className="sub">사내 계정으로 로그인해 주세요.</p>
+                  <p className="sub">아이디와 비밀번호로 로그인해 주세요.</p>
                   {/* 앱 틀 CSS(Main.css)의 .tabs 여백이 겹치지 않게 지운다 */}
                   <div className="tabs" role="tablist" aria-label="로그인 방법" style={{ padding: 0, gap: 0 }}>
                     <button type="button" className={tab === 'login' ? 'on' : ''} role="tab" aria-selected={tab === 'login'} onClick={goLogin}>로그인</button>
@@ -210,27 +208,25 @@ export function Login() {
                       {(idErr || pwErr) && (
                         <div className="alert err" role="alert"><span className="ms" aria-hidden="true">error</span><div><b>입력하지 않은 칸이 있습니다</b><span>빨간 칸을 채운 뒤 다시 로그인해 주세요.</span></div></div>
                       )}
-                      <button type="button" className="sso" onClick={finish} disabled={busy}><span className="ms" aria-hidden="true">badge</span>사내 계정(SSO)으로 계속</button>
-                      <div className="or">또는 사번으로 로그인</div>
+                      {failed && !idErr && !pwErr && (
+                        <div className="alert err" role="alert"><span className="ms" aria-hidden="true">error</span><div><b>{failed}</b><span>아이디와 비밀번호를 확인한 뒤 다시 로그인해 주세요.</span></div></div>
+                      )}
                       <div className="field">
-                        <label htmlFor="uid">사번 또는 회사 이메일</label>
-                        <div className={'inp' + (idErr ? ' bad' : '')}><input id="uid" autoComplete="username" value={id} onChange={(e) => setId(e.target.value)} placeholder="예: 20261234" aria-invalid={idErr} aria-describedby="uid-err" /></div>
-                        {idErr && <div className="ferr" id="uid-err"><span className="ms" aria-hidden="true">error</span>사번 또는 회사 이메일을 입력해 주세요.</div>}
+                        <label htmlFor="uid">아이디</label>
+                        <div className={'inp' + (idErr ? ' bad' : '')}><input id="uid" autoComplete="username" value={id} onChange={(e) => setId(e.target.value)} onKeyDown={onEnter} placeholder="예: engineer" aria-invalid={idErr} aria-describedby="uid-err" /></div>
+                        {idErr && <div className="ferr" id="uid-err"><span className="ms" aria-hidden="true">error</span>아이디를 입력해 주세요.</div>}
                       </div>
                       <div className="field">
                         <label htmlFor="upw">비밀번호</label>
                         <div className={'inp pw' + (pwErr ? ' bad' : '')}>
-                          <input id="upw" type={showPw ? 'text' : 'password'} autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="비밀번호" aria-invalid={pwErr} aria-describedby="upw-err" />
+                          <input id="upw" type={showPw ? 'text' : 'password'} autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={onEnter} placeholder="비밀번호" aria-invalid={pwErr} aria-describedby="upw-err" />
                           <button type="button" className="eye" onClick={() => setShowPw(!showPw)} aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 보기'} title={showPw ? '비밀번호 숨기기' : '비밀번호 보기'}>
                             <span className="ms" aria-hidden="true" style={{ fontSize: 18 }}>{showPw ? 'visibility_off' : 'visibility'}</span></button>
                         </div>
                         {pwErr && <div className="ferr" id="upw-err"><span className="ms" aria-hidden="true">error</span>비밀번호를 입력해 주세요.</div>}
                       </div>
-                      <div className="row">
-                        <label className="chk"><input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} />로그인 상태 유지</label>
-                        <a href="#" onClick={noop}>비밀번호를 잊으셨나요?</a>
-                      </div>
-                      <button type="button" className="go" onClick={doLogin} disabled={busy}>{busy && <span className="spin" aria-hidden="true" />}{busy ? '로그인 중…' : '로그인'}</button>
+                      <div className="row"><span>비밀번호를 잊었으면 관리자에게 문의해 주세요.</span></div>
+                      <button type="button" className="go" onClick={() => void doLogin()} disabled={busy}>{busy && <span className="spin" aria-hidden="true" />}{busy ? '로그인 중…' : '로그인'}</button>
                     </>
                   )}
 
@@ -275,7 +271,6 @@ export function Login() {
           </div>
         </main>
       </div>
-      {loader.view}
     </div>
   )
 }

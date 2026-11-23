@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { mockMe } from './helpers'
 
 // 명세 review-workspace "협조 요청 찾기"·"협조 요청 RFP별 보기"·"협조 요청 내보내기 단추"·"협조 요청 현황 화면"(재요청)의 Scenario
 // (change update-todo-search). 협조 요청 목록 API를 테스트가 정한 값으로 바꿔 화면만 본다. 내보내기·재요청 API는 백엔드 tests/test_todo_search.py.
@@ -62,7 +63,7 @@ async function mock(page: Page, userId = 1, more: A[] = []) {
     }
     return r.fulfill({ json: [] })
   })
-  await page.addInitScript((id) => localStorage.setItem('s2w.user', String(id)), userId)
+  await mockMe(page, userId)
   return posts
 }
 

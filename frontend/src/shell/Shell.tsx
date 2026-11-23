@@ -175,31 +175,32 @@ function useOnline(): boolean {
   return on
 }
 
-/** 머리글 오른쪽 사용자. 로그인이 없으므로 누르면 사용자를 바꾼다 (목업은 로그인 화면으로 감, SCR-00_공유.md). */
+/** 머리글 오른쪽 사용자. 누르면 로그아웃·다른 사용자로 로그인 (add-session-auth). */
 function UserChip({ open, onToggle, onClose }: { open: boolean; onToggle: () => void; onClose: () => void }) {
-  const { user, users, setUserId, signOut } = useSession()
+  const { user, signOut } = useSession()
   const online = useOnline()
   const state = online ? '온라인' : '오프라인'
   const role = user ? ROLE_NAMES[user.role] ?? user.role : ''
+  // 로그아웃·다른 사용자로 로그인 모두 서버 세션을 끝내고 로그인 화면으로 간다
+  const leave = async () => { onClose(); await signOut(); navigate('/login', { replace: true }) }
   return (
     <div className="ntw">
-      <button type="button" className="user" aria-label="사용자 바꾸기" aria-expanded={open} onClick={onToggle}
-        title={user ? `${user.user_name} · ${state} · 사용자 바꾸기` : '사용자 없음'}>
+      <button type="button" className="user" aria-label="사용자" aria-expanded={open} onClick={onToggle}
+        title={user ? `${user.user_name} · ${state}` : '로그인하지 않음'}>
         <span className="av" aria-hidden="true">{user ? initial(user.user_name) : '?'}<i className={online ? 'on' : 'off'} /></span>
         <span className="sr">{state}</span>
-        <span className="uw"><b>{user?.user_name ?? '사용자 없음'}</b><span>{role}</span></span>
+        <span className="uw"><b>{user?.user_name ?? '로그인하지 않음'}</b><span>{role}</span></span>
       </button>
       {open && (
-        <div className="ntp" role="dialog" aria-label="사용자 바꾸기">
-          <div className="nth"><b>사용자 바꾸기</b>
-            <button type="button" onClick={() => { signOut(); onClose(); navigate('/login') }}>로그아웃</button></div>
-          {users.map((u) => (
-            <button key={u.user_id} type="button" className={'nti' + (u.user_id === user?.user_id ? ' un' : '')}
-              aria-pressed={u.user_id === user?.user_id} onClick={() => { setUserId(u.user_id); onClose() }}>
-              <span className="ic c-blue">{initial(u.user_name)}</span>
-              <span className="tx"><b>{u.user_name}</b><span>{ROLE_NAMES[u.role] ?? u.role}</span></span>
-            </button>
-          ))}
+        <div className="ntp" role="dialog" aria-label="사용자">
+          <div className="nth"><b>{user ? `${user.user_name} · ${role}` : '로그인하지 않음'}</b>
+            <button type="button" onClick={leave}>로그아웃</button></div>
+          {user?.login_id && <div className="nti un"><span className="ic c-blue">{initial(user.user_name)}</span>
+            <span className="tx"><b>{user.login_id}</b><span>로그인 아이디</span></span></div>}
+          <button type="button" className="nti" onClick={leave}>
+            <span className="ic c-blue"><span className="ms" aria-hidden="true">switch_account</span></span>
+            <span className="tx"><b>다른 사용자로 로그인</b><span>지금 세션을 끝내고 로그인 화면으로</span></span>
+          </button>
         </div>
       )}
     </div>

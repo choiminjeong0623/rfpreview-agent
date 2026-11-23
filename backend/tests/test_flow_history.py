@@ -57,11 +57,15 @@ def test_flow_api(db, run, monkeypatch):
     from contextlib import contextmanager
 
     import rfp_agent.api.runs as runs_api
+    from rfp_agent.api.auth import current_user
+    from rfp_agent.auth import User
 
     @contextmanager
     def same():
         yield db
     monkeypatch.setattr(runs_api, "connect", same)
+    app.dependency_overrides[current_user] = (
+        lambda: User(1, "기본 엔지니어", "ENGINEER", "engineer"))
     client = TestClient(app)
     body = client.get(f"/api/runs/{run}/flow").json()
     assert body["stop"] == "engineer_review" and body["steps"][0]["node"] == "documents"

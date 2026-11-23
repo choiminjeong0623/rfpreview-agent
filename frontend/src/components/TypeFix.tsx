@@ -21,7 +21,7 @@ export function TypeFix({ runId, requirementId, current }: { runId: number; requ
   const save = () => {
     setBusy(true)
     setMsg(null)
-    api.setType(runId, requirementId, code, reason.trim() || null, user.user_id)
+    api.setType(runId, requirementId, code, reason.trim() || null)
       .then(() => {
         setShown(code)
         setOpen(false)

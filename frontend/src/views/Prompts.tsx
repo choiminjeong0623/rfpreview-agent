@@ -222,7 +222,7 @@ function Editor({ d, onSaved }: { d: PromptDetail; onSaved: () => void }) {
     if (!user) return
     setBusy('save')
     try {
-      const r = await api.savePrompt(d.role, user.user_id, text, memo)
+      const r = await api.savePrompt(d.role, text, memo)
       toast.done(`staging에 v${r.version}으로 저장했습니다. 평가를 돌려 점수를 확인하세요.`)
       setMemo('')
       onSaved()
@@ -231,13 +231,13 @@ function Editor({ d, onSaved }: { d: PromptDetail; onSaved: () => void }) {
   const runEval = async () => {
     if (!user) return
     setBusy('eval')
-    try { setJob(await api.evalPrompt(d.role, user.user_id)) } catch (e) { toast.show((e as Error).message, 'error') } finally { setBusy('') }
+    try { setJob(await api.evalPrompt(d.role)) } catch (e) { toast.show((e as Error).message, 'error') } finally { setBusy('') }
   }
   const promote = async () => {
     if (!user || !job) return
     setBusy('promote')
     try {
-      const r = await api.promotePrompt(d.role, user.user_id, job.job_id)
+      const r = await api.promotePrompt(d.role, job.job_id)
       toast.done(`v${r.version}을 운영(production)으로 올렸습니다. 다음 검토부터 이 판을 씁니다.`)
       setJob({ ...job, promoted_version: r.version })
       onSaved()

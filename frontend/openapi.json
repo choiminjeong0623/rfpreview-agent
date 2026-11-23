@@ -5,13 +5,91 @@
     "version": "0.2.0"
   },
   "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "로그인"
+        ],
+        "summary": "Login",
+        "description": "아이디·비밀번호가 맞으면 세션 쿠키를 준다. 틀린 비밀번호·없는 아이디·비활성은 같은 401.",
+        "operationId": "login_api_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionUser"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "로그인"
+        ],
+        "summary": "Logout",
+        "description": "서버 세션을 끝내고 쿠키를 지운다.",
+        "operationId": "logout_api_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "로그인"
+        ],
+        "summary": "Me",
+        "operationId": "me_api_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionUser"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/users": {
       "get": {
         "tags": [
           "검토 실행"
         ],
         "summary": "Users",
-        "description": "로그인(범위 밖) 전까지 화면에서 고르는 사용자 목록.",
+        "description": "결재자·담당자를 고르는 사용자 목록 (로그인 필요).",
         "operationId": "users_api_users_get",
         "responses": {
           "200": {
@@ -1247,26 +1325,8 @@
           "검토 실행"
         ],
         "summary": "Home Summary Text",
-        "description": "홈 요약 상자 문장 (add-screen-summary). 내 차례 수는 홈 \"내가 처리할 건\"과 같다.",
+        "description": "홈 요약 상자 문장 (add-screen-summary). 내 차례 수는 홈 \"내가 처리할 건\"과 같다.\n사용자는 로그인한 사람이다 (add-session-auth).",
         "operationId": "home_summary_text_api_home_summary_get",
-        "parameters": [
-          {
-            "name": "user_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "User Id"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1274,16 +1334,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ScreenSummary"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -2589,16 +2639,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Actor"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -2642,16 +2682,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Actor"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -2695,16 +2725,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Actor"
-              }
-            }
-          }
-        },
         "responses": {
           "202": {
             "description": "Successful Response",
@@ -3043,16 +3063,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Actor"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -3100,22 +3110,6 @@
               "type": "string",
               "title": "Key"
             }
-          },
-          {
-            "name": "actor_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Actor Id"
-            }
           }
         ],
         "responses": {
@@ -3160,16 +3154,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Actor"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -3243,19 +3227,8 @@
           "검토 실행"
         ],
         "summary": "My Tasks",
-        "description": "고른 사용자의 \"내 할 일\": 엔지니어·승인자는 멈춘 검토, 담당자는 받은 할 일 (FR-11).",
+        "description": "로그인한 사용자의 \"내 할 일\": 엔지니어·승인자는 멈춘 검토, 담당자는 받은 할 일 (FR-11).",
         "operationId": "my_tasks_api_tasks_get",
-        "parameters": [
-          {
-            "name": "user_id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "User Id"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -3263,16 +3236,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MyTasks"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -3655,16 +3618,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/HandoffRequest"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4367,25 +4320,9 @@
           "사업 현황"
         ],
         "summary": "Businesses",
-        "description": "사업 목록과 요약. scope=mine이면 user_id가 관여한 사업만 (내 사업).",
+        "description": "사업 목록과 요약. scope=mine이면 로그인한 사용자가 관여한 사업만 (내 사업).",
         "operationId": "businesses_api_businesses_get",
         "parameters": [
-          {
-            "name": "user_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "User Id"
-            }
-          },
           {
             "name": "scope",
             "in": "query",
@@ -4479,22 +4416,6 @@
             "schema": {
               "type": "integer",
               "title": "Business Id"
-            }
-          },
-          {
-            "name": "user_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "User Id"
             }
           }
         ],
@@ -4592,16 +4513,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Actor"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -4639,22 +4550,6 @@
             "schema": {
               "type": "integer",
               "title": "Business Id"
-            }
-          },
-          {
-            "name": "actor_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Actor Id"
             }
           }
         ],
@@ -5238,16 +5133,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ActorBody"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5290,16 +5175,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ActorBody"
-              }
-            }
-          }
-        },
         "responses": {
           "204": {
             "description": "Successful Response"
@@ -5593,16 +5468,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ActorIn"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5767,17 +5632,6 @@
               }
             ],
             "title": "Reason"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -5822,17 +5676,6 @@
               }
             ],
             "title": "Reason"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -5889,53 +5732,6 @@
         ],
         "title": "ActionResult",
         "description": "확정·수정·반려 하나. 바뀌기 전·후 줄은 대상 표마다 칸이 달라 자유 형식이다."
-      },
-      "Actor": {
-        "properties": {
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
-          }
-        },
-        "type": "object",
-        "title": "Actor"
-      },
-      "ActorBody": {
-        "properties": {
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
-          }
-        },
-        "type": "object",
-        "title": "ActorBody"
-      },
-      "ActorIn": {
-        "properties": {
-          "actor_id": {
-            "type": "integer",
-            "title": "Actor Id"
-          }
-        },
-        "type": "object",
-        "required": [
-          "actor_id"
-        ],
-        "title": "ActorIn"
       },
       "AiCall": {
         "properties": {
@@ -7351,17 +7147,6 @@
             "type": "array",
             "title": "Files"
           },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
-          },
           "choices": {
             "anyOf": [
               {
@@ -7456,17 +7241,6 @@
             ],
             "title": "Engineer Id"
           },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
-          },
           "choices": {
             "anyOf": [
               {
@@ -7554,17 +7328,6 @@
             "type": "string",
             "title": "Action",
             "default": "CONFIRM"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -8037,17 +7800,6 @@
               }
             ],
             "title": "Sales Id"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -9400,17 +9152,6 @@
               }
             ],
             "title": "Comment"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -9512,17 +9253,6 @@
               }
             ],
             "title": "Reason"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -10042,10 +9772,6 @@
       },
       "DraftIn": {
         "properties": {
-          "actor_id": {
-            "type": "integer",
-            "title": "Actor Id"
-          },
           "text": {
             "type": "string",
             "maxLength": 20000,
@@ -10066,7 +9792,6 @@
         },
         "type": "object",
         "required": [
-          "actor_id",
           "text"
         ],
         "title": "DraftIn"
@@ -11040,17 +10765,6 @@
       },
       "HandoffRequest": {
         "properties": {
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
-          },
           "table_id": {
             "anyOf": [
               {
@@ -11822,17 +11536,6 @@
             ],
             "title": "Engineer Id"
           },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
-          },
           "files": {
             "items": {
               "type": "string"
@@ -12084,6 +11787,28 @@
           "target_label"
         ],
         "title": "LogEntry"
+      },
+      "LoginBody": {
+        "properties": {
+          "login_id": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Login Id"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "login_id",
+          "password"
+        ],
+        "title": "LoginBody"
       },
       "Loss": {
         "properties": {
@@ -14025,10 +13750,6 @@
       },
       "PromoteIn": {
         "properties": {
-          "actor_id": {
-            "type": "integer",
-            "title": "Actor Id"
-          },
           "job_id": {
             "type": "integer",
             "title": "Job Id"
@@ -14036,7 +13757,6 @@
         },
         "type": "object",
         "required": [
-          "actor_id",
           "job_id"
         ],
         "title": "PromoteIn"
@@ -16052,17 +15772,6 @@
               }
             ],
             "title": "Engineer Id"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -16151,17 +15860,6 @@
           "reason": {
             "type": "string",
             "title": "Reason"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -16428,17 +16126,6 @@
               }
             ],
             "title": "Reason"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -16575,17 +16262,6 @@
               }
             ],
             "title": "Reason"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -16746,17 +16422,6 @@
               }
             ],
             "title": "Business Id"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -18180,17 +17845,6 @@
               }
             ],
             "title": "Note"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -18253,17 +17907,6 @@
             "type": "array",
             "title": "Assignment Ids"
           },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
-          },
           "resend": {
             "type": "boolean",
             "title": "Resend",
@@ -18304,6 +17947,50 @@
           "mails"
         ],
         "title": "SendResult"
+      },
+      "SessionUser": {
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "user_name": {
+            "type": "string",
+            "title": "User Name"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ENGINEER",
+              "COST",
+              "QUALITY",
+              "SALES",
+              "APPROVER"
+            ],
+            "title": "Role"
+          },
+          "login_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Login Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "user_id",
+          "user_name",
+          "role",
+          "login_id"
+        ],
+        "title": "SessionUser",
+        "description": "로그인한 사용자 (add-session-auth)."
       },
       "SourceLine": {
         "properties": {
@@ -18487,17 +18174,6 @@
       },
       "Submit": {
         "properties": {
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
-          },
           "approver_id": {
             "anyOf": [
               {
@@ -18577,17 +18253,6 @@
               }
             ],
             "title": "Note"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",
@@ -18640,10 +18305,6 @@
             "pattern": "^(TODO|DOING|DONE)$",
             "title": "Status"
           },
-          "actor_id": {
-            "type": "integer",
-            "title": "Actor Id"
-          },
           "reply_note": {
             "anyOf": [
               {
@@ -18658,8 +18319,7 @@
         },
         "type": "object",
         "required": [
-          "status",
-          "actor_id"
+          "status"
         ],
         "title": "TaskStatus"
       },
@@ -18871,17 +18531,6 @@
               }
             ],
             "title": "Reason"
-          },
-          "actor_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Actor Id"
           }
         },
         "type": "object",

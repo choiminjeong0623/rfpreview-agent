@@ -13,7 +13,7 @@ import pytest
 from rfp_agent.pipeline import queries, review
 from rfp_agent.pipeline.loss import recalculate
 from rfp_agent.pipeline.run import RunContext, create_run, execute_run
-from tests.conftest import FakeLLM
+from tests.conftest import FakeLLM, as_user
 from tests.docx_factory import build_gis_spec, build_loss_spec
 from tests.test_engineering_check import build_check_spec
 
@@ -77,8 +77,7 @@ def run_paths(run_id: int, user_id: int) -> list[str]:
         "documents", "pairs", "requirements", "risks", "judgments", "judgment-counts",
         "equipment", "warranty", "losses", "outputs", "tbe", "tbe?lang=both&include=confirmed",
         "datasheets", "submission-check", "checks", "proposals", "history", "approval",
-        "read-checks", "deliverables", "assignments?role=COST")] + [
-        f"/api/tasks?user_id={user_id}"]
+        "read-checks", "deliverables", "assignments?role=COST")] + ["/api/tasks"]
 
 
 def test_every_api_passes_its_model(db, run, run_more, run_check, client):
@@ -106,31 +105,32 @@ def test_every_api_passes_its_model(db, run, run_more, run_check, client):
     # 쓰기 API
     ok(client.post(f"{base}/actions", json={"target": "judgment",
                                              "target_id": judgments[0]["judgment_id"],
-                                             "action": "CONFIRM", "actor_id": engineer}))
+                                             "action": "CONFIRM"}))
     ok(client.post(f"{base}/actions/bulk",
-                   json={"ids": [j["judgment_id"] for j in judgments[1:3]], "actor_id": engineer}))
-    ok(client.put(f"{base}/info", json={"review_name": "예시 검토", "actor_id": engineer}))
+                   json={"ids": [j["judgment_id"] for j in judgments[1:3]]}))
+    ok(client.put(f"{base}/info", json={"review_name": "예시 검토"}))
     ok(client.post(f"{base}/submission-check"))
     group = judgments[0]["equipment_group"]
     ok(client.put(f"{base}/equipment/{group}/product", json={"product_code": None}))
     for check in ok(client.get(f"{base}/read-checks"))[:1]:
-        ok(client.post(f"{base}/read-checks/{check['key']}", json={"actor_id": engineer}))
+        ok(client.post(f"{base}/read-checks/{check['key']}", json={}))
         ok(client.delete(f"{base}/read-checks/{check['key']}"))
     for task in ok(client.get(f"/api/runs/{run}/assignments?role=QUALITY"))[:1]:
         ok(client.post(f"{base}/assignments/send",
-                       json={"assignment_ids": [task["assignment_id"]], "actor_id": engineer}))
+                       json={"assignment_ids": [task["assignment_id"]]}))
         ok(client.put(f"/api/assignments/{task['assignment_id']}",
-                      json={"status": "DONE", "actor_id": engineer, "reply_note": "받음"}))
+                      json={"status": "DONE", "reply_note": "받음"}))
     approver = review.default_user(db, "APPROVER")
-    submit = {"approver_id": approver, "comment": "질의 회신 예정", "actor_id": engineer}
+    submit = {"approver_id": approver, "comment": "질의 회신 예정"}
     ok(client.post(f"{base}/finish-review", json=submit))
-    ok(client.post(f"{base}/withdraw", json={"actor_id": engineer}))
+    ok(client.post(f"{base}/withdraw", json={}))
     ok(client.post(f"{base}/finish-review", json=submit))
-    ok(client.post(f"{base}/approval", json={"decision": "REJECTED", "comment": "다시 확인",
-                                              "actor_id": approver}))
-    ok(client.post(f"{base}/reopen", json={"actor_id": engineer}))
-    for path in [*run_paths(run, engineer), f"/api/tasks?user_id={approver}"]:
+    ok(client.post(f"{base}/approval", json={"decision": "REJECTED", "comment": "다시 확인"},
+                   headers=as_user(approver)))
+    ok(client.post(f"{base}/reopen", json={}))
+    for path in run_paths(run, engineer):
         ok(client.get(path))
+    ok(client.get("/api/tasks", headers=as_user(approver)))
 
     loss = ok(client.get(f"/api/runs/{run_more}/losses"))[0]
     ok(client.put(f"/api/runs/{run_more}/losses/{loss['loss_calc_id']}",

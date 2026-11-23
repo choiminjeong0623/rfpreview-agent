@@ -6,6 +6,7 @@ from urllib.parse import quote
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import BaseModel
 
+from rfp_agent.api.auth import CurrentUser
 from rfp_agent.api.schemas import (
     CompareRule,
     DocKindRule,
@@ -97,12 +98,10 @@ class RuleChange(BaseModel):
     """규칙 추가·수정. value 칸은 사전마다 다르다 (pipeline/rule_edit.py). 사유는 꼭 적는다."""
     value: dict[str, Any]
     reason: str | None = None
-    actor_id: int | None = None
 
 
 class RuleRemoval(BaseModel):
     reason: str | None = None
-    actor_id: int | None = None
 
 
 def _edit(call):
@@ -121,23 +120,25 @@ def rule_edits(dictionary: RuleDictionary | None = None) -> list[RuleEdit]:
 
 
 @router.post("/rules/{dictionary}", status_code=201)
-def add_rule(dictionary: RuleDictionary, body: RuleChange) -> RuleEdit:
+def add_rule(dictionary: RuleDictionary, body: RuleChange, user: CurrentUser) -> RuleEdit:
     """규칙 한 줄 추가 (엔지니어·승인자). 지운 같은 키 줄이 있으면 되살린다."""
     return _edit(lambda conn: rule_edit.add(conn, dictionary, body.value, body.reason,
-                                            body.actor_id))
+                                            user.user_id))
 
 
 @router.put("/rules/{dictionary}/{row_id}")
-def update_rule(dictionary: RuleDictionary, row_id: str, body: RuleChange) -> RuleEdit:
+def update_rule(dictionary: RuleDictionary, row_id: str, body: RuleChange,
+                user: CurrentUser) -> RuleEdit:
     return _edit(lambda conn: rule_edit.update(conn, dictionary, row_id, body.value,
-                                               body.reason, body.actor_id))
+                                               body.reason, user.user_id))
 
 
 @router.delete("/rules/{dictionary}/{row_id}")
-def delete_rule(dictionary: RuleDictionary, row_id: str, body: RuleRemoval) -> RuleEdit:
+def delete_rule(dictionary: RuleDictionary, row_id: str, body: RuleRemoval,
+                user: CurrentUser) -> RuleEdit:
     """규칙 한 줄 삭제. 지난 결과가 가리키는 사전은 끄고, 쓰이는 표준 항목은 막는다."""
     return _edit(lambda conn: rule_edit.delete(conn, dictionary, row_id, body.reason,
-                                               body.actor_id))
+                                               user.user_id))
 
 
 @router.get("/engineering/peak-check")

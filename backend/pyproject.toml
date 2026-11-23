@@ -49,4 +49,5 @@ select = ["E", "F", "I", "B", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["db: PostgreSQL이 필요한 테스트 (TEST_DATABASE_URL이 없으면 건너뜀)"]
+markers = ["db: PostgreSQL이 필요한 테스트 (TEST_DATABASE_URL이 없으면 건너뜀)",
+           "real_auth: 시험용 로그인 바꿔 끼우기 없이 실제 쿠키·세션으로 (add-session-auth)"]

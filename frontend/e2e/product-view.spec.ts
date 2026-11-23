@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { mockMe } from './helpers'
 
 // 명세 review-workspace "제품 상세 화면"·"요구 조건으로 찾기"·"제품표 화면"(빠른 보기·대신 쓸 수 있는 제품)의 Scenario
 // (change add-product-view). 제품표 API 응답을 테스트가 정한 값으로 바꿔 화면만 본다. 백엔드 칸은 tests/test_reference_views.py.
@@ -72,7 +73,7 @@ async function mock(page: Page) {
     if (path === '/api/users') return r.fulfill({ json: [{ user_id: 1, user_name: '시험 엔지니어', role: 'ENGINEER' }] })
     return r.fulfill({ json: [] })
   })
-  await page.addInitScript(() => localStorage.setItem('s2w.user', '1'))
+  await mockMe(page)
 }
 
 const quick = (page: Page) => page.getByRole('complementary', { name: '제품 빠른 보기' })

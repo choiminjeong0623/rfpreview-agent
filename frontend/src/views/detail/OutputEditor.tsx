@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { api, type OutputItem } from '../../api'
 import { STATUS_NAMES } from '../../components/labels'
-import { useSession } from '../../shell/useSession'
 
 // SCR-08-11 일탈 목록·질의 문장 고치기 (목업 v4.57 Detail 패널·판정 상세 창의 문장 칸 #draft).
 // 고치기·빼기는 사유가 필요하다 (POST /actions output_item EDIT·REJECT). 확정은 사유 없이.
@@ -18,7 +17,6 @@ const DONE_MESSAGES = {
 export function OutputEditor({ runId, item, id, canEdit, onDone, onSaved }: {
   runId: number; item: OutputItem; id: string; canEdit: boolean; onDone: () => void; onSaved?: (message: string) => void
 }) {
-  const { user } = useSession()
   const [text, setText] = useState(item.text_draft)
   const [dropping, setDropping] = useState(false)
   const [why, setWhy] = useState('')
@@ -30,7 +28,7 @@ export function OutputEditor({ runId, item, id, canEdit, onDone, onSaved }: {
     setBusy(true)
     setError(null)
     api.act(runId, {
-      target: 'output_item', target_id: item.item_id, action, actor_id: user!.user_id,
+      target: 'output_item', target_id: item.item_id, action,
       value: action === 'EDIT' ? { text: text.trim() } : undefined, reason: action === 'CONFIRM' ? undefined : why.trim(),
     }).then(() => { setWhy(''); setDropping(false); onSaved?.(DONE_MESSAGES[action]); onDone() }, (e: Error) => setError(e.message)).finally(() => setBusy(false))
   }

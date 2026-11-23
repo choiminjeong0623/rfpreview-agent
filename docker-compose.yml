@@ -42,6 +42,9 @@ services:
       RFP_RUN_WORKERS: ${RFP_RUN_WORKERS:-2}
       RFP_UPLOAD_MAX_MB: ${RFP_UPLOAD_MAX_MB:-100}
       RFP_REQUEST_MAX_MB: ${RFP_REQUEST_MAX_MB:-300}
+      # 로그인 세션 (add-session-auth): 유지 시간, HTTPS 배포 때 쿠키 Secure
+      RFP_SESSION_HOURS: ${RFP_SESSION_HOURS:-8}
+      RFP_COOKIE_SECURE: ${RFP_COOKIE_SECURE:-false}
       # AI 호출 기록 원문 저장 (add-ai-call-trace): off = 해시만
       RFP_TRACE_RAW: ${RFP_TRACE_RAW:-off}
       # Langfuse 프롬프트 관리 (add-langfuse-prompts): off = 코드 판만. Langfuse는 따로 띄운다(docs/setup-guide.md)

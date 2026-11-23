@@ -314,8 +314,38 @@ def _run_count(conn) -> int:
     return conn.execute("SELECT count(*) FROM review_run").fetchone()[0]
 
 
-def demo_setup(create: bool, file: Path | None) -> None:
-    """빈 DB에 시연 데이터를 한 번에 준비한다. 검토가 있는 DB는 거절하고 지우지 않는다."""
+DEMO_LOGINS = ("engineer", "approver", "cost", "quality", "sales")
+
+
+def set_password(login_id: str, password: str) -> None:
+    """로그인 아이디의 비밀번호를 정한다 (add-session-auth). 비밀번호는 출력하지 않는다."""
+    from rfp_agent import auth
+
+    with connect() as conn:
+        try:
+            auth.set_password(conn, login_id, password)
+        except (ValueError, LookupError) as exc:
+            sys.exit(str(exc))
+    print(f"[로그인] {login_id} 비밀번호를 정했습니다 (살아 있던 세션은 끝냄).")
+
+
+def _read_password(from_stdin: bool) -> str:
+    import getpass
+
+    if from_stdin:
+        return sys.stdin.readline().rstrip("\n")
+    first = getpass.getpass("새 비밀번호: ")
+    if getpass.getpass("한 번 더: ") != first:
+        sys.exit("두 비밀번호가 다릅니다.")
+    return first
+
+
+def demo_setup(create: bool, file: Path | None, password: str | None = None) -> None:
+    """빈 DB에 시연 데이터를 한 번에 준비한다. 검토가 있는 DB는 거절하고 지우지 않는다.
+
+    password를 주면 시연 사용자 다섯(engineer·approver·cost·quality·sales)에 같은 비밀번호를 둔다.
+    """
+    from rfp_agent import auth
     from rfp_agent.llm.client import ai_mode
 
     settings = get_settings()
@@ -326,6 +356,8 @@ def demo_setup(create: bool, file: Path | None) -> None:
         if (n := _run_count(conn)) > 0:
             sys.exit(f"검토가 {n}건 있는 DB입니다. 시연 준비는 검토가 없는 DB에서만 합니다"
                      " (지우지 않습니다). 새 DB 이름으로 --create 하세요.")
+    if password is not None and len(password) < auth.MIN_PASSWORD:
+        sys.exit(f"비밀번호는 {auth.MIN_PASSWORD}자 이상이어야 합니다.")
     if not path.exists():
         sys.exit(f"시연 파일이 없습니다: {path}\n"
                  "  cd backend && uv run python ../generate_risk_rfp.py && "
@@ -336,11 +368,19 @@ def demo_setup(create: bool, file: Path | None) -> None:
         print(f"[마이그레이션] 적용 {len(applied)}건")
         print_report("규칙 사전", seed_rules(conn, settings.seed_dir))
         run_products(conn)
+        if password is not None:
+            for login_id in DEMO_LOGINS:
+                auth.set_password(conn, login_id, password)
+            print(f"[로그인] 시연 사용자 {len(DEMO_LOGINS)}명 비밀번호를 정했습니다: "
+                  + ", ".join(DEMO_LOGINS))
     for csv_name, name, kind in DEMO_KEYS:
         load_answer_key(settings.seed_dir / "answer_keys" / csv_name, name, False, kind,
                         DEMO_FILE.removesuffix(".docx") if kind == "REQ" else None)
     demo_businesses([["시연 사업", str(path)]], "Demo Grid Co.", 14)
     print("[시연 준비] 끝. 이 DB로 백엔드를 띄우면 검토 목록에 시연 검토가 하나 보입니다.")
+    if password is None:
+        print("[로그인] 비밀번호를 정하지 않아 아직 아무도 로그인할 수 없습니다. "
+              "rfp-db set-password --login engineer 로 정하세요.")
 
 
 def _print_sources(prompts: dict) -> None:
@@ -392,7 +432,7 @@ def main(argv: list[str] | None = None) -> None:
                                             "make-answer-key", "fill-due", "demo-setup",
                                             "export-eval-set", "eval-prompts",
                                             "langfuse-push-prompts", "langfuse-push-traces",
-                                            "langfuse-push-dataset"])
+                                            "langfuse-push-dataset", "set-password"])
     parser.add_argument("path", nargs="?",
                         help="load-answer-key: 정답지 CSV / make-answer-key: 공급사 답안 docx")
     parser.add_argument("--name", help="load-answer-key: 정답지 이름 (같은 이름이면 줄을 바꿈)")
@@ -438,7 +478,17 @@ def main(argv: list[str] | None = None) -> None:
                         help="eval-prompts: Langfuse 판이 기준선 비교를 통과하면 production으로")
     parser.add_argument("--label", help="langfuse-push-prompts: 붙일 표시 (기본 staging)")
     parser.add_argument("--run", type=int, help="langfuse-push-traces: 검토 실행 번호")
+    parser.add_argument("--login", help="set-password: 로그인 아이디 (예: engineer)")
+    parser.add_argument("--password-stdin", action="store_true",
+                        help="set-password: 비밀번호를 묻지 않고 표준 입력 첫 줄에서 읽음")
+    parser.add_argument("--password",
+                        help="demo-setup: 시연 사용자 다섯 명에 둘 같은 비밀번호 (8자 이상)")
     args = parser.parse_args(argv)
+    if args.command == "set-password":
+        if not args.login:
+            parser.error("set-password --login 아이디 가 필요합니다")
+        set_password(args.login, _read_password(args.password_stdin))
+        return
     settings = get_settings()
     if args.command == "export-eval-set":
         if not args.key:
@@ -476,7 +526,7 @@ def main(argv: list[str] | None = None) -> None:
         demo_businesses(args.business, args.customer, args.due_in)
         return
     if args.command == "demo-setup":
-        demo_setup(args.create, Path(args.file) if args.file else None)
+        demo_setup(args.create, Path(args.file) if args.file else None, args.password)
         return
     if args.command == "fill-due":
         fill_due(args.due_in)

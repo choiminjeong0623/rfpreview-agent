@@ -46,7 +46,7 @@ export function SubmitDialog({ run, onClose, onDone }: { run: RunSummary; onClos
     if (!ready || approverId === null) return
     setBusy(true)
     setError(null)
-    api.submit(run.run_id, approverId, comment.trim(), user!.user_id).then(onDone, (e: Error) => setError(e.message))
+    api.submit(run.run_id, approverId, comment.trim()).then(onDone, (e: Error) => setError(e.message))
       .finally(() => setBusy(false))
   }
 

@@ -73,7 +73,6 @@ export function BidTab({ run, tick, onChanged, onGoJudge, children }: {
 function Point({ runId, p, where, canEdit, lock, acted, onDone }: {
   runId: number; p: Proposal; where: string; canEdit: boolean; lock?: string; acted?: Acted; onDone: (a: Acted) => void
 }) {
-  const { user } = useSession()
   const [dropping, setDropping] = useState(false)
   const [why, setWhy] = useState('')
   const [busy, setBusy] = useState(false)
@@ -81,7 +80,7 @@ function Point({ runId, p, where, canEdit, lock, acted, onDone }: {
   const act = (action: 'ADOPT' | 'DISCARD') => {
     setBusy(true)
     setError(null)
-    api.act(runId, { target: 'proposal_point', target_id: p.point_id, action, reason: action === 'DISCARD' ? why.trim() : undefined, actor_id: user!.user_id })
+    api.act(runId, { target: 'proposal_point', target_id: p.point_id, action, reason: action === 'DISCARD' ? why.trim() : undefined })
       .then(() => { onDone({ action, reason: action === 'DISCARD' ? why.trim() : undefined }); setDropping(false); setWhy('') })
       .catch((e: Error) => setError(e.message))
       .finally(() => setBusy(false))

@@ -34,7 +34,8 @@
    - 스키마가 진실이 되도록 지우고 `npm run gen:api`로 화면 타입에서도 사라지게 한다. Pydantic 기본 설정이 모르는 칸을 무시하므로 옛 화면이 보내도 오류는 나지 않고 값은 쓰이지 않는다(시나리오 "본문에 다른 사용자 번호").
    - API 층에서 `default_user` 대체를 쓰지 않는다. 파이프라인의 `default_user`는 CLI용으로 남긴다.
 5. **CSRF는 SameSite=Lax + 같은 출처 확인**
-   - 상태를 바꾸는 요청은 JSON 본문이거나 파일 업로드다. 업로드(multipart)는 브라우저가 교차 출처로 보낼 수 있으므로 `Origin`(없으면 `Referer`)이 설정된 허용 출처가 아니면 403. 허용 출처는 요청 호스트와 같은 출처.
+   - 상태를 바꾸는 요청(GET·HEAD·OPTIONS 밖, 로그인 포함)은 `Origin`(없으면 `Referer`)의 호스트가 요청 호스트와 다르면 403. 업로드(multipart)는 브라우저가 교차 출처로 보낼 수 있어서이고, JSON 요청도 같은 검사를 건다(추가 비용 없음). Origin·Referer가 모두 없으면 브라우저가 아닌 요청이라 통과한다.
+   - 프록시 뒤에서는 `X-Forwarded-Host`를 요청 호스트로 본다. Vite 개발 서버 프록시는 `changeOrigin`으로 Host를 백엔드 주소로 바꾸므로 `xfwd: true`로 원래 주소를 넘긴다(구현 중 e2e에서 로그인이 403으로 막혀 찾음). 이 머리는 교차 출처 브라우저가 사전 확인 없이 보낼 수 없어 CSRF 검사에 써도 된다.
 6. **세션 유지와 쿠키 설정**
    - `RFP_SESSION_HOURS`(기본 8, 마지막 요청 기준 아님·고정 만료), `RFP_COOKIE_SECURE`(기본 false, 배포 시 true). 쿠키 이름 `s2w_session`, `HttpOnly`, `SameSite=Lax`, `Path=/`.
 7. **비밀번호 넣기는 명령으로만**
@@ -42,7 +43,11 @@
 8. **화면**
    - `SessionProvider`는 `/auth/me`로 사용자를 읽고, API 응답 401을 받으면 `#/login?next=<주소>`로 보낸다. `localStorage`의 `s2w.user`는 지운다.
    - 로그인 화면은 지금 예시 레이아웃을 그대로 쓰고 입력칸·오류 문구만 실제로 잇는다.
-   - e2e `as(page, userId)`는 `request.post('/api/auth/login')`로 쿠키를 받아 페이지 문맥에 넣는다. 시연 비밀번호는 환경 변수 `E2E_PASSWORD`.
+   - e2e `as(page, userId)`는 `page.request.post('/api/auth/login')`로 쿠키를 받아 페이지 문맥에 넣는다. 시연 비밀번호는 환경 변수 `E2E_PASSWORD`(기본 `demo-pass-1`). 시작할 때 `e2e/global-setup.ts`가 엔지니어로 로그인한 쿠키를 저장해(`use.storageState`) 모든 시험이 엔지니어로 시작하고, 승인자 결정처럼 API로 다른 사용자가 할 일은 `asLogin(request, 'approver', fn)`. 백엔드를 흉내 내는 시험은 `mockMe(page, id)`로 `/api/auth/me`를 정한다.
+9. **pytest**
+   - API 시험 대부분은 로그인 뒤 동작을 보므로 `conftest.logged_in`(autouse)이 `current_user`를 바꿔 끼워 머리 `X-Test-User`(사용자 번호)의 사용자, 없으면 기본 엔지니어로 둔다. 본문 `actor_id`로 사용자를 바꾸던 시험은 이 머리로 바꿨다.
+   - 로그인·세션 시나리오와 경로 시험은 `@pytest.mark.real_auth`로 바꿔 끼우지 않고 실제 쿠키로 돈다(`tests/test_session_auth.py`).
+   - 사용자 번호 없이 시작하면 담당 엔지니어가 비던 시나리오("검토 정보 없이 시작")는 이제 시작한 엔지니어가 담당이 된다. 기존 규칙("시작한 사람이 엔지니어면 담당")이 그대로 적용된 결과라 `review-run` 스펙 delta로 문장을 맞췄다.
 
 ## Risks / Trade-offs
 

@@ -5,7 +5,7 @@ import type {
   LossResult, ProductSwitch, RuleEdit,
   AiCalls, RunFlow, RunLogItem, RunSummary, ScreenSummary, SendResult, StageResult, SubmitResult,
   AnswerKey, EvalRun, EvalScore, RuleSuggestion, AssistantAnswer, MeaningCandidate, RiskMeaning, AiUsage, PeakCheck, PromptOverview,
-  PromptDetail, PromptEvalJob, PromptSaved,
+  PromptDetail, PromptEvalJob, PromptSaved, SessionUser,
 } from './api.gen'
 
 export type {
@@ -16,7 +16,7 @@ export type {
   DocumentChoice, DocumentLines, DocumentPreview, EngineeringCheck,
   Equipment, Health, ItemKey, Judgment, JudgmentCounts, Location, LogEntry, Loss, MyTasks, OutputItem, Product,
   ProductDetail, ProductFamily, ProductUse, Proposal, ReadCheck, Requirement, ReviewCard, Risk, RiskExpression, RuleEdit, RunDocument,
-  AnswerKey, EvalMetric, EvalRun, EvalScore, AssistantAnswer, AssistantEvidence, Revision, FlowStep, RunFlow, RunListItem, RunLogItem, RunSummary, RuleSuggestion, ScreenSummary, MeaningCandidate, RiskMeaning, SalesHandoff, SubmissionCheck, Tbe, TbeRow, User, Warranty,
+  AnswerKey, EvalMetric, EvalRun, EvalScore, AssistantAnswer, AssistantEvidence, Revision, FlowStep, RunFlow, RunListItem, RunLogItem, RunSummary, RuleSuggestion, ScreenSummary, SessionUser, MeaningCandidate, RiskMeaning, SalesHandoff, SubmissionCheck, Tbe, TbeRow, User, Warranty,
 } from './api.gen'
 import type {
   CompareRule, DatasheetInfo, Datasheet, DocKindRule, EngineeringCheck, Equipment, Health, ItemKey, Judgment, JudgmentCounts,
@@ -49,11 +49,20 @@ export type ActionBody = {
   action: string
   value?: Record<string, unknown>
   reason?: string
-  actor_id?: number
+}
+
+/** 세션이 없거나 끝났으면 로그인 화면으로, 로그인하면 지금 화면으로 돌아온다 (add-session-auth) */
+export const NO_LOGIN = '로그인이 필요합니다.'
+function toLogin(path: string) {
+  if (path === '/auth/login') return
+  const here = window.location.hash.replace(/^#/, '') || '/'
+  if (here.startsWith('/login')) return
+  window.location.replace('#/login?next=' + encodeURIComponent(here))
 }
 
 async function send(path: string, init?: RequestInit): Promise<Response> {
   const res = await fetch(`/api${path}`, init)
+  if (res.status === 401) toLogin(path)
   if (!res.ok) {
     let message = `API ${res.status}`
     try {
@@ -90,7 +99,7 @@ async function page<T>(path: string): Promise<Page<T>> {
 /** 검토 시작 때 함께 보내는 검토 정보. 빈 칸은 보내지 않는다.
  * 사업 연결(add-project-status): business_id(진행 중인 사업에 추가) 또는 new_business_name(새 사업 만들기) */
 export type StartInfo = Partial<Omit<ReviewInfo, 'engineer_id'>> & {
-  engineer_id?: number | null; actor_id?: number | null; business_id?: number | null; new_business_name?: string
+  engineer_id?: number | null; business_id?: number | null; new_business_name?: string
   /** 등록마다 하나 (add-run-queue). 같은 키가 10분 안에 다시 오면 서버가 처음 검토를 돌려준다 */
   request_key?: string
 }
@@ -121,6 +130,10 @@ const json = (method: string, body: unknown): RequestInit => ({
 
 export const api = {
   health: () => call<Health>('/health'),
+  // 로그인 (add-session-auth): 세션 쿠키(HttpOnly)는 브라우저가 들고, 화면은 사용자만 안다
+  login: (login_id: string, password: string) => call<SessionUser>('/auth/login', json('POST', { login_id, password })),
+  logout: () => send('/auth/logout', { method: 'POST' }).then(() => undefined),
+  me: () => call<SessionUser>('/auth/me'),
   users: () => call<User[]>('/users'),
   runs: (limit = 200) => call<RunListItem[]>(`/runs?limit=${limit}`),
   library: () => call<string[]>('/library'),
@@ -141,6 +154,7 @@ export const api = {
       xhr.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded, e.total) }
       xhr.onerror = () => reject(new Error('서버에 연결하지 못했습니다'))
       xhr.onload = () => {
+        if (xhr.status === 401) toLogin('/runs')
         let body: unknown = null
         try { body = JSON.parse(xhr.responseText) } catch { /* 본문이 JSON이 아니면 상태 코드만 */ }
         if (xhr.status >= 200 && xhr.status < 300) return resolve(body as RunSummary)
@@ -158,24 +172,23 @@ export const api = {
     return call<DocumentPreview[]>('/runs/preview', { method: 'POST', body: form })
   },
   /** 담당자 확인 단계 검토에 문서를 더해 다시 분석 (add-document-addendum, 엔지니어만) */
-  addDocuments: (id: number, files: File[], choices: Record<string, DocumentChoice>, actor_id: number | null) => {
+  addDocuments: (id: number, files: File[], choices: Record<string, DocumentChoice>) => {
     const form = new FormData()
     files.forEach((f) => form.append('files', f))
     if (Object.keys(choices).length) form.append('choices', JSON.stringify(choices))
-    if (actor_id !== null) form.append('actor_id', String(actor_id))
     return call<RunSummary>(`/runs/${id}/documents`, { method: 'POST', body: form })
   },
   /** 지난 RFP 비교 (add-past-compare): 같은 고객사의 지난 검토와 달라진 요구 */
   compareTargets: (id: number) => call<CompareTargets>(`/runs/${id}/compare`),
   compare: (id: number, otherId: number) => call<PastCompare>(`/runs/${id}/compare/${otherId}`),
   /** 보낸 칸만 바꾼다. 빈 문자열은 비우기 */
-  updateInfo: (id: number, info: Partial<Record<keyof ReviewInfo, string | number | null>>, actor_id: number | null) =>
-    call<RunSummary>(`/runs/${id}/info`, json('PUT', { ...info, actor_id })),
+  updateInfo: (id: number, info: Partial<Record<keyof ReviewInfo, string | number | null>>) =>
+    call<RunSummary>(`/runs/${id}/info`, json('PUT', info)),
   judgmentPage: (id: number, params: JudgmentQuery) => page<Judgment>(`/runs/${id}/judgments?${query(params)}`),
   judgmentCounts: (id: number) => call<JudgmentCounts>(`/runs/${id}/judgment-counts`),
   /** 요약 상자 문장 (add-screen-summary): 검토 상세, 홈 */
   runSummaryText: (id: number) => call<ScreenSummary>(`/runs/${id}/summary`),
-  homeSummary: (userId: number | null) => call<ScreenSummary>(`/home/summary${userId === null ? '' : `?user_id=${userId}`}`),
+  homeSummary: () => call<ScreenSummary>('/home/summary'),
   run: (id: number) => call<RunSummary>(`/runs/${id}`),
   documents: (id: number) => call<RunDocument[]>(`/runs/${id}/documents`),
   /** 원문 줄 범위 (최대 40줄, add-judgment-view). partial이면 파일이 없어 저장된 줄만 */
@@ -210,26 +223,26 @@ export const api = {
   tbe: (id: number, q: TbeQuery) => call<Tbe>(`/runs/${id}/tbe?${query(q)}`),
   exportTbe: (id: number, q: TbeQuery) => file(`/runs/${id}/tbe/export?${query(q)}`),
   exportOutputs: (id: number, list_kind: 'DEVIATION' | 'QUERY') => file(`/runs/${id}/outputs/export?list_kind=${list_kind}`),
-  bulkConfirm: (id: number, ids: number[], actor_id: number) =>
-    call<BulkResult>(`/runs/${id}/actions/bulk`, json('POST', { target: 'judgment', ids, action: 'CONFIRM', actor_id })),
+  bulkConfirm: (id: number, ids: number[]) =>
+    call<BulkResult>(`/runs/${id}/actions/bulk`, json('POST', { target: 'judgment', ids, action: 'CONFIRM' })),
   act: (id: number, body: ActionBody) =>
     call<ActionResult>(`/runs/${id}/actions`, json('POST', body)),
   // 사람 유형 고치기 (add-type-examples). NONE은 미분류
-  setType: (id: number, reqId: number, type_code: string, reason: string | null, actor_id: number) =>
-    call<TypeEditResult>(`/runs/${id}/requirements/${reqId}/type`, json('POST', { type_code, reason, actor_id })),
+  setType: (id: number, reqId: number, type_code: string, reason: string | null) =>
+    call<TypeEditResult>(`/runs/${id}/requirements/${reqId}/type`, json('POST', { type_code, reason })),
   history: (id: number) => call<LogEntry[]>(`/runs/${id}/history`),
   approval: (id: number) => call<ApprovalScreen>(`/runs/${id}/approval`),
   readChecks: (id: number) => call<ReadCheck[]>(`/runs/${id}/read-checks`),
-  checkRead: (id: number, key: string, actor_id: number) =>
-    call<ReadCheck>(`/runs/${id}/read-checks/${encodeURIComponent(key)}`, json('POST', { actor_id })),
-  uncheckRead: (id: number, key: string, actor_id: number) =>
-    call<ReadCheck>(`/runs/${id}/read-checks/${encodeURIComponent(key)}?actor_id=${actor_id}`, { method: 'DELETE' }),
+  checkRead: (id: number, key: string) =>
+    call<ReadCheck>(`/runs/${id}/read-checks/${encodeURIComponent(key)}`, { method: 'POST' }),
+  uncheckRead: (id: number, key: string) =>
+    call<ReadCheck>(`/runs/${id}/read-checks/${encodeURIComponent(key)}`, { method: 'DELETE' }),
   /** 결재 상신: 결재자와 상신 의견은 필수 */
-  submit: (id: number, approver_id: number, comment: string, actor_id: number) =>
-    call<SubmitResult>(`/runs/${id}/finish-review`, json('POST', { approver_id, comment, actor_id })),
-  withdraw: (id: number, actor_id: number) => call<StageResult>(`/runs/${id}/withdraw`, json('POST', { actor_id })),
-  rewind: (id: number, step: string, reason: string, actor_id: number) =>
-    call<RunSummary>(`/runs/${id}/rewind`, json('POST', { step, reason, actor_id })),
+  submit: (id: number, approver_id: number, comment: string) =>
+    call<SubmitResult>(`/runs/${id}/finish-review`, json('POST', { approver_id, comment })),
+  withdraw: (id: number) => call<StageResult>(`/runs/${id}/withdraw`, { method: 'POST' }),
+  rewind: (id: number, step: string, reason: string) =>
+    call<RunSummary>(`/runs/${id}/rewind`, json('POST', { step, reason })),
   runLog: () => call<RunLogItem[]>('/run-log'),
   /** 검산 확인 (add-check-calculator): 분석 검산과 같은 규칙의 참고 계산, 저장 안 함 */
   peakCheck: (ik_ka: number, frequency_hz: number, peak_ka: number) =>
@@ -240,13 +253,13 @@ export const api = {
   prompts: () => call<PromptOverview>('/prompts'),
   // 프롬프트 고치기 (add-prompt-editor): Langfuse staging 저장, 평가, 운영으로 올리기
   prompt: (role: string) => call<PromptDetail>(`/prompts/${role}`),
-  savePrompt: (role: string, actorId: number, text: string, message: string) =>
-    call<PromptSaved>(`/prompts/${role}/drafts`, json('POST', { actor_id: actorId, text, message: message || null })),
-  evalPrompt: (role: string, actorId: number) =>
-    call<PromptEvalJob>(`/prompts/${role}/evaluations`, json('POST', { actor_id: actorId })),
+  savePrompt: (role: string, text: string, message: string) =>
+    call<PromptSaved>(`/prompts/${role}/drafts`, json('POST', { text, message: message || null })),
+  evalPrompt: (role: string) =>
+    call<PromptEvalJob>(`/prompts/${role}/evaluations`, { method: 'POST' }),
   promptEval: (role: string) => call<PromptEvalJob | null>(`/prompts/${role}/evaluations/latest`),
-  promotePrompt: (role: string, actorId: number, jobId: number) =>
-    call<PromptSaved>(`/prompts/${role}/promote`, json('POST', { actor_id: actorId, job_id: jobId })),
+  promotePrompt: (role: string, jobId: number) =>
+    call<PromptSaved>(`/prompts/${role}/promote`, json('POST', { job_id: jobId })),
   runFlow: (id: number) => call<RunFlow>(`/runs/${id}/flow`),
   /** AI 호출 기록 (add-ai-call-trace, FR-21). 원문 없이 해시만 */
   aiCalls: (id: number) => call<AiCalls>(`/runs/${id}/ai-calls`),
@@ -256,14 +269,14 @@ export const api = {
   evalRuns: () => call<EvalRun[]>('/eval/runs'),
   evalScores: () => call<EvalScore[]>('/eval/scores'),
   // key_id 유형 정답지(K13), req_key_id 요구사항 정답지(K1·K2·K3·K10, add-requirement-answer-key)
-  score: (run_ids: number[], key_id: number | null, note: string, actor_id: number | null, req_key_id: number | null = null) =>
-    call<EvalScore>('/eval/scores', json('POST', { run_ids, key_id, req_key_id, note, actor_id })),
+  score: (run_ids: number[], key_id: number | null, note: string, req_key_id: number | null = null) =>
+    call<EvalScore>('/eval/scores', json('POST', { run_ids, key_id, req_key_id, note })),
   // 처리 중 취소, 실패·취소한 검토 다시 시도 (add-run-control)
-  cancelRun: (id: number, actor_id: number | null) => call<RunSummary>(`/runs/${id}/cancel`, json('POST', { actor_id })),
-  retryRun: (id: number, actor_id: number | null) => call<RunSummary>(`/runs/${id}/retry`, json('POST', { actor_id })),
-  decide: (id: number, decision: string, comment: string, actor_id: number) =>
-    call<DecisionResult>(`/runs/${id}/approval`, json('POST', { decision, comment, actor_id })),
-  tasks: (user_id: number) => call<MyTasks>(`/tasks?user_id=${user_id}`),
+  cancelRun: (id: number) => call<RunSummary>(`/runs/${id}/cancel`, { method: 'POST' }),
+  retryRun: (id: number) => call<RunSummary>(`/runs/${id}/retry`, { method: 'POST' }),
+  decide: (id: number, decision: string, comment: string) =>
+    call<DecisionResult>(`/runs/${id}/approval`, json('POST', { decision, comment })),
+  tasks: () => call<MyTasks>('/tasks'),
   products: (params: { family?: string; q?: string; offset?: number; limit?: number; cards?: 'false' }) => page<Product>(`/products?${query(params)}`),
   /** 제품표 엑셀 (add-product-export): 목록과 같은 거르기 */
   exportProducts: (params: { family?: string; q?: string; cards?: 'false' }) => file(`/products/export?${query(params)}`),
@@ -274,62 +287,62 @@ export const api = {
   riskExpressions: () => call<RiskExpression[]>('/rules/risk-expressions'),
   docKindRules: () => call<DocKindRule[]>('/rules/doc-kinds'),
   ruleEdits: (dictionary?: RuleDictionary) => call<RuleEdit[]>(`/rules/edits${dictionary ? `?dictionary=${dictionary}` : ''}`),
-  addRule: (dictionary: RuleDictionary, value: RuleValue, reason: string, actor_id: number) =>
-    call<RuleEdit>(`/rules/${dictionary}`, json('POST', { value, reason, actor_id })),
-  updateRule: (dictionary: RuleDictionary, id: string, value: RuleValue, reason: string, actor_id: number) =>
-    call<RuleEdit>(`/rules/${dictionary}/${encodeURIComponent(id)}`, json('PUT', { value, reason, actor_id })),
-  deleteRule: (dictionary: RuleDictionary, id: string, reason: string, actor_id: number) =>
-    call<RuleEdit>(`/rules/${dictionary}/${encodeURIComponent(id)}`, json('DELETE', { reason, actor_id })),
+  addRule: (dictionary: RuleDictionary, value: RuleValue, reason: string) =>
+    call<RuleEdit>(`/rules/${dictionary}`, json('POST', { value, reason })),
+  updateRule: (dictionary: RuleDictionary, id: string, value: RuleValue, reason: string) =>
+    call<RuleEdit>(`/rules/${dictionary}/${encodeURIComponent(id)}`, json('PUT', { value, reason })),
+  deleteRule: (dictionary: RuleDictionary, id: string, reason: string) =>
+    call<RuleEdit>(`/rules/${dictionary}/${encodeURIComponent(id)}`, json('DELETE', { reason })),
   /** 검토 도우미: 읽기 도구만 쓰는 AI에 묻기 (add-review-assistant) */
   ask: (runId: number, question: string) => call<AssistantAnswer>(`/runs/${runId}/assistant`, json('POST', { question })),
   /** 위험 표현 사전에 추가 제안 (add-rule-suggestion) */
   runSuggestions: (runId: number) => call<RuleSuggestion[]>(`/runs/${runId}/rule-suggestions`),
-  suggestRule: (runId: number, expression: string, note: string, actor_id: number) =>
-    call<RuleSuggestion>(`/runs/${runId}/rule-suggestions`, json('POST', { expression, note, actor_id })),
+  suggestRule: (runId: number, expression: string, note: string) =>
+    call<RuleSuggestion>(`/runs/${runId}/rule-suggestions`, json('POST', { expression, note })),
   ruleSuggestions: () => call<RuleSuggestion[]>('/rule-suggestions'),
   // 뜻으로 찾은 후보 (add-meaning-search): 사전 추가 후보(위험 조건 탭), 항목 연결 후보(판정 규칙 화면)
   riskMeaning: (runId: number) => call<RiskMeaning>(`/runs/${runId}/meaning-candidates`),
   itemCandidates: () => call<MeaningCandidate[]>('/item-candidates'),
-  acceptItem: (id: number, actor_id: number) => call<RuleEdit>(`/item-candidates/${id}/accept`, json('POST', { actor_id })),
-  hideItem: (id: number, actor_id: number) => send(`/item-candidates/${id}/hide`, json('POST', { actor_id })).then(() => undefined),
-  acceptSuggestion: (id: number, value: RuleValue, reason: string, actor_id: number) =>
-    call<RuleSuggestion>(`/rule-suggestions/${id}/accept`, json('POST', { value, reason, actor_id })),
-  declineSuggestion: (id: number, reason: string, actor_id: number) =>
-    call<RuleSuggestion>(`/rule-suggestions/${id}/decline`, json('POST', { reason, actor_id })),
+  acceptItem: (id: number) => call<RuleEdit>(`/item-candidates/${id}/accept`, { method: 'POST' }),
+  hideItem: (id: number) => send(`/item-candidates/${id}/hide`, { method: 'POST' }).then(() => undefined),
+  acceptSuggestion: (id: number, value: RuleValue, reason: string) =>
+    call<RuleSuggestion>(`/rule-suggestions/${id}/accept`, json('POST', { value, reason })),
+  declineSuggestion: (id: number, reason: string) =>
+    call<RuleSuggestion>(`/rule-suggestions/${id}/decline`, json('POST', { reason })),
   /** role을 빼면 세 부서 요청 모두 (update-todo-search) */
   assignments: (role?: string) => call<Assignment[]>(role ? `/assignments?role=${role}` : '/assignments'),
   /** 화면이 거른 협조 요청을 엑셀로 (SCR-13 내보내기) */
   exportAssignments: (role: string | null, assignment_ids: number[]) =>
     file('/assignments/export', json('POST', { role, assignment_ids })),
   /** 엔지니어가 회신 받음을 기록하거나 되돌린다 (메일 보냄 ↔ 회신 받음) */
-  setTaskStatus: (assignmentId: number, status: 'DOING' | 'DONE', actor_id: number, reply_note?: string) =>
-    call<AssignmentStatus>(`/assignments/${assignmentId}`, json('PUT', { status, actor_id, reply_note })),
+  setTaskStatus: (assignmentId: number, status: 'DOING' | 'DONE', reply_note?: string) =>
+    call<AssignmentStatus>(`/assignments/${assignmentId}`, json('PUT', { status, reply_note })),
   /** 협조 요청 메일 보내기·다시 보내기 (판정 없는 요청, 발송 실패·주소 없음) */
-  sendRequests: (runId: number, assignment_ids: number[], actor_id: number, resend = false) =>
-    call<SendResult>(`/runs/${runId}/assignments/send`, json('POST', { assignment_ids, actor_id, resend })),
+  sendRequests: (runId: number, assignment_ids: number[], resend = false) =>
+    call<SendResult>(`/runs/${runId}/assignments/send`, json('POST', { assignment_ids, resend })),
   /** 영업 인계 (add-submission-package): 데이터시트 한 장, 결재 승인 뒤 인계 패키지 */
-  handoffDatasheet: (runId: number, table_id: number, actor_id: number) =>
-    call<HandoffResult>(`/runs/${runId}/datasheet/handoff`, json('POST', { table_id, actor_id })),
-  handoffPackage: (runId: number, actor_id: number) =>
-    call<HandoffResult>(`/runs/${runId}/package/handoff`, json('POST', { actor_id })),
+  handoffDatasheet: (runId: number, table_id: number) =>
+    call<HandoffResult>(`/runs/${runId}/datasheet/handoff`, json('POST', { table_id })),
+  handoffPackage: (runId: number) =>
+    call<HandoffResult>(`/runs/${runId}/package/handoff`, { method: 'POST' }),
   downloadPackage: (runId: number) => file(`/runs/${runId}/package`),
   handoffs: (runId: number) => call<SalesHandoff[]>(`/runs/${runId}/handoffs`),
-  reopen: (id: number, actor_id: number) => call<StageResult>(`/runs/${id}/reopen`, json('POST', { actor_id })),
-  businesses: (user_id: number | null, scope: 'mine' | 'all') =>
-    call<BusinessList>(`/businesses?${query({ user_id: user_id ?? undefined, scope })}`),
-  business: (id: number, user_id: number | null) =>
-    call<BusinessDetail>(`/businesses/${id}${user_id != null ? `?user_id=${user_id}` : ''}`),
-  createBusiness: (info: BusinessInfo, actor_id: number | null) =>
-    call<BusinessDetail>('/businesses', json('POST', { ...info, actor_id })),
-  updateBusiness: (id: number, info: BusinessInfo, actor_id: number | null) =>
-    call<BusinessDetail>(`/businesses/${id}`, json('PUT', { ...info, actor_id })),
-  markSubmitted: (id: number, actor_id: number | null) =>
-    call<BusinessDetail>(`/businesses/${id}/submitted`, json('POST', { actor_id })),
-  unmarkSubmitted: (id: number, actor_id: number | null) =>
-    call<BusinessDetail>(`/businesses/${id}/submitted${actor_id != null ? `?actor_id=${actor_id}` : ''}`, { method: 'DELETE' }),
+  reopen: (id: number) => call<StageResult>(`/runs/${id}/reopen`, { method: 'POST' }),
+  businesses: (scope: 'mine' | 'all') =>
+    call<BusinessList>(`/businesses?${query({ scope })}`),
+  business: (id: number) =>
+    call<BusinessDetail>(`/businesses/${id}`),
+  createBusiness: (info: BusinessInfo) =>
+    call<BusinessDetail>('/businesses', json('POST', info)),
+  updateBusiness: (id: number, info: BusinessInfo) =>
+    call<BusinessDetail>(`/businesses/${id}`, json('PUT', info)),
+  markSubmitted: (id: number) =>
+    call<BusinessDetail>(`/businesses/${id}/submitted`, { method: 'POST' }),
+  unmarkSubmitted: (id: number) =>
+    call<BusinessDetail>(`/businesses/${id}/submitted`, { method: 'DELETE' }),
   businessHistory: (id: number) => call<BusinessLog[]>(`/businesses/${id}/history`),
-  linkBusiness: (runId: number, business_id: number | null, actor_id: number | null) =>
-    call<RunSummary>(`/runs/${runId}/business`, json('PUT', { business_id, actor_id })),
+  linkBusiness: (runId: number, business_id: number | null) =>
+    call<RunSummary>(`/runs/${runId}/business`, json('PUT', { business_id })),
 }
 
 function query(params: Record<string, string | number | boolean | undefined>): string {

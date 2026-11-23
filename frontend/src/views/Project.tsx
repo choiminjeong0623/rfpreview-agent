@@ -35,7 +35,7 @@ export function Project({ businessId }: { businessId: number }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [today] = useState(() => isoDay(new Date()))
-  const load = useLoad(() => api.business(businessId, user?.user_id ?? null), [businessId, user?.user_id])
+  const load = useLoad(() => api.business(businessId), [businessId, user?.user_id])
   useRepeat(!!load.data?.ranges.some((r) => r.state === 'an'), load.reload)
   const p = load.data
   if (load.error) return <main className="main"><div className="sh-empty" role="alert">사업을 불러오지 못했습니다: {load.error}</div></main>
@@ -50,7 +50,7 @@ export function Project({ businessId }: { businessId: number }) {
   const toggleSubmitted = () => {
     setBusy(true)
     setError(null)
-    const call = submitted ? api.unmarkSubmitted(p.business_id, user?.user_id ?? null) : api.markSubmitted(p.business_id, user?.user_id ?? null)
+    const call = submitted ? api.unmarkSubmitted(p.business_id) : api.markSubmitted(p.business_id)
     call.then(load.reload, (e: Error) => setError(e.message)).finally(() => setBusy(false))
   }
 

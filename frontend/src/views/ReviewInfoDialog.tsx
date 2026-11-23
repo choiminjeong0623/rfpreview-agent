@@ -13,7 +13,7 @@ const LABELS: [keyof Form, string, number][] = [
 ]
 
 export function ReviewInfoDialog({ run, onClose, onSaved }: { run: RunSummary; onClose: () => void; onSaved: () => void }) {
-  const { user, users } = useSession()
+  const { users } = useSession()
   const start: Form = {
     project_name: run.project_name ?? '', review_name: run.review_name ?? '', customer_name: run.customer_name ?? '',
     country: run.country ?? '', due_date: run.due_date ?? '', engineer_id: run.engineer_id ? String(run.engineer_id) : '',
@@ -31,7 +31,7 @@ export function ReviewInfoDialog({ run, onClose, onSaved }: { run: RunSummary; o
     setBusy(true)
     setError(null)
     const body = Object.fromEntries(changed.map((k) => [k, k === 'engineer_id' ? (form[k] ? Number(form[k]) : null) : form[k]]))
-    api.updateInfo(run.run_id, body, user?.user_id ?? null).then(onSaved, (e: Error) => setError(e.message))
+    api.updateInfo(run.run_id, body).then(onSaved, (e: Error) => setError(e.message))
       .finally(() => setBusy(false))
   }
   const set = (k: keyof Form) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value })

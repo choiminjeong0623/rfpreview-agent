@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { mockMe } from './helpers'
 
 // 명세 review-workspace "홈 화면"(오늘 할 일 순서·오늘 할 일 없음·일정 달력·어제 이후 바뀐 것·홈에서 다시 시도),
 // "사업 현황 화면"(요약 칸 설명 줄·요약 칸으로 거르기), "사업 상세 화면"(사업 상세에서 인계 패키지·승인 전 잠김)의 Scenario
@@ -52,7 +53,7 @@ async function mock(page: Page, runs: R[], opts: { userId?: number; businesses?:
     if (/^\/api\/runs\/\d+\/handoffs$/.test(path)) return r.fulfill({ json: [] })
     return r.fulfill({ json: [] })
   })
-  await page.addInitScript((id) => localStorage.setItem('s2w.user', String(id)), opts.userId ?? 1)
+  await mockMe(page, opts.userId ?? 1)
   return posts
 }
 

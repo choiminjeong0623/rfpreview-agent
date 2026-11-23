@@ -85,7 +85,7 @@ test('항목 연결 후보 받아들이기', async ({ page }) => {
   await page.route('**/api/item-candidates/9/accept', (route) => {
     accepted = true
     return route.fulfill({ json: { edit_id: 1, dictionary: 'items', row_key: { item_key: 'rated_current' }, action: 'EDIT', before_value: {}, after_value: {},
-      reason: '뜻으로 찾은 연결 후보', actor_id: 1, actor_name: '엔지니어', edited_at: '2026-11-01T03:00:00Z', discarded_at: null, after_key: { item_key: 'rated_current' } } })
+      reason: '뜻으로 찾은 연결 후보', actor_name: '엔지니어', edited_at: '2026-11-01T03:00:00Z', discarded_at: null, after_key: { item_key: 'rated_current' } } })
   })
   await as(page, ENGINEER)
   await page.goto('/#/rules')

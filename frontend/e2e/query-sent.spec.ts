@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { mockMe } from './helpers'
 
 // 명세 review-workspace "판정 상세에서 질의 보냄"·"판정 표 질의 꼬리표"의 Scenario (change add-query-sent).
 // 검토 하나의 응답을 테스트가 정한 값으로 바꿔 화면만 본다. 저장·이어받기는 백엔드 tests/test_query_sent.py.
@@ -79,7 +80,7 @@ async function mock(page: Page, stage = 'ENGINEER_REVIEW', userId = 1) {
     if (path in json) return r.fulfill({ json: json[path] })
     return r.fulfill({ json: [] })
   })
-  await page.addInitScript((id) => localStorage.setItem('s2w.user', String(id)), userId)
+  await mockMe(page, userId)
   return posts
 }
 

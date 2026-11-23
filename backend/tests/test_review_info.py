@@ -47,8 +47,7 @@ def test_start_with_review_info(db, spec, client):
     engineer = review.default_user(db, "ENGINEER")
     started = upload(client, spec, project_name="Thai Binh",
                      review_name="115·230 kV GIS 변전소 신설", customer_name="예시 전력회사",
-                     country="베트남", due_date="2026-10-30",
-                     actor_id=str(engineer))
+                     country="베트남", due_date="2026-10-30")
     assert started.status_code == 202
     summary = client.get(f"/api/runs/{started.json()['run_id']}").json()
     assert (summary["project_name"], summary["review_name"], summary["customer_name"],
@@ -64,7 +63,9 @@ def test_start_without_review_info(db, spec, client):
     summary = client.get(f"/api/runs/{started.json()['run_id']}").json()
     assert summary["stage"] == "ENGINEER_REVIEW"
     assert summary["due_date"] == DUE
-    assert all(summary[k] is None for k in review_info.FIELDS if k != "due_date")
+    assert summary["engineer_id"] == review.default_user(db, "ENGINEER")    # 로그인한 엔지니어
+    assert all(summary[k] is None for k in review_info.FIELDS
+               if k not in ("due_date", "engineer_id"))
 
 
 def test_start_without_due_date(db, spec, client):
@@ -125,9 +126,8 @@ def test_change_due_date_logs_once(db, spec, client):
     run_id = run_once(db, [spec])
     review_info.update(db, run_id, {"due_date": "2026-10-30"}, None)
     before_logs = len(review.history(db, run_id, "review_run"))
-    engineer = review.default_user(db, "ENGINEER")
     put = client.put(f"/api/runs/{run_id}/info",
-                     json={"due_date": "2026-11-02", "actor_id": engineer})
+                     json={"due_date": "2026-11-02"})
     assert put.status_code == 200 and put.json()["due_date"] == "2026-11-02"
     logs = review.history(db, run_id, "review_run")
     assert len(logs) == before_logs + 1

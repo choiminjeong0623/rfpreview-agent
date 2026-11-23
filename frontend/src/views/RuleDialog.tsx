@@ -104,10 +104,10 @@ export function RuleDialog({ target, itemKeys, onClose, onDone }: {
     setBusy(true)
     setError(null)
     const value = toValue(fs, form)
-    const call = target.suggestionId ? api.acceptSuggestion(target.suggestionId, value, reason.trim(), user.user_id)
-      : target.mode === 'add' ? api.addRule(target.dictionary, value, reason.trim(), user.user_id)
-      : target.mode === 'edit' ? api.updateRule(target.dictionary, target.id!, value, reason.trim(), user.user_id)
-        : api.deleteRule(target.dictionary, target.id!, reason.trim(), user.user_id)
+    const call = target.suggestionId ? api.acceptSuggestion(target.suggestionId, value, reason.trim())
+      : target.mode === 'add' ? api.addRule(target.dictionary, value, reason.trim())
+      : target.mode === 'edit' ? api.updateRule(target.dictionary, target.id!, value, reason.trim())
+        : api.deleteRule(target.dictionary, target.id!, reason.trim())
     call.then(onDone, (e: Error) => setError(e.message)).finally(() => setBusy(false))
   }
 

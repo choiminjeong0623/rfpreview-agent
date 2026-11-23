@@ -15,6 +15,7 @@ from rfp_agent.llm import client as llm_client
 from rfp_agent.llm import tasks
 from rfp_agent.pipeline import prompt_editor
 from rfp_agent.pipeline import prompt_eval as pe
+from tests.conftest import as_user
 from tests.test_langfuse_prompts import EDITED, fake_langfuse
 from tests.test_prompt_eval import Scripted, answers_for
 
@@ -43,7 +44,7 @@ def test_locked_without_langfuse(db, client):
     assert body["connected"] is False and body["editable_reason"] == prompt_editor.NOT_CONNECTED
     assert body["code_template"] == tasks.TEMPLATES["type"] and "document" in body["slots"]
     r = client.post("/api/prompts/type/drafts",
-                    json={"actor_id": user(db, "ENGINEER"), "text": EDITED})
+                    headers=as_user(user(db, "ENGINEER")), json={"text": EDITED})
     assert r.status_code == 409
 
 
@@ -52,7 +53,7 @@ def test_save_draft_to_staging(db, client, langfuse):
     prod = langfuse.add("type", tasks.TEMPLATES["type"], ["production"])
     eng = user(db, "ENGINEER")
     r = client.post("/api/prompts/type/drafts",
-                    json={"actor_id": eng, "text": EDITED, "message": "한 개만 고르게"})
+                    headers=as_user(eng), json={"text": EDITED, "message": "한 개만 고르게"})
     assert r.status_code == 200, r.text
     new = r.json()["version"]
     body = client.get("/api/prompts/type").json()
@@ -62,14 +63,14 @@ def test_save_draft_to_staging(db, client, langfuse):
     # 데이터 규칙을 지운 글, 자리표시자를 지운 글은 올리지 않음
     for bad, word in ((EDITED.replace(tasks.DATA_RULE, ""), "규칙"),
                       (EDITED.replace("{{document}}", ""), "{{doc_hint}}, {{document}}")):
-        r = client.post("/api/prompts/type/drafts", json={"actor_id": eng, "text": bad})
+        r = client.post("/api/prompts/type/drafts", headers=as_user(eng), json={"text": bad})
         assert r.status_code == 400 and word in r.json()["detail"]
     assert len(langfuse.prompts["rfp-type"]) == 2
     # 같은 글은 다시 올리지 않음, 협조 부서 사용자는 못 고침
     assert client.post("/api/prompts/type/drafts",
-                       json={"actor_id": eng, "text": EDITED}).status_code == 400
-    assert client.post("/api/prompts/type/drafts", json={
-        "actor_id": user(db, "COST"), "text": EDITED + " "}).status_code == 403
+                       headers=as_user(eng), json={"text": EDITED}).status_code == 400
+    assert client.post("/api/prompts/type/drafts", headers=as_user(user(db, "COST")),
+                       json={"text": EDITED + " "}).status_code == 403
 
 
 def _scripted(monkeypatch, wrong: set[str] = frozenset()):
@@ -102,9 +103,11 @@ def test_eval_then_promote(db, client, langfuse, monkeypatch):
                        "WHERE eval_id = %s", (job["eval_id"],)).fetchone()
     assert saved == (f"{tasks.PROMPTS['type']}+lf{staged}", 3)
     # 엔지니어는 못 올림, 승인자는 올림
-    r = client.post("/api/prompts/type/promote", json={"actor_id": eng, "job_id": job["job_id"]})
+    r = client.post("/api/prompts/type/promote", headers=as_user(eng),
+                    json={"job_id": job["job_id"]})
     assert r.status_code == 403
-    r = client.post("/api/prompts/type/promote", json={"actor_id": appr, "job_id": job["job_id"]})
+    r = client.post("/api/prompts/type/promote", headers=as_user(appr),
+                    json={"job_id": job["job_id"]})
     assert r.status_code == 200 and r.json()["version"] == staged
     versions = langfuse.prompts["rfp-type"]
     assert "production" in versions[staged - 1]["labels"]
@@ -121,7 +124,7 @@ def test_regression_blocks_promote(db, client, langfuse, monkeypatch):
     job = prompt_editor.latest_job("type")
     assert job["status"] == "DONE" and job["regression"] and "회귀" in job["promote_block"]
     r = client.post("/api/prompts/type/promote",
-                    json={"actor_id": user(db, "APPROVER"), "job_id": job["job_id"]})
+                    headers=as_user(user(db, "APPROVER")), json={"job_id": job["job_id"]})
     assert r.status_code == 409 and "회귀" in r.json()["detail"]
 
 
@@ -133,7 +136,7 @@ def test_staging_changed_after_eval(db, client, langfuse, monkeypatch):
     job = prompt_editor.latest_job("type")
     langfuse.add("type", EDITED + " ", ["staging"])
     r = client.post("/api/prompts/type/promote",
-                    json={"actor_id": user(db, "APPROVER"), "job_id": job["job_id"]})
+                    headers=as_user(user(db, "APPROVER")), json={"job_id": job["job_id"]})
     assert r.status_code == 409 and "다시 평가" in r.json()["detail"]
 
 
@@ -148,5 +151,6 @@ def test_ai_off_cannot_eval(db, client, langfuse, monkeypatch):
     monkeypatch.setattr(llm_client, "ai_mode", lambda settings: "OFF")
     langfuse.add("type", EDITED, ["staging"])
     assert client.get("/api/prompts/type").json()["ai_ready"] is False
-    r = client.post("/api/prompts/type/evaluations", json={"actor_id": user(db, "ENGINEER")})
+    r = client.post("/api/prompts/type/evaluations", headers=as_user(user(db, "ENGINEER")),
+                    json={})
     assert r.status_code == 409 and r.json()["detail"] == prompt_editor.AI_OFF
