@@ -39,7 +39,7 @@ SELECT run_token::text FROM review_run WHERE run_id = %s FOR UPDATE
 `execute_run`이 `ctx.token`이 있으면 `ctx.conn`을 얇은 감싸개로 바꾼다. 감싸개는 모든 속성을 원래 연결에 넘기고, `commit()`만 `ensure_owned` 뒤 원래 `commit()`을 부른다. `graph_flow.open_like`도 감싼 연결을 받으면 감싼 연결을 돌려준다(문서 병렬 처리 스레드).
 
 - 이렇게 하면 단계가 부르는 함수(`outputs`·`document`·`meaning` 등) 안의 `conn.commit()`도 고치지 않고 같은 규칙을 따른다. 그 함수들은 사람 동작(API)에서도 쓰이는데, 그때는 감싸지 않은 연결이라 지금과 같다.
-- `with conn.transaction():`의 바깥 블록은 `commit()`을 부르지 않고 psycopg 안에서 커밋한다. 처리 흐름에서 이렇게 커밋하는 자리(`_risks_node`, 문서 저장의 바깥 트랜잭션)는 블록 마지막 문장으로 `ensure_owned`를 부른다. 구현할 때 처리 흐름이 부르는 모듈의 `transaction()`을 모두 찾아 바깥 블록인지 본다(tasks 2.3).
+- `with conn.transaction():`의 바깥 블록은 `commit()`을 부르지 않고 psycopg 안에서 커밋한다. 처리 흐름이 부르는 모듈에 이런 블록이 10곳 넘게 있어(`judge`·`outputs`·`warranty`·`proposals` 등) 하나씩 고치지 않고, 감싸개의 `transaction()`이 바깥 블록이면 블록 끝에서 `ensure_owned`를 부른다(구현 중 바꿈: 처음에는 블록마다 직접 부르려 했다). 확인에서 멈추면 블록 안의 예외라 그 트랜잭션은 되돌려진다.
 - 토큰 없이 부른 실행(CLI `rfp-review run`, 예전 테스트)은 감싸지 않는다. 지금과 같다.
 
 ### 3. 테스트는 고치기 전에 실패해야 한다
@@ -49,7 +49,7 @@ SELECT run_token::text FROM review_run WHERE run_id = %s FOR UPDATE
 1. 대기열에 넣고 `claim`으로 옛 작업을 꺼낸다(토큰 A).
 2. `judge_run`을 감싸, 판정 줄을 쓴 뒤 돌아가기 전에 **다른 연결**(autocommit)로 `enqueue`해 토큰 B를 쓰게 한다.
 3. 옛 실행을 `execute_run(ctx(token=A))`로 돌리면 `"SUPERSEDED"`, 그 검토의 판정 0건.
-4. `drain`으로 새 작업을 돌리면 담당자 확인, 판정은 새 실행 것만.
+4. 새 실행 하나만 결과를 쓰는 것은 기존 시험 "취소 직후 다시 시도"가 본다.
 
 고치기 전 코드에서는 3번의 판정이 0건이 아니어서 실패한다. PR 설명에 실패 출력과 통과 출력을 함께 남긴다. 문서 병렬 처리 연결 쪽은 같은 방식으로 `_save_run_document` 앞에서 다시 넣는 테스트 하나를 더 둔다.
 

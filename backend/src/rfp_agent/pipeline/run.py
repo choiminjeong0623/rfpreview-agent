@@ -34,6 +34,7 @@ from rfp_agent.pipeline.judge import judge_run
 from rfp_agent.pipeline.loss import build_losses
 from rfp_agent.pipeline.numbers import josa
 from rfp_agent.pipeline.outputs import build_outputs
+from rfp_agent.pipeline.ownership import RunSuperseded, own
 from rfp_agent.pipeline.proposals import build_proposals
 from rfp_agent.pipeline.risk import (
     FLAG_KIND,
@@ -131,11 +132,6 @@ class RunCancelled(Exception):
     """사람이 처리 중인 검토를 취소했다 (add-run-control)."""
 
 
-class RunSuperseded(Exception):
-    """이 실행의 토큰이 더는 검토의 토큰이 아니다: 새 실행이 맡았다 (add-run-queue).
-
-    결과를 쓰지 않고 멈춘다 (NFR-12, 한 검토에 도는 실행은 하나).
-    """
 
 
 def check_cancel(conn: psycopg.Connection, run_id: int, token: str | None = None) -> None:
@@ -655,6 +651,8 @@ def execute_run(ctx: RunContext, run_id: int, paths: list[Path],
 
     rewind는 담당자 확인에서 멈춘 흐름을 그 처리 단계부터 다시 돌릴 때 (add-step-rewind).
     """
+    # 토큰이 있는 실행은 커밋할 때마다 소유권을 확인한다 (update-run-fencing, NFR-12)
+    ctx = replace(ctx, conn=own(ctx.conn, run_id, ctx.token))
     conn = ctx.conn
     # 이 실행이 쓸 프롬프트 판을 시작할 때 한 번 고른다 (add-langfuse-prompts). Langfuse를 쓰면
     # 그 판, 문제가 있으면 코드 판. 실행 안에서는 바뀌지 않고 실행 기록에 실제로 쓴 판을 남긴다

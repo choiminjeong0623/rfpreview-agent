@@ -31,7 +31,7 @@
 
 ## Impact
 
-- 백엔드: `pipeline/run.py`(실행 연결의 커밋), `pipeline/run_queue.py`(잠금 순서 주석), `pipeline/graph_flow.py`(`open_like`), `pipeline/service.py`(실행 연결 열기).
+- 백엔드: 새 `pipeline/ownership.py`(감싸개·확인), `pipeline/run.py`(실행 연결 감싸기), `pipeline/run_queue.py`(잠금 순서 주석), `pipeline/graph_flow.py`(`open_like`).
 - 테스트: `tests/test_run_queue.py`.
 - 문서: `docs/08-known-limits.md`, `docs/03-adr.md`.
 - 마이그레이션·API·화면 바뀜 없음.

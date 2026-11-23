@@ -15,6 +15,8 @@ from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.types import Command
 from psycopg.rows import dict_row
 
+from rfp_agent.pipeline import ownership
+
 # 사람 동작 → 그 동작을 받는 멈춤 자리
 ACTION_STOP = {"submit": "engineer_review", "add_documents": "engineer_review",
                "rewind": "engineer_review",
@@ -53,7 +55,8 @@ def _saver_conn(conn: psycopg.Connection) -> psycopg.Connection:
 def open_like(conn: psycopg.Connection) -> psycopg.Connection:
     """같은 DB로 보통(트랜잭션) 연결을 하나 더 연다 (문서 병렬 처리의 스레드마다)."""
     info = conn.info
-    return psycopg.connect(info.dsn, password=info.password)
+    # 처리 흐름의 연결이면 같은 소유권 확인을 이어받는다 (update-run-fencing)
+    return ownership.same_owner(conn, psycopg.connect(info.dsn, password=info.password))
 
 
 @contextmanager
