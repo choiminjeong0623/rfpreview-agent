@@ -9,12 +9,12 @@ const PHRASE = "corresponding to the Employer's Requirement"
 async function dropRule(request: import('@playwright/test').APIRequestContext) {
   const rules = await (await request.get('/api/rules/risk-expressions')).json() as { expr_id: number; expression: string }[]
   for (const r of rules.filter((x) => x.expression.toLowerCase() === PHRASE.toLowerCase())) {
-    await request.delete(`/api/rules/risk-expressions/${r.expr_id}`, { data: { reason: 'e2e 정리', actor_id: ENGINEER } })
+    await request.delete(`/api/rules/risk-expressions/${r.expr_id}`, { data: { reason: 'e2e 정리' } })
   }
   // 앞선 실행이 남긴 확인 대기 제안도 반려해 둔다(같은 표현은 한 번만 대기)
   const pending = await (await request.get('/api/rule-suggestions?status=PENDING')).json() as { suggestion_id: number; expression: string }[]
   for (const s of pending.filter((x) => x.expression.toLowerCase() === PHRASE.toLowerCase())) {
-    await request.post(`/api/rule-suggestions/${s.suggestion_id}/decline`, { data: { reason: 'e2e 정리', actor_id: ENGINEER } })
+    await request.post(`/api/rule-suggestions/${s.suggestion_id}/decline`, { data: { reason: 'e2e 정리' } })
   }
 }
 

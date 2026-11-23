@@ -5,7 +5,6 @@ import { stamp } from '../components/format'
 import { useLoad } from '../components/useLoad'
 import { usePageCss } from '../shell/pageCss'
 import { href } from '../shell/router'
-import { useSession } from '../shell/useSession'
 import { useToast } from '../ui'
 
 // SCR-19 정답지·채점 (목업 v4.57 Eval, add-evaluation). docs/screens/SCR-19-정답지채점.md
@@ -40,7 +39,6 @@ function DraftTag({ k }: { k: Pick<AnswerKey, 'made_by'> | { made_by: string | n
 
 export function Eval() {
   usePageCss('Eval')
-  const { user } = useSession()
   const [tab, setTab] = useState<Tab>('k')
   const runs = useLoad(() => api.evalRuns(), [])
   const keys = useLoad(() => api.evalKeys(), [])
@@ -77,7 +75,7 @@ export function Eval() {
   const run = () => {
     setRunning(true)
     setError('')
-    api.score(picked.map((r) => r.run_id), chosenKey, note, user?.user_id ?? null, reqKeyId)
+    api.score(picked.map((r) => r.run_id), chosenKey, note, reqKeyId)
       .then((s) => {
         setNote('')
         setTab('k')

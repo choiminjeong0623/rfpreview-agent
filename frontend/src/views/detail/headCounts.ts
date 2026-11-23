@@ -48,7 +48,7 @@ export function useComplyAll(run: RunSummary, head: HeadCounts | null, onChanged
   const go = async () => {
     if (!user) return
     setBusy(true)
-    try { toast.done(await confirmAllComply(run.run_id, user.user_id)); onChanged() } catch (e) { toast.show((e as Error).message, 'error') } finally { setBusy(false) }
+    try { toast.done(await confirmAllComply(run.run_id)); onChanged() } catch (e) { toast.show((e as Error).message, 'error') } finally { setBusy(false) }
   }
   return { run: can ? go : null, busy }
 }

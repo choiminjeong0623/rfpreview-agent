@@ -64,3 +64,15 @@ def test_create_database_keeps_existing(db, env, db_url, capsys):
     """--create: 이미 있는 DB는 그대로 둔다."""
     cli._create_database(db_url)
     assert "있음" in capsys.readouterr().out
+
+
+def test_demo_setup_with_password(db, env, spec, capsys):
+    """시연 준비에 비밀번호를 주면 시연 사용자 다섯 명이 그 비밀번호로 로그인 (add-session-auth)."""
+    from rfp_agent import auth
+
+    cli.main(["demo-setup", "--file", str(spec), "--password", "demo-pass-1"])
+    db.rollback()
+    for login_id in cli.DEMO_LOGINS:
+        assert auth.login(db, login_id, "demo-pass-1", 1) is not None, login_id
+    out = capsys.readouterr().out
+    assert "demo-pass-1" not in out and "비밀번호를 정했습니다" in out

@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     rfp_run_workers: int = 2
     rfp_upload_max_mb: int = 100
     rfp_request_max_mb: int = 300
+    # 로그인 세션 (add-session-auth): 유지 시간(고정 만료), 쿠키 Secure(HTTPS 배포 때 true)
+    rfp_session_hours: int = 8
+    rfp_cookie_secure: bool = False
     # AI 호출 기록에 원문도 남길지 (add-ai-call-trace). 기본 off(해시만), on이면 7일 보관
     rfp_trace_raw: str = "off"
     # AI 사용 방식 (add-ai-mode, NFR-07): gemini(외부) | local(사내 OpenAI 호환 주소) | off(규칙만)

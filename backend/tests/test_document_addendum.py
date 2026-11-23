@@ -8,6 +8,7 @@ import pytest
 from rfp_agent.pipeline import doc_add, queries, review
 from rfp_agent.pipeline.review import ReviewError
 from rfp_agent.pipeline.run import RunContext, create_run, execute_run
+from tests.conftest import as_user
 from tests.docx_factory import build_gis_spec
 
 VERSION = "test-dict-v1"
@@ -191,10 +192,10 @@ def test_add_documents_api(db, db_url, monkeypatch, spec, tmp_path):
         approver = db.execute("SELECT min(user_id) FROM app_user WHERE role = 'APPROVER'"
                               ).fetchone()[0]
         res = client.post(f"/api/runs/{run_id}/documents", files=files,
-                          data={**data, "actor_id": str(approver)})
+                          data=data, headers=as_user(approver))
         assert res.status_code == 403
         res = client.post(f"/api/runs/{run_id}/documents", files=files,
-                          data={**data, "actor_id": str(engineer(db))})
+                          data=data)
         assert res.status_code == 202, res.text
         assert client.get(f"/api/runs/{run_id}").json()["stage"] == "ENGINEER_REVIEW"
         docs = client.get(f"/api/runs/{run_id}/documents").json()

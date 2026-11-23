@@ -61,7 +61,7 @@ export function Projects() {
   const [applied, setApplied] = useState<Filter>(START)
   const [quick, setQuick] = useState<Quick | null>(null)
   const mine = scope === 'mine' && user !== null
-  const list = useLoad(() => api.businesses(user?.user_id ?? null, mine ? 'mine' : 'all'), [user?.user_id, mine])
+  const list = useLoad(() => api.businesses(mine ? 'mine' : 'all'), [user?.user_id, mine])
   // 처리 중인 검토가 있으면 5초마다 다시 본다
   useRepeat(!!list.data?.items.some((b) => b.ranges.some((r) => r.state === 'an')), list.reload)
   const base = list.data?.items ?? []

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { expect, test, type APIRequestContext } from '@playwright/test'
-import { as, dueIn, ENGINEER } from './helpers'
+import { as, dueIn, ENGINEER, asLogin } from './helpers'
 
 // 명세 review-workspace "사업 현황 화면", "사업 상세 화면", "검토 등록 사업 연결"의 Scenario (change add-project-status).
 // 합성 문서(e2e/fixtures, 고객 원문 아님)를 API로 올려 실행을 만든다. 백엔드(8000)와 `npm run dev`(5173)가 필요하다.
@@ -13,8 +13,7 @@ async function start(request: APIRequestContext, form: Record<string, string>): 
     multipart: {
       files: { name: 'synthetic_154kV_GIS_spec.docx', mimeType: 'application/octet-stream', buffer: readFileSync(DOCX) },
       // 문서 목록에 없는 문서라 묶음을 정해 보낸다 (reject-unjudged-registration)
-      choices: JSON.stringify({ 'synthetic_154kV_GIS_spec.docx': { bundle: 'B' } }),
-      actor_id: String(ENGINEER), due_date: dueIn(), ...form,
+      choices: JSON.stringify({ 'synthetic_154kV_GIS_spec.docx': { bundle: 'B' } }), due_date: dueIn(), ...form,
     },
   })
   expect(res.status()).toBe(202)
@@ -32,10 +31,10 @@ async function finishHelp(request: APIRequestContext, runId: number) {
     const mine = tasks.filter((x) => x.run_id === runId)
     if (!mine.length) continue
     const sent = await request.post(`/api/runs/${runId}/assignments/send`,
-      { data: { assignment_ids: mine.map((t) => t.assignment_id), actor_id: ENGINEER } })
+      { data: { assignment_ids: mine.map((t) => t.assignment_id) } })
     expect((await sent.json()).sent).toBe(mine.length)
     for (const t of mine) {
-      expect((await request.put(`/api/assignments/${t.assignment_id}`, { data: { status: 'DONE', actor_id: ENGINEER } })).ok()).toBe(true)
+      expect((await request.put(`/api/assignments/${t.assignment_id}`, { data: { status: 'DONE' } })).ok()).toBe(true)
     }
   }
 }
@@ -59,9 +58,9 @@ test('반려 칩', async ({ page, request }) => {
   const users = await (await request.get('/api/users')).json() as { user_id: number; role: string }[]
   const approver = users.find((u) => u.role === 'APPROVER')!.user_id
   const sent = await request.post(`/api/runs/${run.run_id}/finish-review`,
-    { data: { approver_id: approver, comment: '시험 상신', actor_id: ENGINEER } })
+    { data: { approver_id: approver, comment: '시험 상신' } })
   test.skip(sent.status() !== 200, '상신 조건(확인 안 한 줄 등)이 맞지 않아 반려를 만들 수 없습니다')
-  await request.post(`/api/runs/${run.run_id}/approval`, { data: { decision: 'REJECTED', comment: '시험 반려', actor_id: approver } })
+  await asLogin(request, 'approver', () => request.post(`/api/runs/${run.run_id}/approval`, { data: { decision: 'REJECTED', comment: '시험 반려' } }))
   await as(page, ENGINEER)
   await page.goto('/#/projects')
   const chip = page.locator('a.pl-row', { hasText: name }).locator('.pj-ch')
@@ -73,7 +72,7 @@ test('팀 전체', async ({ page, request }) => {
   const name = `팀 전체 ${Date.now()}`
   const users = await (await request.get('/api/users')).json() as { user_id: number; role: string }[]
   const cost = users.find((u) => u.role === 'COST')!.user_id
-  await request.post('/api/businesses', { data: { business_name: name, actor_id: ENGINEER } })
+  await request.post('/api/businesses', { data: { business_name: name } })
   await as(page, cost)
   await page.goto('/#/projects')
   await expect(page.locator('a.pl-row', { hasText: name })).toHaveCount(0)
@@ -121,7 +120,7 @@ test('지난 이력은 예시', async ({ page, request }) => {
 test('사업 고르면 미리 채움', async ({ page, request }) => {
   const name = `미리 채움 ${Date.now()}`
   const made = await (await request.post('/api/businesses', { data: { business_name: name, customer_name: '예시 고객사 채움',
-    country: '베트남', due_date: '2099-12-31', actor_id: ENGINEER } })).json() as { business_id: number }
+    country: '베트남', due_date: '2099-12-31' } })).json() as { business_id: number }
   await page.goto('/#/register')
   await page.locator('input[type=file]').setInputFiles({ name: 'a.docx', mimeType: 'application/octet-stream', buffer: readFileSync(DOCX) })
   // 문서 목록에 없는 문서라 묶음을 B로 정해야 다음으로 간다 (reject-unjudged-registration)

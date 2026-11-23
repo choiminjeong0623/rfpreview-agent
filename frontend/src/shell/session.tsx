@@ -3,35 +3,23 @@ import { api } from '../api'
 import { useLoad } from '../components/useLoad'
 import { SessionContext } from './useSession'
 
-// 로그인 대신 머리글에서 고른 사용자 (_공통규칙.md 5장). 고른 사용자는 브라우저에 기억한다.
-
-const KEY = 's2w.user'
-
-function savedUserId(): number | null {
-  try {
-    const v = localStorage.getItem(KEY)
-    return v ? Number(v) : null
-  } catch {
-    return null
-  }
-}
+// 로그인한 사용자 (add-session-auth). 세션은 서버가 쿠키(HttpOnly)로 들고, 화면은 /auth/me로 누구인지만 안다.
+// 브라우저에 사용자를 따로 기억하지 않는다. 세션이 없으면 API가 401을 주고 api.ts가 로그인 화면으로 보낸다.
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const users = useLoad(() => api.users(), [])
-  const [userId, setUserIdState] = useState<number | null>(savedUserId)
-  const list = users.data ?? []
-  const user = list.find((u) => u.user_id === userId) ?? list[0] ?? null
-  const setUserId = (id: number) => {
-    setUserIdState(id)
-    try { localStorage.setItem(KEY, String(id)) } catch { /* 기억하지 못해도 화면은 동작한다 */ }
-  }
-  // 로그아웃: 기억한 사용자를 지운다. 다음 화면에서는 첫 사용자로 돌아간다 (로그인이 없으므로 계정 확인은 없다).
-  const signOut = () => {
-    setUserIdState(null)
-    try { localStorage.removeItem(KEY) } catch { /* 지우지 못해도 화면은 동작한다 */ }
+  const [version, setVersion] = useState(0)
+  const me = useLoad(() => api.me(), [version])
+  const user = me.data
+  // 결재자·담당자를 고르는 목록 (로그인한 뒤에만)
+  const users = useLoad(() => (user ? api.users() : Promise.resolve([])), [user?.user_id])
+  const refresh = () => setVersion((v) => v + 1)
+  // 로그아웃: 서버 세션을 끝낸다. 실패해도 쿠키 없는 상태와 같게 다시 읽는다
+  const signOut = async () => {
+    try { await api.logout() } catch { /* 이미 끝난 세션이어도 로그인 화면으로 간다 */ }
+    refresh()
   }
   return (
-    <SessionContext.Provider value={{ user, users: list, setUserId, signOut, usersError: users.error }}>
+    <SessionContext.Provider value={{ user: user ?? null, users: users.data ?? [], refresh, signOut, usersError: users.error }}>
       {children}
     </SessionContext.Provider>
   )

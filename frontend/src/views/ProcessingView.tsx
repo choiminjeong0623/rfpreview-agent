@@ -2,20 +2,18 @@ import { useEffect, useState } from 'react'
 import './detail.css'
 import { api, type RunSummary } from '../api'
 import { duration, isStalled, progress, stepText } from '../components/progress'
-import { useSession } from '../shell/useSession'
 
 // SCR-02 처리 상태 (목업 v4.57 Loading). docs/screens/SCR-02-처리상태.md
 // 진행률은 처리 단계 순서와 문서 읽기 단계의 세부 진행으로 센다. 남은 시간은 알 수 없어 보이지 않는다.
 
 export function ProcessingView({ run, onChanged }: { run: RunSummary; onChanged: () => void }) {
-  const { user } = useSession()
   const [now, setNow] = useState(() => Date.now())
   const [asking, setAsking] = useState(false)          // "분석 취소"를 한 번 눌러 확인을 묻는 중
   const [error, setError] = useState('')
   const cancelling = Boolean(run.cancel_requested_at)
   const cancel = () => {
     setError('')
-    api.cancelRun(run.run_id, user?.user_id ?? null).then(() => { setAsking(false); onChanged() },
+    api.cancelRun(run.run_id).then(() => { setAsking(false); onChanged() },
       (e: Error) => setError(e.message))
   }
   useEffect(() => {

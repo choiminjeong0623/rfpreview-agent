@@ -10,7 +10,7 @@ async function upload(request: APIRequestContext, file: string, customer: string
   const res = await request.post('/api/runs', {
     multipart: {
       files: { name: file, mimeType: 'application/octet-stream', buffer: readFileSync(new URL(`./fixtures/${file}`, import.meta.url)) },
-      review_name: `지난 비교 ${file}`, customer_name: customer, actor_id: String(ENGINEER), due_date: dueIn(),
+      review_name: `지난 비교 ${file}`, customer_name: customer, due_date: dueIn(),
       choices: JSON.stringify({ [file]: { bundle: 'A' } }),
     },
   })

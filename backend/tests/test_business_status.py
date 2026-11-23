@@ -11,6 +11,7 @@ import pytest
 
 from rfp_agent.pipeline import business, review
 from rfp_agent.pipeline.run import RunContext, create_run, execute_run
+from tests.conftest import as_user
 
 VERSION = "test-dict-v1"
 
@@ -82,7 +83,7 @@ def test_create_business(db, client):
     engineer = review.default_user(db, "ENGINEER")
     made = client.post("/api/businesses", json={
         "business_name": "예시 변전소 신설", "customer_name": "예시 고객사", "country": "베트남",
-        "due_date": "2026-11-20", "actor_id": engineer})
+        "due_date": "2026-11-20"})
     assert made.status_code == 201
     body = made.json()
     year = date.today().year
@@ -147,8 +148,7 @@ def test_start_with_new_business(db, spec, client):
     """Scenario: 새 사업을 만들며 검토 시작 — 사업이 생기고 검토 사업명이 같다."""
     engineer = review.default_user(db, "ENGINEER")
     started = upload(client, spec, new_business_name="예시 변전소 신설",
-                     customer_name="예시 고객사",
-                     actor_id=str(engineer))
+                     customer_name="예시 고객사")
     assert started.status_code == 202
     summary = client.get(f"/api/runs/{started.json()['run_id']}").json()
     assert summary["business_id"] is not None and summary["business_no"].startswith("PJ-")
@@ -304,11 +304,16 @@ def test_my_businesses(db, spec, client):
     mine = business.create(db, {"business_name": "A의 사업"}, other)
     business.link(db, run_id, mine, other)
     business.create(db, {"business_name": "관련 없는 사업"}, other)
-    got = client.get("/api/businesses", params={"user_id": engineer_a, "scope": "mine"}).json()
+    got = client.get("/api/businesses", params={"scope": "mine"},
+                     headers=as_user(engineer_a)).json()
     assert [(b["business_name"], b["my_role"]) for b in got["items"]] == [("A의 사업", "ENGINEER")]
-    team = client.get("/api/businesses", params={"user_id": engineer_a, "scope": "all"}).json()
+    team = client.get("/api/businesses", params={"scope": "all"},
+                      headers=as_user(engineer_a)).json()
     assert len(team["items"]) == 2
-    assert client.get("/api/businesses", params={"scope": "mine"}).status_code == 400
+    # 주소의 사용자 번호는 쓰지 않는다 (add-session-auth): 로그인한 엔지니어 A의 사업 그대로
+    again = client.get("/api/businesses", params={"user_id": other, "scope": "mine"},
+                       headers=as_user(engineer_a)).json()
+    assert [b["business_name"] for b in again["items"]] == ["A의 사업"]
 
 
 def test_helper_sees_business(db, spec, client):
@@ -318,7 +323,7 @@ def test_helper_sees_business(db, spec, client):
     business_id = business.create(db, {"business_name": "예시 사업"}, None)
     business.link(db, run_id, business_id, None)
     request_help(db, run_id, quality, role="QUALITY")
-    got = client.get("/api/businesses", params={"user_id": quality, "scope": "mine"}).json()
+    got = client.get("/api/businesses", params={"scope": "mine"}, headers=as_user(quality)).json()
     assert [(b["business_id"], b["my_role"]) for b in got["items"]] == [(business_id, "HELPER")]
 
 

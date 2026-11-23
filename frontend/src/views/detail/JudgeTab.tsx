@@ -110,7 +110,7 @@ export function JudgeTab({ run, tick, onChanged }: { run: RunSummary; tick: numb
     setBusy(true)
     setError(null)
     try {
-      const out = await api.bulkConfirm(id, ids, user!.user_id)
+      const out = await api.bulkConfirm(id, ids)
       setSel({})
       // 검산 위반·숫자 불일치·값이 빈 줄은 서버가 빼고 확정한다 (update-bulk-confirm-guard)
       say(bulkMessage(out))

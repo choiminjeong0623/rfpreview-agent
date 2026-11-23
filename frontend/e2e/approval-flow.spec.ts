@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { APPROVER, COMMENT, ENGINEER, as, deviationRun } from './helpers'
+import { APPROVER, COMMENT, ENGINEER, as, deviationRun, asLogin } from './helpers'
 
 // 명세 review-workspace "판단 동작"·"내 할 일 화면"의 Scenario (change update-approval-flow). 준비는 helpers.ts.
 
@@ -27,7 +27,7 @@ test('결재 상신 창', async ({ page, request }) => {
 test('승인 화면', async ({ page, request }) => {
   const run = await deviationRun(request, `승인 화면 ${Date.now()}`)
   const sent = await request.post(`/api/runs/${run.run_id}/finish-review`,
-    { data: { approver_id: APPROVER, comment: COMMENT, actor_id: ENGINEER } })
+    { data: { approver_id: APPROVER, comment: COMMENT } })
   expect(sent.status()).toBe(200)
   await as(page, APPROVER)
   await page.goto(`/#/reviews/${run.run_id}`)
@@ -48,8 +48,8 @@ test('엔지니어·승인자의 내 할 일', async ({ page, request }) => {
   const name = `내 할 일 결재 ${Date.now()}`
   const run = await deviationRun(request, name)
   await request.post(`/api/runs/${run.run_id}/finish-review`,
-    { data: { approver_id: APPROVER, comment: COMMENT, actor_id: ENGINEER } })
-  const mine = await (await request.get(`/api/tasks?user_id=${APPROVER}`)).json()
+    { data: { approver_id: APPROVER, comment: COMMENT } })
+  const mine = await asLogin(request, 'approver', async () => (await request.get('/api/tasks')).json())
   const card = mine.reviews.find((c: { run_id: number }) => c.run_id === run.run_id)
   expect(card.criteria.map((c: { ar_code: string }) => c.ar_code)).toContain('AR-01')
   expect(card.approval.request_comment).toBe(COMMENT)

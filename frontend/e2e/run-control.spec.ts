@@ -29,7 +29,7 @@ test('처리 중 분석 취소', async ({ page, request }) => {
   await expect(page.getByText('분석을 멈출까요?')).toBeVisible()
   await page.getByRole('button', { name: '취소하기' }).click()
   await expect(page.getByRole('status')).toContainText('취소하는 중')
-  expect(cancelBody).toEqual({ actor_id: ENGINEER })
+  expect(cancelBody).toBeNull()              // 누가 취소했는지는 로그인 세션으로 정한다 (add-session-auth)
   state = 'cancelled'
   await expect(page.locator('.falert')).toContainText('문서 읽기 단계에서 취소했습니다', { timeout: 10_000 })
   await expect(page.locator('.fid')).toContainText('취소함')

@@ -23,7 +23,7 @@ function Rewind({ run, onChanged }: { run: RunSummary; onChanged: () => void }) 
   const go = () => {
     setBusy(true)
     setError(null)
-    api.rewind(run.run_id, step, reason.trim(), user.user_id).then(onChanged)
+    api.rewind(run.run_id, step, reason.trim()).then(onChanged)
       .catch((e: Error) => setError(e.message)).finally(() => setBusy(false))
   }
   return (

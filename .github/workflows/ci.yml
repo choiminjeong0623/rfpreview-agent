@@ -101,6 +101,13 @@ jobs:
         run: |
           uv sync --frozen
           uv run --frozen rfp-db setup
+          # E2E 로그인 사용자 비밀번호: 실행마다 새로 만들어 시험용 DB와 E2E에만 넘김(설정 파일에 비밀번호 글자를 두지 않음)
+          E2E_PASSWORD="$(openssl rand -hex 16)"
+          echo "::add-mask::$E2E_PASSWORD"
+          echo "E2E_PASSWORD=$E2E_PASSWORD" >> "$GITHUB_ENV"
+          for u in engineer approver cost quality; do
+            echo "$E2E_PASSWORD" | uv run --frozen rfp-db set-password --login "$u" --password-stdin
+          done
           psql "$DATABASE_URL" -c "INSERT INTO document_catalog (file_no, file_key, bundle, language) VALUES (91, 'synthetic_judgment', 'A', 'en'), (94, 'synthetic_loss', 'A', 'en')"
       - name: 백엔드 띄우기
         working-directory: backend

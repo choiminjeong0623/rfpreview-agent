@@ -89,7 +89,7 @@ export function RiskTab({ run, tick, onChanged }: { run: RunSummary; tick: numbe
   const act = (r: Risk, action: 'CONFIRM' | 'REJECT') => {
     setBusy(true)
     setError(null)
-    api.act(id, { target: 'risk_flag', target_id: r.risk_id, action, reason: action === 'REJECT' ? why.trim() : undefined, actor_id: user!.user_id })
+    api.act(id, { target: 'risk_flag', target_id: r.risk_id, action, reason: action === 'REJECT' ? why.trim() : undefined })
       .then(() => {
         setClosing(null); setWhy(''); onChanged()
         // 한 일 + 바뀌는 것 (update-risk-action-toasts). 닫은 위험 조건은 질의 후보를 만들지 않고 결재 확인 사유에서도 빠진다
@@ -204,7 +204,7 @@ function Found({ run, docs }: { run: RunSummary; docs: RunDocument[] }) {
     if (!user || !text.trim()) return
     setBusy(true)
     setError(null)
-    api.suggestRule(run.run_id, text.trim(), note.trim(), user.user_id)
+    api.suggestRule(run.run_id, text.trim(), note.trim())
       .then(() => {
         toast.done(`“${text.trim()}”: 위험 표현 사전에 추가를 제안했습니다. 규칙 담당이 판정 규칙 화면에서 반영하면 다음 검토부터 잡힙니다.`,
           { href: href('/rules'), label: '판정 규칙 보기' })

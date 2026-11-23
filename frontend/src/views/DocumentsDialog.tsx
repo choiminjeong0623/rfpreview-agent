@@ -17,7 +17,6 @@ const BUNDLES: Bundle[] = ['A', 'B', 'C', 'D']
 
 /** 문서 추가: docx·PDF 고르기 → 분류 추천 → 묶음·종류 고르기 → 추가하고 다시 분석 */
 function AddDocuments({ run, docs, onAdded }: { run: RunSummary; docs: RunDocument[]; onAdded: () => void }) {
-  const { user } = useSession()
   const input = useRef<HTMLInputElement>(null)
   const [files, setFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<Record<string, DocumentPreview> | 'loading' | null>(null)
@@ -47,7 +46,7 @@ function AddDocuments({ run, docs, onAdded }: { run: RunSummary; docs: RunDocume
     setError(null)
     const choices: Record<string, DocumentChoice> = {}
     files.forEach((f) => { const c = now(f); if (c) choices[f.name] = c })
-    api.addDocuments(run.run_id, files, choices, user?.user_id ?? null)
+    api.addDocuments(run.run_id, files, choices)
       .then(onAdded, (e: Error) => setError(e.message)).finally(() => setBusy(false))
   }
   return (

@@ -22,7 +22,7 @@ export async function deviationRun(request: APIRequestContext, name: string) {
   const res = await request.post('/api/runs', {
     multipart: {
       files: { name: 'synthetic_judgment.docx', mimeType: 'application/octet-stream', buffer: readFileSync(DOCX) },
-      review_name: name, actor_id: String(ENGINEER), due_date: dueIn(),
+      review_name: name, due_date: dueIn(),
     },
   })
   const run = await res.json() as { run_id: number; review_no: string }
@@ -32,7 +32,7 @@ export async function deviationRun(request: APIRequestContext, name: string) {
   test.skip(!j, '합성 데이터시트가 문서 목록(묶음 A)에 없어 판정이 없습니다')
   const edit = await request.post(`/api/runs/${run.run_id}/actions`, {
     data: { target: 'judgment', target_id: j.judgment_id, action: 'EDIT', value: { result: 'DEVIATION_CANDIDATE' },
-      reason: '시험용 일탈', actor_id: ENGINEER },
+      reason: '시험용 일탈' },
   })
   expect(edit.status()).toBe(200)
   const summary = await (await request.get(`/api/runs/${run.run_id}`)).json() as { deviation_candidates: number }
@@ -40,8 +40,40 @@ export async function deviationRun(request: APIRequestContext, name: string) {
   return { ...run, deviations: summary.deviation_candidates }
 }
 
+// 로그인 (add-session-auth). 시연 사용자 비밀번호는 `rfp-db demo-setup --password`나 `set-password`로 정하고
+// E2E_PASSWORD로 준다. 기본 사용자(역할마다 처음 만든 사람)의 로그인 아이디는 역할 이름의 소문자다.
+export const PASSWORD = process.env.E2E_PASSWORD ?? 'demo-pass-1'
+const LOGIN_OF: Record<string, string> = { ENGINEER: 'engineer', APPROVER: 'approver', COST: 'cost', QUALITY: 'quality', SALES: 'sales' }
+
+/** API 요청을 그 아이디로 로그인한다 (쿠키가 요청 문맥에 남는다) */
+export async function login(request: APIRequestContext, loginId = 'engineer') {
+  const res = await request.post('/api/auth/login', { data: { login_id: loginId, password: PASSWORD } })
+  expect(res.status(), `${loginId} 로그인: ${await res.text()} (E2E_PASSWORD를 확인하세요)`).toBe(200)
+}
+
+/** 잠깐 다른 아이디로 로그인해 fn을 부르고 엔지니어로 돌아온다 (승인자의 결정 등) */
+export async function asLogin<T>(request: APIRequestContext, loginId: string, fn: () => Promise<T>): Promise<T> {
+  await login(request, loginId)
+  try { return await fn() } finally { await login(request) }
+}
+
+/** 화면을 그 사용자(기본 사용자 번호)로 로그인한다. 페이지의 쿠키를 바꾸므로 이미 연 화면은 다시 읽어야 한다 */
 export async function as(page: Page, userId: number) {
-  await page.addInitScript((id) => localStorage.setItem('s2w.user', String(id)), userId)
+  await login(page.request)
+  const users = await (await page.request.get('/api/users')).json() as { user_id: number; role: string }[]
+  const role = users.find((u) => u.user_id === userId)?.role
+  expect(role, `사용자 ${userId}이(가) 없습니다`).toBeTruthy()
+  if (role !== 'ENGINEER') await login(page.request, LOGIN_OF[role!])
+}
+
+/** 백엔드를 흉내 내는 시험(page.route)에서 로그인한 사용자를 정한다. 일반 흉내보다 나중에 불러야 먼저 걸린다 */
+const MOCK_ME: Record<number, { user_name: string; role: string; login_id: string }> = {
+  1: { user_name: '시험 엔지니어', role: 'ENGINEER', login_id: 'engineer' },
+  2: { user_name: '시험 승인자', role: 'APPROVER', login_id: 'approver' },
+  3: { user_name: '시험 품질', role: 'QUALITY', login_id: 'quality' },
+}
+export async function mockMe(page: Page, userId = 1) {
+  await page.route('**/api/auth/me', (r) => r.fulfill({ json: { user_id: userId, ...MOCK_ME[userId] } }))
 }
 
 
@@ -51,7 +83,7 @@ async function upload(request: APIRequestContext, file: string, name: string, bu
   const res = await request.post('/api/runs', {
     multipart: {
       files: { name: file, mimeType: 'application/octet-stream', buffer: readFileSync(new URL(`./fixtures/${file}`, import.meta.url)) },
-      review_name: name, actor_id: String(ENGINEER), due_date: dueIn(),
+      review_name: name, due_date: dueIn(),
       ...(bundle ? { choices: JSON.stringify({ [file]: { bundle } }) } : {}),
     },
   })

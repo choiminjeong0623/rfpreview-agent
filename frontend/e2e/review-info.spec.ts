@@ -33,7 +33,7 @@ async function start(request: APIRequestContext, form: Record<string, string>) {
 test('목록에서 마감 보기', async ({ page, request }) => {
   const scope = `제어·보호반 ${Date.now()}`
   const run = await start(request, { project_name: 'Long An', review_name: scope, customer_name: '예시 송전회사',
-    due_date: isoAfter(3), actor_id: '1' })
+    due_date: isoAfter(3) })
   await page.goto('/#/reviews')
   await page.getByRole('button', { name: '팀 전체' }).click()
   const row = page.locator('tr', { hasText: scope })
@@ -55,7 +55,7 @@ test('검토명이 빈 검토', async ({ page, request }) => {
 })
 
 test('머리글에서 고치기', async ({ page, request }) => {
-  const run = await start(request, { review_name: '머리글 고치기 확인', actor_id: '1' })
+  const run = await start(request, { review_name: '머리글 고치기 확인' })
   await page.goto(`/#/reviews/${run.run_id}`)
   await expect(page.getByRole('navigation', { name: '현재 위치' })).toContainText(run.review_no)
   await page.getByRole('button', { name: '검토 정보 수정' }).click()

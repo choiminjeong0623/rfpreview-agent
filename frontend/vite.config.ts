@@ -11,7 +11,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    proxy: { '/api': apiTarget },
+    // xfwd: 백엔드가 원래 주소(X-Forwarded-Host)로 같은 출처인지 본다 (add-session-auth, 다른 사이트 요청 막기)
+    proxy: { '/api': { target: apiTarget, changeOrigin: true, xfwd: true } },
     watch: usePolling ? { usePolling: true, interval: 300 } : undefined,
   },
 })

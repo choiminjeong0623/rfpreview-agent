@@ -34,11 +34,12 @@
     "기준 데이터": ["reference-data"],
     "화면 (SCR)": ["review-workspace", "business-status"],
     "정답지·채점 (K1~K13)": ["evaluation"],
-    "스펙 검증 (SDD 5단계)": ["spec-verification"]
+    "스펙 검증 (SDD 5단계)": ["spec-verification"],
+    "로그인·세션 (ADR-012)": ["user-auth"]
   },
   "screens": {
     "SCR-00": { "fr": [], "components": ["shell/Shell.tsx", "shell/AnalysisProgress.tsx", "ui/index.ts"] },
-    "SCR-01": { "fr": [], "components": ["views/examples/Login.tsx"] },
+    "SCR-01": { "fr": [], "components": ["views/Login.tsx"] },
     "SCR-02": { "fr": ["FR-01", "FR-02", "FR-03", "FR-04", "FR-05", "FR-06"], "components": ["views/ProcessingView.tsx"] },
     "SCR-03": { "fr": ["FR-10", "FR-11"], "components": ["views/Home.tsx", "components/SummaryBox.tsx", "components/myWork.ts"] },
     "SCR-04": { "fr": [], "components": ["views/Projects.tsx"] },

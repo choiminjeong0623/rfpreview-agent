@@ -149,7 +149,7 @@ export function Todo() {
   const send = (a: Assignment, resend = false) => {
     if (!user) return
     setSending(a.assignment_id)
-    api.sendRequests(a.run_id, [a.assignment_id], user.user_id, resend)
+    api.sendRequests(a.run_id, [a.assignment_id], resend)
       .then((r) => r.sent ? toast.done(resend ? '다시 보냈습니다' : `${address(a)}(으)로 메일을 보냈습니다`)
         : toast.show(r.no_address ? '부서 주소가 설정되지 않아 보내지 않았습니다' : '메일을 보내지 못했습니다. 잠시 뒤 다시 보내 주세요', 'error'),
       (e: Error) => toast.show(e.message, 'error'))
@@ -379,7 +379,7 @@ function Detail({ a, now, dept, user, sending, sendingMe, onSend, onClose, onCha
   const set = (status: 'DOING' | 'DONE') => {
     setBusy(true)
     setError(null)
-    api.setTaskStatus(a.assignment_id, status, user!.user_id, status === 'DONE' ? note : undefined)
+    api.setTaskStatus(a.assignment_id, status, status === 'DONE' ? note : undefined)
       .then(() => onChanged(status === 'DONE' ? '회신 완료로 처리했습니다' : '회신 완료를 취소했습니다'), (e: Error) => setError(e.message))
       .finally(() => setBusy(false))
   }

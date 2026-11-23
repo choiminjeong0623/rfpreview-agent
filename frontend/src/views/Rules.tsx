@@ -253,7 +253,7 @@ function ItemLinks({ items, error, canEdit, lockText, onDone }: {
     if (!user) return
     setBusy(true)
     setFail(null)
-    ;(accept ? api.acceptItem(x.candidate_id, user.user_id) : api.hideItem(x.candidate_id, user.user_id))
+    ;(accept ? api.acceptItem(x.candidate_id) : api.hideItem(x.candidate_id))
       .then(() => { setDone(accept ? `“${x.text_raw}”을(를) ${x.target}의 동의어로 추가했습니다. 다음 분석부터 판정에 쓰입니다.` : `“${x.text_raw}” 후보를 숨겼습니다.`); onDone() },
         (e: Error) => setFail(e.message))
       .finally(() => setBusy(false))
@@ -325,7 +325,7 @@ function Suggestions({ items, error, canEdit, lockText, onAccept, onDeclined }: 
     if (!user) return
     setBusy(true)
     setFail(null)
-    api.declineSuggestion(id, why.trim(), user.user_id)
+    api.declineSuggestion(id, why.trim())
       .then(() => { setDeclining(null); setWhy(''); onDeclined() }, (e: Error) => setFail(e.message))
       .finally(() => setBusy(false))
   }

@@ -159,7 +159,7 @@ function Detail({ runId, stage, j, docs, pos, total, onPrev, onNext, editing, se
   const saveW = () => {
     if (!w || !user) return
     setError(null)
-    api.act(runId, { target: 'warranty_candidate', target_id: w.candidate_id, action: 'EDIT', value: { value: wVal.trim() }, reason: wWhy.trim(), actor_id: user.user_id })
+    api.act(runId, { target: 'warranty_candidate', target_id: w.candidate_id, action: 'EDIT', value: { value: wVal.trim() }, reason: wWhy.trim() })
       .then(() => { setWVal(''); setWWhy(''); warranty.reload(); toast.done('보증값을 입력했습니다.'); onChanged() }, (e: Error) => setError(e.message))
   }
 
@@ -178,7 +178,7 @@ function Detail({ runId, stage, j, docs, pos, total, onPrev, onNext, editing, se
   const confirm = () => {
     setBusy(true)
     setError(null)
-    api.act(runId, { target: 'judgment', target_id: j.judgment_id, action: 'CONFIRM', actor_id: user!.user_id })
+    api.act(runId, { target: 'judgment', target_id: j.judgment_id, action: 'CONFIRM' })
       .then(() => { toast.done('판정을 제안대로 확정했습니다.'); onConfirmed() }, (e: Error) => setError(e.message))
       .finally(() => setBusy(false))
   }
@@ -186,7 +186,7 @@ function Detail({ runId, stage, j, docs, pos, total, onPrev, onNext, editing, se
   const querySent = (sent: boolean) => {
     setBusy(true)
     setError(null)
-    api.act(runId, { target: 'judgment', target_id: j.judgment_id, action: sent ? 'QUERY_SENT' : 'QUERY_UNSENT', actor_id: user!.user_id })
+    api.act(runId, { target: 'judgment', target_id: j.judgment_id, action: sent ? 'QUERY_SENT' : 'QUERY_UNSENT' })
       .then(() => { toast.done(sent ? '질의 보냄으로 표시했습니다.' : '질의 보냄 표시를 되돌렸습니다.'); onChanged() }, (e: Error) => setError(e.message))
       .finally(() => setBusy(false))
   }
@@ -328,7 +328,6 @@ function SourceLines({ runId, loc, needle }: { runId: number; loc: Location; nee
 
 /** 판정 바꾸기 창: 새 판정 5종, 사유 필수 */
 function EditDialog({ runId, j, onClose, onDone }: { runId: number; j: Judgment; onClose: () => void; onDone: (was: string, now: string) => void }) {
-  const { user } = useSession()
   const [k, setK] = useState(j.result)
   const [why, setWhy] = useState('')
   const [hint, setHint] = useState<string | null>(null)
@@ -337,7 +336,7 @@ function EditDialog({ runId, j, onClose, onDone }: { runId: number; j: Judgment;
     if (!why.trim()) { setHint('판정을 바꾸려면 사유를 적어 주세요.'); return }
     setBusy(true)
     setHint(null)
-    api.act(runId, { target: 'judgment', target_id: j.judgment_id, action: 'EDIT', value: { result: k }, reason: why.trim(), actor_id: user!.user_id })
+    api.act(runId, { target: 'judgment', target_id: j.judgment_id, action: 'EDIT', value: { result: k }, reason: why.trim() })
       .then(() => onDone(j.result, k), (e: Error) => setHint(e.message))
       .finally(() => setBusy(false))
   }

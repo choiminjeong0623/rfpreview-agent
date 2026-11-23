@@ -8,6 +8,7 @@ from rfp_agent.pipeline import classify as cls
 from rfp_agent.pipeline import reference, rule_edit
 from rfp_agent.pipeline.docx_reader import read_blocks
 from rfp_agent.pipeline.run import RunContext, create_run, execute_run
+from tests.conftest import as_user
 from tests.docx_factory import build_gis_spec, build_judgment_spec
 
 SATISFACTION = "to the satisfaction of the Engineer"
@@ -222,8 +223,8 @@ def test_rule_edit_api(seeded_db, db_url, monkeypatch):
     get_settings.cache_clear()
     try:
         client = TestClient(app)
-        engineer, cost = user(seeded_db, "ENGINEER"), user(seeded_db, "COST")
-        body = {"value": NEW_RISK, "reason": "추가", "actor_id": engineer}
+        cost = user(seeded_db, "COST")
+        body = {"value": NEW_RISK, "reason": "추가"}
         assert client.post("/api/rules/risk-expressions", json=body).status_code == 201
         row = next(r for r in client.get("/api/rules/risk-expressions").json()
                    if r["expression"] == SATISFACTION)
@@ -231,9 +232,9 @@ def test_rule_edit_api(seeded_db, db_url, monkeypatch):
         put = client.put(url, json={**body, "value": {**NEW_RISK, "risk_kind": "BLANKET"},
                                     "reason": "종류"})
         assert put.status_code == 200 and put.json()["after_value"]["risk_kind"] == "BLANKET"
-        assert client.request("DELETE", url, json={"reason": "삭제", "actor_id": cost}
-                              ).status_code == 403
-        assert client.request("DELETE", url, json={"reason": "삭제", "actor_id": engineer}
+        assert client.request("DELETE", url, json={"reason": "삭제"},
+                              headers=as_user(cost)).status_code == 403
+        assert client.request("DELETE", url, json={"reason": "삭제"}
                               ).status_code == 200
         wrong = {**body, "value": {**NEW_RISK, "risk_kind": "X"}}
         assert client.post("/api/rules/risk-expressions", json=wrong).status_code == 400

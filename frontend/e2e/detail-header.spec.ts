@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { mockMe } from './helpers'
 
 // 명세 review-workspace "검토 상세 머리글과 탭"·"검토 상세 아래 행동 줄"·"판정 탭 한꺼번에 확정"·"목록 초안 내려받기와 문장 고치기"
 // Scenario (change update-detail-header). 검토 하나의 API 응답을 테스트가 정한 값으로 바꿔 머리글만 본다(백엔드·RFP 원문 없이).
@@ -54,7 +55,7 @@ async function mock(page: Page, o: Opt = {}) {
     if (path in json) return r.fulfill({ json: json[path] })
     return r.fulfill({ json: [] })
   })
-  await page.addInitScript(() => localStorage.setItem('s2w.user', '1'))
+  await mockMe(page)
   await page.goto(`/#/reviews/${ID}`)
 }
 

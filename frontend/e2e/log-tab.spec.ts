@@ -19,7 +19,7 @@ test('위험 조건 닫은 이력', async ({ page }) => {
   const risks = await (await page.request.get(`/api/runs/${run.run_id}/risks`)).json() as { risk_id: number; risk_kind: string; expression: string | null }[]
   const blanket = risks.find((r) => r.risk_kind === 'BLANKET')!
   const res = await page.request.post(`/api/runs/${run.run_id}/actions`, {
-    data: { target: 'risk_flag', target_id: blanket.risk_id, action: 'REJECT', reason: '일반 조항이라 문제 없음', actor_id: ENGINEER },
+    data: { target: 'risk_flag', target_id: blanket.risk_id, action: 'REJECT', reason: '일반 조항이라 문제 없음' },
   })
   expect(res.status()).toBe(200)
   await as(page, ENGINEER)

@@ -5,6 +5,7 @@ import pytest
 
 from rfp_agent.pipeline import queries, review
 from rfp_agent.pipeline.run import RunContext, create_run, execute_run
+from tests.conftest import as_user
 
 VERSION = "test-dict-v1"
 COMMENT = "질의 1건은 10-27 회신 예정"
@@ -146,8 +147,8 @@ def test_approval_flow_api(db, run, db_url, monkeypatch):
         assert ok.status_code == 200 and ok.json()["stage"] == "APPROVAL"
         screen = client.get(f"{url}/approval").json()
         assert screen["approval"]["request_comment"] == COMMENT
-        assert client.post(f"{url}/approval", json={"decision": "APPROVED",
-                                                     "actor_id": other}).status_code == 403
+        assert client.post(f"{url}/approval", json={"decision": "APPROVED"},
+                           headers=as_user(other)).status_code == 403
         assert client.post(f"{url}/withdraw", json={}).json()["stage"] == "ENGINEER_REVIEW"
         assert client.post(f"{url}/withdraw", json={}).status_code == 409
     finally:

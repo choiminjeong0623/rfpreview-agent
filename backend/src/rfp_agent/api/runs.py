@@ -15,6 +15,7 @@ from urllib.parse import quote
 from fastapi import APIRouter, BackgroundTasks, Form, HTTPException, Query, Response, UploadFile
 from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 
+from rfp_agent.api.auth import CurrentUser
 from rfp_agent.api.schemas import (
     ActionResult,
     AiCalls,
@@ -121,11 +122,10 @@ class ReviewInfo(BaseModel):
     country: str | None = Field(None, max_length=60)
     due_date: date | str | None = None
     engineer_id: int | None = None
-    actor_id: int | None = None
 
     def info(self) -> dict:
         return self.model_dump(exclude_unset=True,
-                               exclude={"actor_id", "files", "choices", "business_id",
+                               exclude={"files", "choices", "business_id",
                                         "new_business_name"})
 
 
@@ -166,47 +166,37 @@ class Action(BaseModel):
     action: str                     # CONFIRM, EDIT, REJECT, ADOPT, DISCARD
     value: dict | None = None       # EDIT: {"result"} / {"value", "unit"} / {"text"}
     reason: str | None = None
-    actor_id: int | None = None
 
 
 class TypeEdit(BaseModel):
     type_code: str                  # 유형 코드 또는 NONE(미분류)
     reason: str | None = None
-    actor_id: int | None = None
 
 
 class BulkAction(BaseModel):
     target: str = "judgment"
     ids: list[int]
     action: str = "CONFIRM"
-    actor_id: int | None = None
 
-
-class Actor(BaseModel):
-    actor_id: int | None = None
 
 
 class Rewind(BaseModel):
     """단계부터 다시 처리 (add-step-rewind): 처리 단계 이름과 사유."""
     step: str
     reason: str
-    actor_id: int | None = None
 
 
 class TaskStatus(BaseModel):
     status: str = Field(pattern="^(TODO|DOING|DONE)$")
-    actor_id: int
     reply_note: str | None = None
 
 
 class HandoffRequest(BaseModel):
-    actor_id: int | None = None
     table_id: int | None = None      # 데이터시트일 때
 
 
 class SendRequests(BaseModel):
     assignment_ids: list[int]
-    actor_id: int | None = None
     resend: bool = False             # 메일 보냄(회신 대기) 요청 재요청 (update-todo-search)
 
 
@@ -216,7 +206,6 @@ class ExportAssignments(BaseModel):
 
 
 class Submit(BaseModel):
-    actor_id: int | None = None
     approver_id: int | None = None
     comment: str | None = None
 
@@ -224,7 +213,6 @@ class Submit(BaseModel):
 class Decision(BaseModel):
     decision: str = Field(pattern="^(APPROVED|REJECTED)$")
     comment: str | None = None
-    actor_id: int | None = None
 
 
 @contextmanager
@@ -354,7 +342,7 @@ def _safe_name(name: str) -> str:
 
 @router.get("/users")
 def users() -> list[User]:
-    """로그인(범위 밖) 전까지 화면에서 고르는 사용자 목록."""
+    """결재자·담당자를 고르는 사용자 목록 (로그인 필요)."""
     with connect() as conn:
         return queries.users(conn)
 
@@ -482,17 +470,16 @@ async def upload_preview(files: list[UploadFile]) -> list[DocumentPreview]:
 
 
 @router.post("/runs/library", status_code=202)
-def run_library(body: LibraryRun, background: BackgroundTasks) -> RunSummary:
-    return _start(_library_paths(body.files), background, body.info(), body.actor_id, body.choices,
+def run_library(body: LibraryRun, background: BackgroundTasks, user: CurrentUser) -> RunSummary:
+    return _start(_library_paths(body.files), background, body.info(), user.user_id, body.choices,
                   body.business_id, body.new_business_name, body.request_key)
 
 
 @router.post("/runs", status_code=202)
-async def run_upload(files: list[UploadFile], background: BackgroundTasks,
+async def run_upload(files: list[UploadFile], background: BackgroundTasks, user: CurrentUser,
                      project_name: str | None = Form(None), review_name: str | None = Form(None),
                      customer_name: str | None = Form(None), country: str | None = Form(None),
                      due_date: str | None = Form(None), engineer_id: int | None = Form(None),
-                     actor_id: int | None = Form(None),
                      choices: str | None = Form(None),
                      business_id: int | None = Form(None),
                      new_business_name: str | None = Form(None),
@@ -511,7 +498,7 @@ async def run_upload(files: list[UploadFile], background: BackgroundTasks,
     sent = {"project_name": project_name, "review_name": review_name,
             "customer_name": customer_name, "country": country, "due_date": due_date,
             "engineer_id": engineer_id}
-    return _start(paths, background, {k: v for k, v in sent.items() if v is not None}, actor_id,
+    return _start(paths, background, {k: v for k, v in sent.items() if v is not None}, user.user_id,
                   chosen, business_id, new_business_name, request_key)
 
 
@@ -521,11 +508,11 @@ def run_status(run_id: int) -> RunSummary:
 
 
 @router.put("/runs/{run_id}/info")
-def update_info(run_id: int, body: ReviewInfo) -> RunSummary:
+def update_info(run_id: int, body: ReviewInfo, user: CurrentUser) -> RunSummary:
     """검토 정보를 고친다. 단계와 관계없이 고칠 수 있고 바뀐 칸은 이력에 남는다."""
     _summary(run_id)
     with connect() as conn:
-        _review(lambda: review_info.update(conn, run_id, body.info(), body.actor_id))
+        _review(lambda: review_info.update(conn, run_id, body.info(), user.user_id))
     return _summary(run_id)
 
 
@@ -610,10 +597,11 @@ def run_summary_text(run_id: int) -> ScreenSummary:
 
 
 @router.get("/home/summary")
-def home_summary_text(user_id: int | None = None) -> ScreenSummary:
-    """홈 요약 상자 문장 (add-screen-summary). 내 차례 수는 홈 "내가 처리할 건"과 같다."""
+def home_summary_text(user: CurrentUser) -> ScreenSummary:
+    """홈 요약 상자 문장 (add-screen-summary). 내 차례 수는 홈 "내가 처리할 건"과 같다.
+    사용자는 로그인한 사람이다 (add-session-auth)."""
     with connect() as conn:
-        return home_summary(conn, user_id)
+        return home_summary(conn, user.user_id)
 
 
 @router.get("/runs/{run_id}/judgment-counts")
@@ -632,7 +620,8 @@ def run_equipment(run_id: int) -> list[Equipment]:
 
 
 @router.put("/runs/{run_id}/equipment/{group:path}/product")
-def choose_product(run_id: int, group: str, body: ProductChoice) -> ProductSwitch:
+def choose_product(run_id: int, group: str, body: ProductChoice,
+                   user: CurrentUser) -> ProductSwitch:
     """설비 묶음의 비교 제품을 바꾸고 그 묶음을 다시 판정한다.
 
     이전 판정은 지우지 않고 현재가 아님으로 남긴다.
@@ -653,7 +642,7 @@ def choose_product(run_id: int, group: str, body: ProductChoice) -> ProductSwitc
         review.log(conn, run_id, "run_product_choice", run_id, "EDIT",
                    {"group": group, "product_code": before[0] if before else None},
                    {"group": group, "product_code": body.product_code}, "비교 제품 바꿔 보기",
-                   review.default_user(conn, "ENGINEER"))
+                   user.user_id)
         conn.commit()
         return counts
 
@@ -676,7 +665,8 @@ def run_losses(run_id: int) -> list[Loss]:
 
 
 @router.put("/runs/{run_id}/losses/{loss_calc_id}")
-def update_loss(run_id: int, loss_calc_id: int, body: LossValues) -> LossResult:
+def update_loss(run_id: int, loss_calc_id: int, body: LossValues,
+                user: CurrentUser) -> LossResult:
     """엔지니어가 손실값을 넣으면 다시 계산한다. 직접 넣은 값은 팀 가정으로 표시된다."""
     _summary(run_id)
     with connect() as conn:
@@ -689,7 +679,7 @@ def update_loss(run_id: int, loss_calc_id: int, body: LossValues) -> LossResult:
                              body.loss_aux_kw)
         review.log(conn, run_id, "loss_calc", loss_calc_id, "EDIT", before,
                    review.row(conn, "loss_calc", loss_calc_id, run_id), "손실값 고치기",
-                   review.default_user(conn, "ENGINEER"))
+                   user.user_id)
         with _ai(conn, "LOSS_EDIT", run_id) as ctx:
             build_proposals(conn, run_id, ctx.llm)
         build_assignments(conn, run_id)
@@ -824,31 +814,31 @@ def run_proposals(run_id: int) -> list[Proposal]:
 
 
 @router.post("/runs/{run_id}/actions")
-def act(run_id: int, body: Action) -> ActionResult:
+def act(run_id: int, body: Action, user: CurrentUser) -> ActionResult:
     """후보 하나를 확정·수정·반려(제안 포인트는 채택·버림·수정)하고 이력을 남긴다."""
     with connect() as conn, _ai(conn, "REVIEW_ACTION", run_id) as ctx:
         return _review(lambda: review.act(ctx, run_id, body.target,
                                           body.target_id, body.action, body.value,
-                                          body.reason, body.actor_id))
+                                          body.reason, user.user_id))
 
 
 @router.post("/runs/{run_id}/requirements/{requirement_id}/type")
-def edit_type(run_id: int, requirement_id: int, body: TypeEdit) -> TypeEditResult:
+def edit_type(run_id: int, requirement_id: int, body: TypeEdit,
+              user: CurrentUser) -> TypeEditResult:
     """사람이 요구사항의 주 유형을 고친다 (add-type-examples). 엔지니어·승인자만."""
     _summary(run_id)
     with connect() as conn:
-        actor_id = body.actor_id or review.default_user(conn, "ENGINEER")
         return _review(lambda: review.set_type(conn, run_id, requirement_id, body.type_code,
-                                               body.reason, actor_id))
+                                               body.reason, user.user_id))
 
 
 @router.post("/runs/{run_id}/actions/bulk")
-def act_bulk(run_id: int, body: BulkAction) -> BulkResult:
+def act_bulk(run_id: int, body: BulkAction, user: CurrentUser) -> BulkResult:
     """여러 판정을 한 번에 제안대로 확정한다 (수정·반려는 한 줄씩)."""
     if body.target != "judgment" or body.action != "CONFIRM":
         raise HTTPException(400, "한꺼번에는 판정 확정만 할 수 있습니다.")
     with connect() as conn, _ai(conn, "BULK_CONFIRM", run_id) as ctx:
-        return _review(lambda: review.bulk_confirm(ctx, run_id, body.ids, body.actor_id))
+        return _review(lambda: review.bulk_confirm(ctx, run_id, body.ids, user.user_id))
 
 
 @router.get("/runs/{run_id}/history")
@@ -859,40 +849,40 @@ def history(run_id: int, target: str | None = None, target_id: int | None = None
 
 
 @router.post("/runs/{run_id}/finish-review")
-def finish_review(run_id: int, body: Submit) -> SubmitResult:
+def finish_review(run_id: int, body: Submit, user: CurrentUser) -> SubmitResult:
     """결재 상신. 결재자와 상신 의견을 받아 승인 대기로 둔다 (걸린 기준이 없어도)."""
     with connect() as conn:
         return _review(lambda: review.finish_review(conn, run_id, body.approver_id,
-                                                    body.comment, body.actor_id))
+                                                    body.comment, user.user_id))
 
 
 @router.post("/runs/{run_id}/withdraw")
-def withdraw(run_id: int, body: Actor) -> StageResult:
+def withdraw(run_id: int, user: CurrentUser) -> StageResult:
     """결정 전인 상신을 취소하고 담당자 확인으로 되돌린다."""
     with connect() as conn:
-        return _review(lambda: review.withdraw(conn, run_id, body.actor_id))
+        return _review(lambda: review.withdraw(conn, run_id, user.user_id))
 
 
 @router.post("/runs/{run_id}/cancel")
-def cancel_run(run_id: int, body: Actor) -> RunSummary:
+def cancel_run(run_id: int, user: CurrentUser) -> RunSummary:
     """처리 중인 검토를 취소한다. 처리는 다음 진행 기록 때 멈추고 처리 실패가 된다."""
     with connect() as conn:
-        _review(lambda: run_control.request_cancel(conn, run_id, body.actor_id))
+        _review(lambda: run_control.request_cancel(conn, run_id, user.user_id))
     return _summary(run_id)
 
 
 @router.post("/runs/{run_id}/retry", status_code=202)
-def retry_run(run_id: int, body: Actor, background: BackgroundTasks) -> RunSummary:
+def retry_run(run_id: int, background: BackgroundTasks, user: CurrentUser) -> RunSummary:
     """실패·취소한 검토를 같은 파일·분류로 다시 처리한다. 처리한 문서는 다시 쓴다."""
     with connect() as conn:
-        paths, choices = _review(lambda: run_control.prepare_retry(conn, run_id, body.actor_id))
+        paths, choices = _review(lambda: run_control.prepare_retry(conn, run_id, user.user_id))
         _queue(background, conn, run_id, "RETRY", paths, choices)
     return _summary(run_id)
 
 
 @router.post("/runs/{run_id}/documents", status_code=202)
 async def add_documents(run_id: int, files: list[UploadFile], background: BackgroundTasks,
-                        actor_id: int | None = Form(None),
+                        user: CurrentUser,
                         choices: str | None = Form(None)) -> RunSummary:
     """분석을 마친 검토(담당자 확인 단계)에 정정본·추가 문서를 더해 같은 검토를 다시 분석한다.
 
@@ -907,20 +897,21 @@ async def add_documents(run_id: int, files: list[UploadFile], background: Backgr
     added = {name: c.model_dump(exclude_none=True) for name, c in chosen.items()}
     with connect() as conn:
         paths, merged = _review(lambda: doc_add.prepare_add(conn, run_id, new_paths, added,
-                                                            actor_id))
+                                                            user.user_id))
         _queue(background, conn, run_id, "ADD_DOCS", paths, merged)
     return _summary(run_id)
 
 
 @router.post("/runs/{run_id}/rewind", status_code=202)
-def rewind(run_id: int, body: Rewind, background: BackgroundTasks) -> RunSummary:
+def rewind(run_id: int, body: Rewind, background: BackgroundTasks,
+           user: CurrentUser) -> RunSummary:
     """담당자 확인 단계의 검토를 고른 처리 단계부터 다시 처리한다 (add-step-rewind, C2).
 
     같은 줄의 사람 확정·수정·반려와 위험 조건 확인은 이어받는다 (CR-08, FR-10 ⑤).
     """
     with connect() as conn:
         paths, choices = _review(lambda: doc_add.prepare_rewind(conn, run_id, body.step,
-                                                                body.reason, body.actor_id))
+                                                                body.reason, user.user_id))
         _queue(background, conn, run_id, "REWIND", paths, choices, body.step)
     return _summary(run_id)
 
@@ -963,30 +954,30 @@ def run_read_checks(run_id: int) -> list[ReadCheck]:
 
 
 @router.post("/runs/{run_id}/read-checks/{key}")
-def check_read(run_id: int, key: str, body: Actor) -> ReadCheck:
+def check_read(run_id: int, key: str, user: CurrentUser) -> ReadCheck:
     with connect() as conn:
-        return _review(lambda: read_checks.set_checked(conn, run_id, key, True, body.actor_id))
+        return _review(lambda: read_checks.set_checked(conn, run_id, key, True, user.user_id))
 
 
 @router.delete("/runs/{run_id}/read-checks/{key}")
-def uncheck_read(run_id: int, key: str, actor_id: int | None = None) -> ReadCheck:
+def uncheck_read(run_id: int, key: str, user: CurrentUser) -> ReadCheck:
     with connect() as conn:
-        return _review(lambda: read_checks.set_checked(conn, run_id, key, False, actor_id))
+        return _review(lambda: read_checks.set_checked(conn, run_id, key, False, user.user_id))
 
 
 @router.post("/runs/{run_id}/approval")
-def decide(run_id: int, body: Decision) -> DecisionResult:
+def decide(run_id: int, body: Decision, user: CurrentUser) -> DecisionResult:
     with connect() as conn:
         screen = _review(lambda: review.decide(conn, run_id, body.decision, body.comment,
-                                               body.actor_id))
+                                               user.user_id))
         screen["read_unchecked"] = read_checks.unchecked(conn, run_id)
         return screen
 
 
 @router.post("/runs/{run_id}/reopen")
-def reopen(run_id: int, body: Actor) -> StageResult:
+def reopen(run_id: int, user: CurrentUser) -> StageResult:
     with connect() as conn:
-        return _review(lambda: review.reopen(conn, run_id, body.actor_id))
+        return _review(lambda: review.reopen(conn, run_id, user.user_id))
 
 
 @router.get("/runs/{run_id}/deliverables")
@@ -998,10 +989,10 @@ def deliverables(run_id: int) -> Deliverables:
 
 
 @router.get("/tasks")
-def my_tasks(user_id: int) -> MyTasks:
-    """고른 사용자의 "내 할 일": 엔지니어·승인자는 멈춘 검토, 담당자는 받은 할 일 (FR-11)."""
+def my_tasks(user: CurrentUser) -> MyTasks:
+    """로그인한 사용자의 "내 할 일": 엔지니어·승인자는 멈춘 검토, 담당자는 받은 할 일 (FR-11)."""
     with connect() as conn:
-        return _review(lambda: review.my_tasks(conn, user_id))
+        return _review(lambda: review.my_tasks(conn, user.user_id))
 
 
 @router.get("/runs/{run_id}/assignments")
@@ -1034,20 +1025,21 @@ def export_assignments(body: ExportAssignments) -> Response:
 
 
 @router.put("/assignments/{assignment_id}")
-def update_assignment(assignment_id: int, body: TaskStatus) -> AssignmentStatus:
+def update_assignment(assignment_id: int, body: TaskStatus,
+                      user: CurrentUser) -> AssignmentStatus:
     """엔지니어가 회신 받음을 기록하거나 되돌린다 (메일 보냄 ↔ 회신 받음)."""
     with connect() as conn:
         return _review(lambda: review.set_assignment_status(conn, assignment_id, body.status,
-                                                            body.actor_id, body.reply_note))
+                                                            user.user_id, body.reply_note))
 
 
 @router.post("/runs/{run_id}/assignments/send")
-def send_assignments(run_id: int, body: SendRequests) -> SendResult:
+def send_assignments(run_id: int, body: SendRequests, user: CurrentUser) -> SendResult:
     """엔지니어가 고른 요청을 부서 주소로 보낸다 (판정 없는 요청, 실패·주소 없음 다시 보내기)."""
     _summary(run_id)
     with connect() as conn:
-        actor_id = body.actor_id or review.default_user(conn, "ENGINEER")
-        if _review(lambda: review._user_role(conn, actor_id)) != "ENGINEER":
+        actor_id = user.user_id
+        if user.role != "ENGINEER":
             raise HTTPException(403, "협조 요청은 기술 검토 엔지니어만 보낼 수 있습니다.")
         conn.execute("UPDATE assignment SET mail_error = NULL WHERE run_id = %s "
                      "AND assignment_id = ANY(%s) AND mail_sent_at IS NULL",
@@ -1060,21 +1052,20 @@ def send_assignments(run_id: int, body: SendRequests) -> SendResult:
 
 # ── 영업 인계 (add-submission-package, FR-11 확장) ──────────────
 
-def _engineer(conn, actor_id: int | None) -> int:
-    actor = actor_id or review.default_user(conn, "ENGINEER")
-    if _review(lambda: review._user_role(conn, actor)) != "ENGINEER":
+def _engineer(user) -> int:
+    if user.role != "ENGINEER":
         raise HTTPException(403, "영업에 넘기기는 기술 검토 엔지니어만 할 수 있습니다.")
-    return actor
+    return user.user_id
 
 
 @router.post("/runs/{run_id}/datasheet/handoff")
-def handoff_datasheet(run_id: int, body: HandoffRequest) -> HandoffResult:
+def handoff_datasheet(run_id: int, body: HandoffRequest, user: CurrentUser) -> HandoffResult:
     """데이터시트 한 장을 영업 주소로 보낸다. 후보 칸이 남으면 409."""
     _summary(run_id)
     if body.table_id is None:
         raise HTTPException(422, "넘길 데이터시트(table_id)를 정해 주세요.")
     with connect() as conn:
-        actor = _engineer(conn, body.actor_id)
+        actor = _engineer(user)
         try:
             return sales_handoff.send_datasheet(conn, run_id, body.table_id, actor)
         except datasheet.NotFound as exc:
@@ -1097,11 +1088,11 @@ def download_package(run_id: int) -> Response:
 
 
 @router.post("/runs/{run_id}/package/handoff")
-def handoff_package(run_id: int, body: HandoffRequest) -> HandoffResult:
+def handoff_package(run_id: int, user: CurrentUser) -> HandoffResult:
     """인계 패키지를 영업 주소로 보낸다."""
     _summary(run_id)
     with connect() as conn:
-        actor = _engineer(conn, body.actor_id)
+        actor = _engineer(user)
         try:
             return sales_handoff.send_package(conn, run_id, actor)
         except sales_handoff.HandoffRefused as exc:

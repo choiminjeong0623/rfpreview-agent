@@ -14,7 +14,7 @@ const LABELS: [Key, string, number][] = [
 ]
 
 export function BusinessDialog({ business: b, onClose, onSaved }: { business: BusinessDetail; onClose: () => void; onSaved: () => void }) {
-  const { user, users } = useSession()
+  const { users } = useSession()
   const start: Form = {
     business_name: b.business_name, customer_name: b.customer_name ?? '', country: b.country ?? '', tender_no: b.tender_no ?? '',
     order_mode: b.order_mode ?? '', due_date: b.business_due_date ?? '', sales_id: b.sales_id ? String(b.sales_id) : '',
@@ -32,7 +32,7 @@ export function BusinessDialog({ business: b, onClose, onSaved }: { business: Bu
     setBusy(true)
     setError(null)
     const body: BusinessInfo = Object.fromEntries(changed.map((k) => [k, k === 'sales_id' ? (form[k] ? Number(form[k]) : null) : form[k]]))
-    api.updateBusiness(b.business_id, body, user?.user_id ?? null).then(onSaved, (e: Error) => setError(e.message))
+    api.updateBusiness(b.business_id, body).then(onSaved, (e: Error) => setError(e.message))
       .finally(() => setBusy(false))
   }
   const set = (k: Key) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value })

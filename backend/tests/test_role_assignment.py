@@ -6,6 +6,7 @@ from docx import Document
 from rfp_agent.pipeline import queries, review
 from rfp_agent.pipeline.handoff_mail import send_requests
 from rfp_agent.pipeline.run import RunContext, create_run, execute_run
+from tests.conftest import as_user
 from tests.docx_factory import build_judgment_spec
 
 VERSION = "test-dict-v1"
@@ -191,25 +192,23 @@ def test_tasks_api(tasks_run, db_url, monkeypatch):
     try:
         client = TestClient(app)
         quality = review.default_user(conn, "QUALITY")
-        mine = client.get("/api/tasks", params={"user_id": quality}).json()
+        mine = client.get("/api/tasks", headers=as_user(quality)).json()
         [task] = [t for t in mine["assignments"] if t["run_id"] == run_id]
         assert mine["role"] == "QUALITY" and task["text"] == TYPE_TEST
         url = f"/api/assignments/{task['assignment_id']}"
-        engineer = review.default_user(conn, "ENGINEER")
         result = client.post(f"/api/runs/{run_id}/assignments/send",
-                             json={"assignment_ids": [task["assignment_id"]],
-                                   "actor_id": engineer}).json()
+                             json={"assignment_ids": [task["assignment_id"]]}).json()
         assert result == {"sent": 1, "failed": 0, "no_address": 0, "mails": 1}
-        assert client.put(url, json={"status": "DONE", "actor_id": quality}).status_code == 403
-        assert client.put(url, json={"status": "LATER", "actor_id": engineer}).status_code == 422
-        assert client.put(url, json={"status": "DONE", "actor_id": engineer,
+        assert client.put(url, json={"status": "DONE"},
+                          headers=as_user(quality)).status_code == 403
+        assert client.put(url, json={"status": "LATER"}).status_code == 422
+        assert client.put(url, json={"status": "DONE",
                                      "reply_note": "회신 받음"}).status_code == 200
         listed = client.get(f"/api/runs/{run_id}/assignments", params={"role": "QUALITY"}).json()
         assert [(t["status"], t["reply_note"]) for t in listed] == [("DONE", "회신 받음")]
         refused = client.post(f"/api/runs/{run_id}/assignments/send",
-                              json={"assignment_ids": [], "actor_id": quality})
+                              json={"assignment_ids": []}, headers=as_user(quality))
         assert refused.status_code == 403
-        assert client.get("/api/tasks", params={"user_id": 999999}).status_code == 400
     finally:
         get_settings.cache_clear()
 
