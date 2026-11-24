@@ -8,7 +8,7 @@
 7,"Commercial proposal showing unit price, quantity, delivery term, warranty, and validity period.",2. Mandatory Proposal Submission,COST,Y,,수정,Y,ambiguous: (공란) → Y,"2. Mandatory Proposal Submission | 가격 중심이나 납기·보증 조건도 포함. COST 유지, 복합 유형 표시.",최민정
 8,"Manufacturer authorization, production facility information, after-sales organization, and technical support plan.",2. Mandatory Proposal Submission,MAKER_QUAL,Y,,수정,Y,ambiguous: (공란) → Y,"2. Mandatory Proposal Submission | 제조사 자격 중심이나 사후지원·기술지원 포함. MAKER_QUAL 유지, 복합 유형 표시.",최민정
 9,"Factory acceptance, type/routine test plan, packing, inspection, delivery, and commissioning approach.",2. Mandatory Proposal Submission,TEST,Y,,수정,Y,ambiguous: (공란) → Y,"2. Mandatory Proposal Submission | 시험 계획과 포장·검사·납품·시운전이 혼재. TEST 유지, 복합 유형 표시.",최민정
-10,"Evidence for maintenance interval, service life, warranty, spare parts, and lifecycle support.",2. Mandatory Proposal Submission,COST,Y,,검토필요,N,,2. Mandatory Proposal Submission | 수명·정비·보증·예비품은 직접 가격 요구가 아님. COST의 수명주기 포함 여부 확인 필요.,최민정
+10,"Evidence for maintenance interval, service life, warranty, spare parts, and lifecycle support.",2. Mandatory Proposal Submission,COST,Y,,유지,N,,2. Mandatory Proposal Submission | 수명·정비·보증·예비품은 직접 가격 요구가 아님. COST의 수명주기 포함 여부 확인 필요. → 11-24 결정: 애매함 Y로 두고 K13에서 뺌,최민정
 11,The bidder shall complete one response row per offered product. A numeric or text response without a cited source is not accepted as evidence.,4. Technical Requirements and Evidence,NONE,Y,,유지,N,,4. Technical Requirements and Evidence | 일반 제출·응답 의무로서 특정 전문 유형에 해당하지 않음.,최민정
 12,"Product code, name, family, description, and product datasheet",4. Technical Requirements and Evidence,NONE,,,유지,N,,4장 T1 (응답 요구 표) | 일반 제출·응답 의무로서 특정 전문 유형에 해당하지 않음.,최민정
 13,"Rated voltage, rated current, and short-circuit capability with applicable unit",4. Technical Requirements and Evidence,TECH_PERF,,,유지,N,,4장 T2 (응답 요구 표) | 원문 문장 및 분류 일치.,최민정
@@ -16,8 +16,8 @@
 15,"Lightning impulse, power-frequency withstand, and switching impulse as applicable",4. Technical Requirements and Evidence,TECH_PERF,,,유지,N,,4장 T4 (응답 요구 표) | 원문 문장 및 분류 일치.,최민정
 16,"Peak/making current, breaking/closing time, and applicable interrupting evidence",4. Technical Requirements and Evidence,TECH_PERF,,,유지,N,,4장 T5 (응답 요구 표) | 원문 문장 및 분류 일치.,최민정
 17,"Insulation medium, cooling, gas leakage (if GIS), and partial discharge",4. Technical Requirements and Evidence,TECH_PERF,,,유지,N,,4장 T6 (응답 요구 표) | 원문 문장 및 분류 일치.,최민정
-18,"Maintenance interval, service life, lifecycle status, warranty, and spares plan",4. Technical Requirements and Evidence,COST,Y,,검토필요,N,,4장 T7 (응답 요구 표) | T7 수명주기 지원. COST의 범위 확인 필요.,최민정
-19,"Weight, dimensions, MOQ, lead time, packing, shipping, and delivery capability",4. Technical Requirements and Evidence,COST,Y,,검토필요,N,,4장 T8 (응답 요구 표) | T8 공급·물류. 비용 직접 언급 없음. COST 범위 확인 필요.,최민정
+18,"Maintenance interval, service life, lifecycle status, warranty, and spares plan",4. Technical Requirements and Evidence,COST,Y,,유지,N,,4장 T7 (응답 요구 표) | T7 수명주기 지원. COST의 범위 확인 필요. → 11-24 결정: 애매함 Y로 두고 K13에서 뺌,최민정
+19,"Weight, dimensions, MOQ, lead time, packing, shipping, and delivery capability",4. Technical Requirements and Evidence,COST,Y,,유지,N,,4장 T8 (응답 요구 표) | T8 공급·물류. 비용 직접 언급 없음. COST 범위 확인 필요. → 11-24 결정: 애매함 Y로 두고 K13에서 뺌,최민정
 20,"List/offer price basis, currency, validity, payment and delivery terms",4. Technical Requirements and Evidence,COST,,,유지,N,,4장 T9 (응답 요구 표) | 원문 문장 및 분류 일치.,최민정
 21,"Operating temperature, IP rating and installation limits supported by evidence",4. Technical Requirements and Evidence,SITE_ENV,,,유지,N,,4장 T10 (응답 요구 표) | 원문 문장 및 분류 일치.,최민정
 22,1 / Rated voltage / kV / ≥170 kV,4.2 TS-170-GIS,TECH_PERF,,,유지,N,,4.2 TS-170-GIS 1 | 원문 문장 및 분류 일치.,최민정
@@ -56,11 +56,11 @@
 55,Type Test reports issued by an independent accredited laboratory shall be submitted for the offered GIS.,8.2,TEST,,,유지,N,,8.2 Testing and Quality Assurance | 원문 문장 및 분류 일치.,최민정
 56,Routine Test shall be performed on every GIS bay at the factory and shall be witnessed by the Procuring Entity.,8.2,TEST,Y,,유지,N,,8.2 Testing and Quality Assurance | 원문 문장 및 분류 일치.,최민정
 57,The bidder shall submit the factory test report and the inspection and test plan at least four (4) weeks before shipment.,8.2,TEST,,,유지,N,,8.2 Testing and Quality Assurance | 원문 문장 및 분류 일치.,최민정
-58,The manufacturer shall hold a valid ISO 9001 certificate for the production facility of the offered equipment.,8.3,MAKER_QUAL,,,검토필요,N,,"8.3 Supplier Qualification | ISO 9001 인증이나 8.3 공급자 자격 절에 해당. MAKER_QUAL 유지, STANDARD_CERT 가능.",최민정
+58,The manufacturer shall hold a valid ISO 9001 certificate for the production facility of the offered equipment.,8.3,MAKER_QUAL,,,유지,N,,"8.3 Supplier Qualification | ISO 9001 인증이나 8.3 공급자 자격 절에 해당. MAKER_QUAL 유지, STANDARD_CERT 가능. → 11-24 결정: MAKER_QUAL 유지(8.3 공급자 자격 절, 주어가 제조사 생산 시설)",최민정
 59,The bidder shall have at least ten (10) years of experience in manufacturing and supplying gas-insulated switchgear.,8.3,MAKER_QUAL,,,유지,N,,8.3 Supplier Qualification | 원문 문장 및 분류 일치.,최민정
 60,An authorization letter from the manufacturer shall be submitted with the proposal.,8.3,MAKER_QUAL,,,유지,N,,8.3 Supplier Qualification | 원문 문장 및 분류 일치.,최민정
 61,Any deviation that is not listed in the bidder's deviation schedule shall be deemed to be accepted by the bidder.,9.1,RISK,,,유지,N,,9.1 Deviations and Clarifications | 계약상 편차 제한 또는 공급 범위 리스크.,최민정
 62,No deviations from the technical requirements will be accepted after contract award.,9.1,RISK,,,유지,N,,9.1 Deviations and Clarifications | 계약상 편차 제한 또는 공급 범위 리스크.,최민정
 63,"The scope of supply shall cover all accessories required for safe operation, including but not limited to special tools, earthing devices and gas handling equipment.",9.2,RISK,,,유지,N,,9.2 Scope of Supply | 계약상 편차 제한 또는 공급 범위 리스크.,최민정
-64,Any item that is not explicitly mentioned but is necessary for the complete installation shall be supplied at no extra cost to the Procuring Entity.,9.2,RISK,Y,,검토필요,N,,"9.2 Scope of Supply | 계약 범위 및 무상 공급 의무가 혼재. RISK 유지, OPEN_SCOPE 후보 여부 별도 확인.",최민정
+64,Any item that is not explicitly mentioned but is necessary for the complete installation shall be supplied at no extra cost to the Procuring Entity.,9.2,RISK,Y,,유지,N,,"9.2 Scope of Supply | 계약 범위 및 무상 공급 의무가 혼재. RISK 유지, OPEN_SCOPE 후보 여부 별도 확인. → 11-24 결정: RISK 유지·애매함 Y, 요구사항 정답지는 일반 요구사항 그대로(OPEN_SCOPE 아님)",최민정
 65,The annual gas leakage rate of each gas compartment of the GIS shall not exceed 0.5 %.,9.3,TECH_PERF,,,유지,N,,9.3 Technical Clarifications | 기술 성능 유형 일치. 부록 B 0.4%와 수치 불일치 별도 관리.,최민정
