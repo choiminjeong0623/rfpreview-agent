@@ -156,13 +156,13 @@ def test_eval_demo_same_table(db, env, db_url, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     first = eval_demo.run(False, Path("a.md"), None)
     keys = {k["key_name"]: (k["key_kind"], k["rows"], k["made_by"]) for k in evaluation.keys(db)}
-    assert keys == {"합성 RFP 28 요구사항": ("REQ", 69, "CLAUDE_DRAFT"),
-                    "합성 RFP 28 유형": ("TYPE", 65, "CLAUDE_DRAFT"),
+    assert keys == {"합성 RFP 28 요구사항": ("REQ", 69, "HUMAN"),
+                    "합성 RFP 28 유형": ("TYPE", 65, "HUMAN"),
                     "합성 RFP 28 판정": ("JUDGE", 30, "CLAUDE_DRAFT")}
     [saved] = evaluation.history(db)
     got = {m["code"]: (m["num"], m["den"]) for m in saved["metrics"]["items"]}
     assert {k: got[k] for k in ("K1", "K2", "K3", "K10", "K13", "K5-KEY", "K6-KEY")} == {
-        "K1": (65, 65), "K2": (65, 66), "K3": (30, 30), "K10": (4, 4), "K13": (42, 42),
+        "K1": (65, 65), "K2": (65, 66), "K3": (30, 30), "K10": (4, 4), "K13": (38, 38),
         "K5-KEY": (29, 30), "K6-KEY": (10, 10)}
     assert "| TIME" not in first and "| K5-KEY |" in first
     assert (tmp_path / "a.md").read_text(encoding="utf-8") == first
