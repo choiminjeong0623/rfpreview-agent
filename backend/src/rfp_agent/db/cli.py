@@ -288,9 +288,11 @@ def compare_prompts(set_name: str, models: str, repeat: int, yes: bool,
 
 
 DEMO_FILE = "RFP_Product_Master_Evaluative_EN_With_Product_Switch.docx"
-DEMO_KEYS = [("synthetic_rfp28_req.csv", "합성 RFP 28 요구사항", "REQ"),
-             ("synthetic_rfp28_type.csv", "합성 RFP 28 유형", "TYPE"),
-             ("synthetic_rfp28_judge.csv", "합성 RFP 28 판정", "JUDGE")]
+# (CSV, 이름, 종류, 사람 확인). 요구사항·유형은 2026-11-24 최민정이 원문과 한 줄씩 대조해
+# 확인했다(update-synthetic-key-human). 판정 정답지는 아직 Claude 초안.
+DEMO_KEYS = [("synthetic_rfp28_req.csv", "합성 RFP 28 요구사항", "REQ", True),
+             ("synthetic_rfp28_type.csv", "합성 RFP 28 유형", "TYPE", True),
+             ("synthetic_rfp28_judge.csv", "합성 RFP 28 판정", "JUDGE", False)]
 # 합성 RFP 파일 24 → 25 → 26 → 27 → 28 (add-eval-demo: 파일 25 스크립트 복원)
 SYNTHETIC_SCRIPTS = ("generate_evaluative_rfp.py", "generate_deviation_rfp.py",
                      "generate_collaboration_rfp.py", "generate_risk_rfp.py",
@@ -381,8 +383,8 @@ def demo_setup(create: bool, file: Path | None, password: str | None = None) -> 
                 auth.set_password(conn, login_id, password)
             print(f"[로그인] 시연 사용자 {len(DEMO_LOGINS)}명 비밀번호를 정했습니다: "
                   + ", ".join(DEMO_LOGINS))
-    for csv_name, name, kind in DEMO_KEYS:
-        load_answer_key(settings.seed_dir / "answer_keys" / csv_name, name, False, kind,
+    for csv_name, name, kind, human in DEMO_KEYS:
+        load_answer_key(settings.seed_dir / "answer_keys" / csv_name, name, human, kind,
                         None if kind == "TYPE" else DEMO_FILE.removesuffix(".docx"))
     demo_businesses([["시연 사업", str(path)]], "Demo Grid Co.", 14)
     print("[시연 준비] 끝. 이 DB로 백엔드를 띄우면 검토 목록에 시연 검토가 하나 보입니다.")
