@@ -1,31 +1,31 @@
-번호,text,expected,product_code,ambiguous,note
-1,1 / Rated voltage / kV / ≥170 kV,COMPLY,GIS-170-50,,4.2 TS-170-GIS 1. 제품표 170 kV GIS는 GIS-170-50 하나. 170 ≥ 170
-2,2 / Rated continuous current / A / ≥3150 A,COMPLY,GIS-170-50,,4.2 TS-170-GIS 2. 4000 ≥ 3150
-3,3 / Rated short-time withstand current / kA / ≥50 kA,COMPLY,GIS-170-50,,4.2 TS-170-GIS 3. 50 ≥ 50 (요구에 시간 없음)
-4,4 / Rated lightning impulse withstand voltage / kV / ≥750 kV,COMPLY,GIS-170-50,,4.2 TS-170-GIS 4. 750 ≥ 750
-5,5 / Rated short-duration power-frequency withstand voltage / kV / ≥395 kV,COMPLY,GIS-170-50,,4.2 TS-170-GIS 5. 395 ≥ 395
-6,6 / Rated short-circuit making current / kA / ≥125 kA,COMPLY,GIS-170-50,,4.2 TS-170-GIS 6. 125 ≥ 125
-7,7 / Total Breaking Time / ms / ≤60 ms,COMPLY,GIS-170-50,,4.2 TS-170-GIS 7. 60 ≤ 60
-8,8 / Annual leakage rate for each gas compartment / % / ≤0.5 %,COMPLY,GIS-170-50,,4.2 TS-170-GIS 8. 0.5 ≤ 0.5
-9,9 / Partial discharge / pC / ≤5 pC,COMPLY,GIS-170-50,,4.2 TS-170-GIS 9. 5 ≤ 5
-10,10 / Maintenance period / months / ≥12 months,COMPLY,GIS-170-50,,4.2 TS-170-GIS 10. 12 ≥ 12
-11,11 / Service life / years / ≥30 years,COMPLY,GIS-170-50,,4.2 TS-170-GIS 11. 30 ≥ 30
-12,1 / Rated voltage / kV / ≥24 kV,NEEDS_REVIEW,,,4.3 TS-24-CB 1. 24 kV·40 kA 진공차단기 후보 5개(정격 전류만 다름)라 사람이 고르기 전엔 비교 제품을 정하지 않음
-13,2 / Rated normal current / A / ≥2000 A,NEEDS_REVIEW,,,4.3 TS-24-CB 2. 같은 이유. 고르면 1250 A 제품은 일탈·2000 A 이상은 준수
-14,3 / Rated short-circuit breaking current / kA / ≥40 kA,NEEDS_REVIEW,,,4.3 TS-24-CB 3. 같은 이유
-15,4 / Rated lightning impulse withstand voltage / kV / ≥125 kV,NEEDS_REVIEW,,,4.3 TS-24-CB 4. 같은 이유
-16,5 / Rated short-duration power-frequency withstand voltage / kV / ≥50 kV,NEEDS_REVIEW,,,4.3 TS-24-CB 5. 같은 이유
-17,6 / Rated short-circuit making current / kA / ≥100 kA,NEEDS_REVIEW,,,4.3 TS-24-CB 6. 같은 이유
-18,7 / Total Breaking Time / ms / ≤60 ms,NEEDS_REVIEW,,,4.3 TS-24-CB 7. 같은 이유
-19,The annual gas leakage rate of each gas compartment of the GIS shall not exceed 0.5 %.,COMPLY,GIS-170-50,,9.3 문장. GIS 문장이고 GIS-170-50 0.5 ≤ 0.5
-20,D-01 / Rated voltage / kV / ≥180 kV,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-01. 170 < 180
-21,D-02 / Rated continuous current / A / ≥4000 A,COMPLY,GIS-170-50,,부록 B D-02. 4000 ≥ 4000
-22,D-03 / Rated short-time withstand current / kA / ≥60 kA,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-03. 50 < 60
-23,D-04 / Rated lightning impulse withstand voltage / kV / ≥800 kV,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-04. 750 < 800
-24,D-05 / Rated short-duration power-frequency withstand voltage / kV / ≥420 kV,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-05. 395 < 420
-25,D-06 / Rated short-circuit making current / kA / ≥130 kA,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-06. 125 < 130
-26,D-07 / Total breaking time / ms / ≤55 ms,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-07. 60 > 55
-27,D-08 / Annual leakage rate for each gas compartment / % / ≤0.4 %,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-08. 0.5 > 0.4
-28,D-09 / Partial discharge / pC / ≤3 pC,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-09. 5 > 3
-29,D-10 / Maintenance period / months / ≥24 months,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-10. 12 < 24
-30,D-11 / Service life / years / ≥35 years,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-11. 30 < 35
+번호,text,expected,product_code,ambiguous,note,판정,변경여부,변경항목,검수근거,만든 이
+1,1 / Rated voltage / kV / ≥170 kV,COMPLY,GIS-170-50,,4.2 TS-170-GIS 1. 제품표 170 kV GIS는 GIS-170-50 하나. 170 ≥ 170,유지,N,,"제품표 170, 요구 ≥170: 준수.",최민정
+2,2 / Rated continuous current / A / ≥3150 A,COMPLY,GIS-170-50,,4.2 TS-170-GIS 2. 4000 ≥ 3150,유지,N,,"제품표 4000, 요구 ≥3150: 준수.",최민정
+3,3 / Rated short-time withstand current / kA / ≥50 kA,COMPLY,GIS-170-50,,4.2 TS-170-GIS 3. 50 ≥ 50 (요구에 시간 없음),유지,N,,"제품표 50, 요구 ≥50: 준수.",최민정
+4,4 / Rated lightning impulse withstand voltage / kV / ≥750 kV,COMPLY,GIS-170-50,,4.2 TS-170-GIS 4. 750 ≥ 750,유지,N,,"제품표 750, 요구 ≥750: 준수. 팀 가정값 적용.",최민정
+5,5 / Rated short-duration power-frequency withstand voltage / kV / ≥395 kV,COMPLY,GIS-170-50,,4.2 TS-170-GIS 5. 395 ≥ 395,유지,N,,"제품표 395, 요구 ≥395: 준수. 팀 가정값 적용.",최민정
+6,6 / Rated short-circuit making current / kA / ≥125 kA,COMPLY,GIS-170-50,,4.2 TS-170-GIS 6. 125 ≥ 125,유지,N,,"제품표 125, 요구 ≥125: 준수. 팀 가정값 적용.",최민정
+7,7 / Total Breaking Time / ms / ≤60 ms,COMPLY,GIS-170-50,,4.2 TS-170-GIS 7. 60 ≤ 60,유지,N,,"제품표 60, 요구 ≤60: 준수. 팀 가정값 적용.",최민정
+8,8 / Annual leakage rate for each gas compartment / % / ≤0.5 %,COMPLY,GIS-170-50,,4.2 TS-170-GIS 8. 0.5 ≤ 0.5,유지,N,,"제품표 0.5, 요구 ≤0.5: 준수. 팀 가정값 적용.",최민정
+9,9 / Partial discharge / pC / ≤5 pC,COMPLY,GIS-170-50,,4.2 TS-170-GIS 9. 5 ≤ 5,유지,N,,"제품표 5, 요구 ≤5: 준수. 팀 가정값 적용.",최민정
+10,10 / Maintenance period / months / ≥12 months,COMPLY,GIS-170-50,,4.2 TS-170-GIS 10. 12 ≥ 12,유지,N,,"제품표 12, 요구 ≥12: 준수. 팀 가정값 적용.",최민정
+11,11 / Service life / years / ≥30 years,COMPLY,GIS-170-50,,4.2 TS-170-GIS 11. 30 ≥ 30,유지,N,,"제품표 30, 요구 ≥30: 준수. 팀 가정값 적용.",최민정
+12,1 / Rated voltage / kV / ≥24 kV,NEEDS_REVIEW,,,4.3 TS-24-CB 1. 24 kV·40 kA 진공차단기 후보 5개(정격 전류만 다름)라 사람이 고르기 전엔 비교 제품을 정하지 않음,유지,N,,후보 5개 중 5개 수치 충족. 비교 제품 미확정이므로 확인 필요.,최민정
+13,2 / Rated normal current / A / ≥2000 A,NEEDS_REVIEW,,,4.3 TS-24-CB 2. 같은 이유. 고르면 1250 A 제품은 일탈·2000 A 이상은 준수,유지,N,,후보 5개 중 3개 수치 충족. 비교 제품 미확정이므로 확인 필요.,최민정
+14,3 / Rated short-circuit breaking current / kA / ≥40 kA,NEEDS_REVIEW,,,4.3 TS-24-CB 3. 같은 이유,유지,N,,후보 5개 중 5개 수치 충족. 비교 제품 미확정이므로 확인 필요.,최민정
+15,4 / Rated lightning impulse withstand voltage / kV / ≥125 kV,NEEDS_REVIEW,,,4.3 TS-24-CB 4. 같은 이유,유지,N,,후보 5개 중 5개 수치 충족. 비교 제품 미확정이므로 확인 필요.,최민정
+16,5 / Rated short-duration power-frequency withstand voltage / kV / ≥50 kV,NEEDS_REVIEW,,,4.3 TS-24-CB 5. 같은 이유,유지,N,,후보 5개 중 5개 수치 충족. 비교 제품 미확정이므로 확인 필요.,최민정
+17,6 / Rated short-circuit making current / kA / ≥100 kA,NEEDS_REVIEW,,,4.3 TS-24-CB 6. 같은 이유,유지,N,,후보 5개 중 5개 수치 충족. 비교 제품 미확정이므로 확인 필요.,최민정
+18,7 / Total Breaking Time / ms / ≤60 ms,NEEDS_REVIEW,,,4.3 TS-24-CB 7. 같은 이유,유지,N,,후보 5개 중 5개 수치 충족. 비교 제품 미확정이므로 확인 필요.,최민정
+19,The annual gas leakage rate of each gas compartment of the GIS shall not exceed 0.5 %.,COMPLY,GIS-170-50,,9.3 문장. GIS 문장이고 GIS-170-50 0.5 ≤ 0.5,유지,N,,"제품표 0.5, 요구 ≤0.5: 준수. 팀 가정값 적용.",최민정
+20,D-01 / Rated voltage / kV / ≥180 kV,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-01. 170 < 180,유지,N,,"제품표 170, 요구 ≥180: 일탈 후보. 부록 B의 GIS 적용은 초안 전제(원문 미확인). → 11-25 원문 확인: 부록 B 표 머리가 TS-170-GIS라 GIS에 적용.",최민정
+21,D-02 / Rated continuous current / A / ≥4000 A,COMPLY,GIS-170-50,,부록 B D-02. 4000 ≥ 4000,유지,N,,"제품표 4000, 요구 ≥4000: 준수. 부록 B의 GIS 적용은 초안 전제(원문 미확인). → 11-25 원문 확인: 부록 B 표 머리가 TS-170-GIS라 GIS에 적용.",최민정
+22,D-03 / Rated short-time withstand current / kA / ≥60 kA,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-03. 50 < 60,유지,N,,"제품표 50, 요구 ≥60: 일탈 후보. 부록 B의 GIS 적용은 초안 전제(원문 미확인). → 11-25 원문 확인: 부록 B 표 머리가 TS-170-GIS라 GIS에 적용.",최민정
+23,D-04 / Rated lightning impulse withstand voltage / kV / ≥800 kV,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-04. 750 < 800,유지,N,,"제품표 750, 요구 ≥800: 일탈 후보. 팀 가정값 적용. 부록 B의 GIS 적용은 초안 전제(원문 미확인). → 11-25 원문 확인: 부록 B 표 머리가 TS-170-GIS라 GIS에 적용.",최민정
+24,D-05 / Rated short-duration power-frequency withstand voltage / kV / ≥420 kV,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-05. 395 < 420,유지,N,,"제품표 395, 요구 ≥420: 일탈 후보. 팀 가정값 적용. 부록 B의 GIS 적용은 초안 전제(원문 미확인). → 11-25 원문 확인: 부록 B 표 머리가 TS-170-GIS라 GIS에 적용.",최민정
+25,D-06 / Rated short-circuit making current / kA / ≥130 kA,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-06. 125 < 130,유지,N,,"제품표 125, 요구 ≥130: 일탈 후보. 팀 가정값 적용. 부록 B의 GIS 적용은 초안 전제(원문 미확인). → 11-25 원문 확인: 부록 B 표 머리가 TS-170-GIS라 GIS에 적용.",최민정
+26,D-07 / Total breaking time / ms / ≤55 ms,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-07. 60 > 55,유지,N,,"제품표 60, 요구 ≤55: 일탈 후보. 팀 가정값 적용. 부록 B의 GIS 적용은 초안 전제(원문 미확인). → 11-25 원문 확인: 부록 B 표 머리가 TS-170-GIS라 GIS에 적용.",최민정
+27,D-08 / Annual leakage rate for each gas compartment / % / ≤0.4 %,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-08. 0.5 > 0.4,유지,N,,"제품표 0.5, 요구 ≤0.4: 일탈 후보. 팀 가정값 적용. 부록 B의 GIS 적용은 초안 전제(원문 미확인). → 11-25 원문 확인: 부록 B 표 머리가 TS-170-GIS라 GIS에 적용.",최민정
+28,D-09 / Partial discharge / pC / ≤3 pC,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-09. 5 > 3,유지,N,,"제품표 5, 요구 ≤3: 일탈 후보. 팀 가정값 적용. 부록 B의 GIS 적용은 초안 전제(원문 미확인). → 11-25 원문 확인: 부록 B 표 머리가 TS-170-GIS라 GIS에 적용.",최민정
+29,D-10 / Maintenance period / months / ≥24 months,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-10. 12 < 24,유지,N,,"제품표 12, 요구 ≥24: 일탈 후보. 팀 가정값 적용. 부록 B의 GIS 적용은 초안 전제(원문 미확인). → 11-25 원문 확인: 부록 B 표 머리가 TS-170-GIS라 GIS에 적용.",최민정
+30,D-11 / Service life / years / ≥35 years,DEVIATION_CANDIDATE,GIS-170-50,,부록 B D-11. 30 < 35,유지,N,,"제품표 30, 요구 ≥35: 일탈 후보. 팀 가정값 적용. 부록 B의 GIS 적용은 초안 전제(원문 미확인). → 11-25 원문 확인: 부록 B 표 머리가 TS-170-GIS라 GIS에 적용.",최민정

@@ -30,12 +30,12 @@ def counts(db):
 def test_demo_setup_on_empty_db(db, env, spec, capsys):
     """Scenario: 빈 DB에 시연 준비 — 정답지 3개, 사업 "시연 사업", 검토 1건 담당자 확인.
 
-    정답지 만든 이: 요구사항·유형 사람, 판정 Claude 초안(update-synthetic-key-human).
+    정답지 만든 이: 요구사항·유형·판정 모두 사람(update-judge-key-human).
     """
     cli.main(["demo-setup", "--file", str(spec)])
     keys = dict(db.execute("SELECT key_name, made_by FROM answer_key").fetchall())
     assert keys == {"합성 RFP 28 요구사항": "HUMAN", "합성 RFP 28 유형": "HUMAN",
-                    "합성 RFP 28 판정": "CLAUDE_DRAFT"}
+                    "합성 RFP 28 판정": "HUMAN"}
     runs = db.execute(
         "SELECT b.business_name, r.stage FROM review_run r JOIN business b USING (business_id)"
     ).fetchall()

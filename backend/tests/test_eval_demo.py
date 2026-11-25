@@ -158,7 +158,7 @@ def test_eval_demo_same_table(db, env, db_url, tmp_path, monkeypatch):
     keys = {k["key_name"]: (k["key_kind"], k["rows"], k["made_by"]) for k in evaluation.keys(db)}
     assert keys == {"합성 RFP 28 요구사항": ("REQ", 69, "HUMAN"),
                     "합성 RFP 28 유형": ("TYPE", 65, "HUMAN"),
-                    "합성 RFP 28 판정": ("JUDGE", 30, "CLAUDE_DRAFT")}
+                    "합성 RFP 28 판정": ("JUDGE", 30, "HUMAN")}
     [saved] = evaluation.history(db)
     got = {m["code"]: (m["num"], m["den"]) for m in saved["metrics"]["items"]}
     assert {k: got[k] for k in ("K1", "K2", "K3", "K10", "K13", "K5-KEY", "K6-KEY")} == {
